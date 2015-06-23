@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.branch;
+package com.b2international.snowowl.core.branch;
 
 import java.util.Collection;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
-import com.b2international.snowowl.core.api.IBranchPath;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 
 /**
@@ -185,5 +184,5 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @return
 	 * @deprecated - use the new {@link Branch} interface instead
 	 */
-	IBranchPath branchPath();
+	//IBranchPath branchPath();
 }
