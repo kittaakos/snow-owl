@@ -1,0 +1,17 @@
+{
+	"properties" : {
+		"commitId" : {
+			"type" : "long"
+		},
+		"commitTimestamp" : {
+			"type" : "long"
+		},
+		"branchPath" : {
+			"type" : "string",
+			"index" : "not_analyzed"
+		},
+		"baseTimestamp" : {
+			"type" : "long"
+		}
+	}
+}

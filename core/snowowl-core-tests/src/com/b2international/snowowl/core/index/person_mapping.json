@@ -1,0 +1,45 @@
+{
+	"_parent" : {
+		"type" : "commit"
+	},
+	"properties" : {
+		"commitTimestamp" : {
+			"type" : "long"
+		},
+		"deleted" : {
+			"type" : "boolean"
+		},
+		"commitId" : {
+			"type" : "long"
+		},
+		"id" : {
+			"type" : "long"
+		},
+		"firstName" : {
+			"type" : "string"
+		},
+		"lastName" : {
+			"type" : "string"
+		},
+		"yob" : {
+			"type" : "long"
+		},
+		"addresses" : {
+			"type" : "nested",
+			"properties" : {
+				"country" : {
+					"type" : "string"
+				},
+				"city" : {
+					"type" : "string"
+				},
+				"street" : {
+					"type" : "string"
+				},
+				"zipCode" : {
+					"type" : "long"
+				}
+			}
+		}
+	}
+}
