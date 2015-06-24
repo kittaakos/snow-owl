@@ -18,8 +18,8 @@ package com.b2international.snowowl.core.internal.branch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
-import com.b2international.snowowl.core.events.util.ApiEventHandler;
-import com.b2international.snowowl.core.events.util.Handler;
+import com.b2international.snowowl.core.event.util.ApiEventHandler;
+import com.b2international.snowowl.core.event.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;

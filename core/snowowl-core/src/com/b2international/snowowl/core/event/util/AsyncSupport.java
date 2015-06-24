@@ -17,7 +17,7 @@ package com.b2international.snowowl.core.event.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.events.Event;
+import com.b2international.snowowl.core.event.Event;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
