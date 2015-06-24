@@ -184,5 +184,5 @@ public interface Branch extends Deletable, MetadataHolder {
 	 * @return
 	 * @deprecated - use the new {@link Branch} interface instead
 	 */
-	//IBranchPath branchPath();
+	IBranchPath branchPath();
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.core.internal.branch;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -27,12 +27,11 @@ import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.BranchPathUtils;
 import com.b2international.snowowl.datastore.cdo.ICDOConnection;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.branch.BranchManager;
-import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
 import com.b2international.snowowl.datastore.store.IndexStore;
 import com.b2international.snowowl.datastore.store.Store;

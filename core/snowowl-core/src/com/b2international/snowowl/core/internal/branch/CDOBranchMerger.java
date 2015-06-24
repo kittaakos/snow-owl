@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.core.internal.branch;
 
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
-import com.b2international.snowowl.datastore.server.branch.BranchMergeException;
+import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
 
 /**

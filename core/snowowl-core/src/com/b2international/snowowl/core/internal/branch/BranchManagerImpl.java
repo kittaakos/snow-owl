@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.internal.branch;
+package com.b2international.snowowl.core.internal.branch;
 
 import java.util.Collection;
 
@@ -21,11 +21,11 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.datastore.server.branch.Branch;
-import com.b2international.snowowl.datastore.server.branch.Branch.BranchState;
-import com.b2international.snowowl.datastore.server.branch.BranchManager;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.query.QueryBuilder;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch.BranchState;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.store.Store;
+import com.b2international.snowowl.core.store.query.QueryBuilder;
 
 /**
  * @since 4.1
