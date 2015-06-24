@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.index.mapping.ComponentMappingStrategy;
+import com.b2international.snowowl.core.index.mapping.DefaultMappingStrategy;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -60,11 +60,10 @@ public class TransactionalIndexTest {
 		// define mapping
 		final Mappings mappings = new Mappings();
 		mappings.addMapping(TEST_INDEX, PERSONS, Resources.toString(Resources.getResource(TransactionalIndexTest.class, "person_mapping.json"), Charsets.UTF_8));
-		mappings.addMappingStrategy(TEST_INDEX, PERSONS, new ComponentMappingStrategy<>(mapper, Person.class));
+		mappings.addMappingStrategy(TEST_INDEX, PERSONS, new DefaultMappingStrategy<>(mapper, Person.class));
 		client = node.client();
 		// init index
-		index = new Index(client, TEST_INDEX, mappings);
-		index.setMapper(mapper);
+		index = new Index(client, TEST_INDEX, mappings, mapper);
 		index.delete();
 		index.create();
 	}

@@ -15,28 +15,16 @@
  */
 package com.b2international.snowowl.core.index.mapping;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 
-import com.b2international.snowowl.core.index.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
- * @since 5.0
+ * @since 5.0 
+ * @param <T> - the type of the object to map from/to Map<String, Object>/JSON
  */
-public class ComponentMappingStrategy<T extends Component> {
+public interface MappingStrategy<T> {
 
-	private ObjectMapper mapper;
-	private Class<T> type;
-
-	public ComponentMappingStrategy(ObjectMapper mapper, Class<T> type) {
-		this.mapper = checkNotNull(mapper, "mapper");
-		this.type = checkNotNull(type, "type");
-	}
+	Map<String, Object> convert(T t);
 	
-	public final T fromJSON(Map<String, Object> json) {
-		return mapper.convertValue(json, type);
-	}
-
+	T convert(Map<String, Object> map);
+	
 }

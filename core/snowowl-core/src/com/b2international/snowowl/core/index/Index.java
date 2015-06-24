@@ -42,8 +42,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.index.mapping.ComponentMappingStrategy;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.b2international.snowowl.core.index.mapping.DefaultMappingStrategy;
+import com.b2international.snowowl.core.index.mapping.MappingStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
@@ -77,9 +77,8 @@ public class Index {
 	private Mappings mappings;
 	private Map<String, Long> baseTimestampMap = new MapMaker().makeMap();
 	private Map<String, Long> headTimestampMap = new MapMaker().makeMap();
-	private ObjectMapper mapper;
 
-	public Index(Client client, String name, Mappings mappings) {
+	public Index(Client client, String name, Mappings mappings, ObjectMapper mapper) {
 		this.client = checkNotNull(client, "client");
 		this.indicesClient = this.client.admin().indices();
 		this.name = name;
@@ -88,6 +87,7 @@ public class Index {
 		try {
 			final String mapping = Resources.toString(Resources.getResource(Index.class, TRANSACTION_MAPPING_JSON), Charsets.UTF_8);
 			this.mappings.addMapping(name, COMMIT_TYPE, mapping);
+			this.mappings.addMappingStrategy(name, COMMIT_TYPE, new DefaultMappingStrategy<>(mapper, IndexCommit.class));
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to read transaction mapping", e);
 		}
@@ -134,7 +134,11 @@ public class Index {
 
 	IndexRequestBuilder prepareAdd(IndexRevision revision) {
 		try {
-			return this.client.prepareIndex(name, revision.type()).setParent(String.valueOf(revision.getCommitId())).setSource(toJSON(revision));
+			final String type = revision.type();
+			final Map<String, Object> json = getMappingStrategy(type).convert(revision);
+			return this.client.prepareIndex(name, type)
+					.setParent(String.valueOf(revision.getCommitId()))
+					.setSource(json);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -142,9 +146,13 @@ public class Index {
 	
 	void commit(IndexCommit tx) {
 		try {
-			final String json = toJSON(tx);
+			final Map<String, Object> json = getMappingStrategy(COMMIT_TYPE).convert(tx);
 			LOG.info("Committing transaction: {}", json);
-			final IndexResponse response = this.client.prepareIndex(name, COMMIT_TYPE).setId(String.valueOf(tx.getTransactionId())).setSource(json).setRefresh(true).get();
+			final IndexResponse response = this.client.prepareIndex(name, COMMIT_TYPE)
+					.setId(String.valueOf(tx.getTransactionId()))
+					.setSource(json)
+					.setRefresh(true)
+					.get();
 			if (!response.isCreated()) {
 				throw new IllegalStateException("Failed to create transaction doc:" + tx.getTransactionId());
 			}
@@ -155,10 +163,6 @@ public class Index {
 		}
 	}
 
-	private String toJSON(Object obj) throws JsonProcessingException {
-		return mapper.writeValueAsString(obj);
-	}
-	
 	SearchResponse search(QueryBuilder queryBuilder) {
 		return search(null, queryBuilder);
 	}
@@ -186,7 +190,7 @@ public class Index {
 				throw new FormattedRuntimeException("%s not found with identifier '%s' at branch '%s'", type, id, branchPath);
 			}
 			final SearchHit searchHit = hits.hits()[0];
-			return (Component) this.mappings.getMappingStrategy(name, type).fromJSON(searchHit.getSource());
+			return (Component) this.mappings.getMappingStrategy(name, type).convert(searchHit.getSource());
 		} catch (SearchPhaseExecutionException e) {
 			// TODO how to handle search phase exceptions
 			throw new FormattedRuntimeException("Missing index: %s/%s", name, type, e);
@@ -235,16 +239,12 @@ public class Index {
 		return headTimestampMap.get(branchPath);
 	}
 
-	ComponentMappingStrategy<? extends Component> getMappingStrategy(String type) {
-		return mappings.getMappingStrategy(name, type);
+	<T> MappingStrategy<T> getMappingStrategy(String type) {
+		return (MappingStrategy<T>) mappings.getMappingStrategy(name, type);
 	}
 
 	Client client() {
 		return client;
-	}
-
-	void setMapper(ObjectMapper mapper) {
-		this.mapper = mapper;
 	}
 
 }

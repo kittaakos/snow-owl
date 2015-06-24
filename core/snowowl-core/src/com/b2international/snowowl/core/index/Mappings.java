@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.index.mapping.ComponentMappingStrategy;
+import com.b2international.snowowl.core.index.mapping.MappingStrategy;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -29,13 +29,13 @@ import com.google.common.collect.Table;
 public class Mappings {
 
 	private Table<String, String, String> indexTypeToMappingTable = HashBasedTable.create();
-	private Table<String, String, ComponentMappingStrategy<? extends Component>> indexTypeToMappingStrategyTable = HashBasedTable.create();
+	private Table<String, String, MappingStrategy<?>> indexTypeToMappingStrategyTable = HashBasedTable.create();
 	
 	public void addMapping(String index, String type, String mapping) {
 		indexTypeToMappingTable.put(index, type, mapping);
 	}
 	
-	public void addMappingStrategy(String index, String type, ComponentMappingStrategy<? extends Component> strategy) {
+	public void addMappingStrategy(String index, String type, MappingStrategy<?> strategy) {
 		indexTypeToMappingStrategyTable.put(index, type, strategy);
 	}
 	
@@ -44,7 +44,7 @@ public class Mappings {
 		return indexTypeToMappingTable.get(index, type); 
 	}
 	
-	public ComponentMappingStrategy<? extends Component> getMappingStrategy(String index, String type) {
+	public MappingStrategy<?> getMappingStrategy(String index, String type) {
 		checkArgument(indexTypeToMappingStrategyTable.contains(index, type), "No mapping strategy defined for %s/%s", index, type);
 		return indexTypeToMappingStrategyTable.get(index, type);
 	}

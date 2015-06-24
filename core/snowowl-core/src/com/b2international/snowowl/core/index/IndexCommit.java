@@ -33,7 +33,7 @@ import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.b2international.snowowl.core.index.mapping.ComponentMappingStrategy;
+import com.b2international.snowowl.core.index.mapping.MappingStrategy;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.Sets;
@@ -150,8 +150,8 @@ public class IndexCommit {
 			// id should be the very first sort key, the second is revision
 			final Object id = hit.getSortValues()[0];
 			if (!changes.containsKey(id)) {
-				final ComponentMappingStrategy<? extends Component> mappingStrategy = index.getMappingStrategy(hit.getType());
-				changes.put(id, mappingStrategy.fromJSON(hit.getSource()));
+				final MappingStrategy<Component> mappingStrategy = index.getMappingStrategy(hit.getType());
+				changes.put(id, mappingStrategy.convert(hit.getSource()));
 			}
 		}
 		return changes.values();
