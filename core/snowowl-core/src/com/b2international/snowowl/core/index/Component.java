@@ -20,15 +20,18 @@ package com.b2international.snowowl.core.index;
 /**
  * @since 5.0
  */
-public class Component {
+public abstract class Component {
 
 	private String id;
+	
+	/*package*/ Component() {
+	}
 	
 	public String getId() {
 		return id;
 	}
 	
-	public void setId(String id) {
+	/*package*/ void setId(String id) {
 		this.id = id;
 	}
 	
