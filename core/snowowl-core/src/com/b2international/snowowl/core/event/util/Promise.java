@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.events.util;
+package com.b2international.snowowl.core.event.util;
 
 import com.b2international.commons.collections.Procedure;
 
