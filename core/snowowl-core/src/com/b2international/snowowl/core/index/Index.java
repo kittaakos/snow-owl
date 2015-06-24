@@ -15,236 +15,62 @@
  */
 package com.b2international.snowowl.core.index;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-
-import java.io.IOException;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.index.IndexResponse;
-import org.elasticsearch.action.search.SearchPhaseExecutionException;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
-import org.elasticsearch.common.collect.MapMaker;
-import org.elasticsearch.common.settings.ImmutableSettings;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.sort.SortOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.index.mapping.DefaultMappingStrategy;
-import com.b2international.snowowl.core.index.mapping.MappingStrategy;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.io.Resources;
 
 /**
- * Represents an elasticsearch index repository.
+ * General purpose index service implementation on top of Elasticsearch library.
  * 
  * @since 5.0
  */
-public class Index {
+public final class Index {
 
-	private static final Logger LOG = LoggerFactory.getLogger(Index.class);
-	private static final String TRANSACTION_MAPPING_JSON = "commit_mapping.json";
-	
-	static final String MAIN_BRANCH = "MAIN";
-
-	static final String ID_FIELD = "id";
-	static final String BRANCH_PATH_FIELD = "branchPath";
-	static final String DELETED_FIELD = "deleted";
-	static final String TRANSACTION_ID_FIELD = "transactionId";
-	static final String COMMIT_TIMESTAMP_FIELD = "commitTimestamp";
-	static final String COMMIT_TYPE = "commit";
-	static final String BASE_TIMESTAMP_FIELD = "baseTimestamp";
-	
-	private AtomicInteger transactionIds = new AtomicInteger(0);
-	private AtomicLong timestampProvider = new AtomicLong(0L);
 	private Client client;
-	private IndicesAdminClient indicesClient;
-	private String name;
-	private Mappings mappings;
-	private Map<String, Long> baseTimestampMap = new MapMaker().makeMap();
-	private Map<String, Long> headTimestampMap = new MapMaker().makeMap();
+	private String index;
 
-	public Index(Client client, String name, Mappings mappings, ObjectMapper mapper) {
-		this.client = checkNotNull(client, "client");
-		this.indicesClient = this.client.admin().indices();
-		this.name = name;
-		this.mappings = mappings;
-		createBranch(null, MAIN_BRANCH);
-		try {
-			final String mapping = Resources.toString(Resources.getResource(Index.class, TRANSACTION_MAPPING_JSON), Charsets.UTF_8);
-			this.mappings.addMapping(name, COMMIT_TYPE, mapping);
-			this.mappings.addMappingStrategy(name, COMMIT_TYPE, new DefaultMappingStrategy<>(mapper, IndexCommit.class));
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to read transaction mapping", e);
-		}
+	public Index(Client client, String index) {
+		this.client = client;
+		this.index = index;
 	}
 	
-	public IndexCommit openTransaction(String branchPath) {
-		return new IndexCommit(this, branchPath, transactionIds.getAndIncrement(), timestampProvider.getAndIncrement());
+	public Map<String, Object> get(String type, String id) {
+		// TODO not found exception conversion
+		return this.client.prepareGet(index, type, id).get().getSource();
 	}
 	
-	public IndexQueryBuilder newQuery(String branchPath) {
-		return new IndexQueryBuilder(this, branchPath);
+	public void put(String type, String id, Map<String, Object> obj) {
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj);
+		// TODO indexing strategy, IMMEDIATE, BULK, BULK_SIZED
+		// determines the refresh flag state as well, in IMMEDIATE the refresh should always be set
+		req.get();
 	}
 	
-	public IndexQueryBuilder newQuery(String type, String branchPath) {
-		return new IndexQueryBuilder(this, type, branchPath);
-	}
-
-	public void create() throws IOException {
-		if (!exists()) {
-			final CreateIndexRequestBuilder newIndex = this.indicesClient.prepareCreate(name);
-			// disable refresh, we manually refresh the index during commits
-			newIndex.setSettings(ImmutableSettings.builder().put("refresh_interval", -1).build());
-			// add mappings
-			for (Entry<String, String> entry : mappings.getMappings(name).entrySet()) {
-				LOG.info(String.format("Adding %s mapping:\n%s", entry.getKey(), entry.getValue()));
-				newIndex.addMapping(entry.getKey(), entry.getValue());
-			}
-			LOG.info("Creating index: " + name);
-			newIndex.get();
-		}
-	}
-
-	public boolean exists() {
-		LOG.info("Checking existence of {}", name);
-		return this.indicesClient.prepareExists(name).get().isExists();
+	public void remove(String type, String id) {
+		// TODO not found exception conversion
+		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id);
+		// TODO indexing strategy
+		req.get();
 	}
 	
-	public void delete() {
-		if (exists()) {
-			LOG.info("Deleting index: {}", name);
-			this.indicesClient.prepareDelete(name).get();
-		}
-	}
-
-	IndexRequestBuilder prepareAdd(IndexRevision revision) {
-		try {
-			final String type = revision.type();
-			final Map<String, Object> json = getMappingStrategy(type).convert(revision);
-			return this.client.prepareIndex(name, type)
-					.setParent(String.valueOf(revision.getCommitId()))
-					.setSource(json);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+	public SearchHits search(String type, QueryBuilder query) {
+		return search(type, query, 0, Integer.MAX_VALUE);
 	}
 	
-	void commit(IndexCommit tx) {
-		try {
-			final Map<String, Object> json = getMappingStrategy(COMMIT_TYPE).convert(tx);
-			LOG.info("Committing transaction: {}", json);
-			final IndexResponse response = this.client.prepareIndex(name, COMMIT_TYPE)
-					.setId(String.valueOf(tx.getTransactionId()))
-					.setSource(json)
-					.setRefresh(true)
-					.get();
-			if (!response.isCreated()) {
-				throw new IllegalStateException("Failed to create transaction doc:" + tx.getTransactionId());
-			}
-			// update head timestamp
-			headTimestampMap.put(tx.getBranchPath(), tx.getCommitTimestamp());
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	SearchResponse search(QueryBuilder queryBuilder) {
-		return search(null, queryBuilder);
+	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
+		return this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get().getHits();
 	}
 	
-	SearchResponse search(String type, QueryBuilder queryBuilder) {
-		// TODO scrolling?
-		// TODO async?
-		LOG.info("Running query in {}/{}: {}", name, type, queryBuilder);
-		SearchRequestBuilder req = this.client.prepareSearch(name)
-				.setQuery(queryBuilder)
-				.setSize(Integer.MAX_VALUE) // TODO is it okay to have max int as size???
-				.addSort(Index.ID_FIELD, SortOrder.ASC)
-				.addSort(Index.COMMIT_TIMESTAMP_FIELD, SortOrder.DESC);
-		if (type != null) {
-			req.setTypes(type);
-		}
-		return req.get();
+	public String getName() {
+		return index;
 	}
 
-	Component load(String type, String branchPath, String id) {
-		try {
-			final SearchResponse response = newQuery(type, branchPath).where(termQuery(ID_FIELD, id)).search();
-			final SearchHits hits = response.getHits();
-			if (hits.totalHits() <= 0) {
-				throw new FormattedRuntimeException("%s not found with identifier '%s' at branch '%s'", type, id, branchPath);
-			}
-			final SearchHit searchHit = hits.hits()[0];
-			return (Component) this.mappings.getMappingStrategy(name, type).convert(searchHit.getSource());
-		} catch (SearchPhaseExecutionException e) {
-			// TODO how to handle search phase exceptions
-			throw new FormattedRuntimeException("Missing index: %s/%s", name, type, e);
-		}
-	}
-
-	/*
-	 * Testing only, mostly for branching simulations, will be removed when branching support is moved to new snowowl-core
-	 */
-	void createBranch(String parent, String name) {
-		// simulate branch creation
-		final long timestamp = timestampProvider.getAndIncrement();
-		final String branchPath = !Strings.isNullOrEmpty(parent) ? parent + "/" + name : name;
-		baseTimestampMap.put(branchPath, timestamp);
-		headTimestampMap.put(branchPath, timestamp);
-	}
-
-	/*Rebase moves baseTimestamp to the current parent head, and creates a single commit without any changes for now*/
-	void rebase(String branchPath) {
-		final String parent = getParentBranchPath(branchPath);
-		// move basetimestamp to parent head
-		baseTimestampMap.put(branchPath, getHeadTimestamp(parent));
-		// simulate applyChangeset commit
-		headTimestampMap.put(branchPath, timestampProvider.getAndIncrement());
+	public void clear(String type) {
+		this.client.admin().indices().prepareDeleteMapping(index).setType(type).get();
 	}
 	
-	void merge(String branchPath) {
-		final String parent = getParentBranchPath(branchPath);
-		// merge will make branch content available on parent
-		openTransaction(branchPath).changes();
-		// rebase is basically just a reopen implementation without actual applyChangeSet
-		rebase(branchPath);
-	}
-
-	private String getParentBranchPath(String branchPath) {
-		return branchPath.substring(0, branchPath.lastIndexOf("/"));
-	}
-	
-	long getBaseTimestamp(String branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		return baseTimestampMap.get(branchPath);
-	}
-	
-	long getHeadTimestamp(String branchPath) {
-		checkNotNull(branchPath, "branchPath");
-		return headTimestampMap.get(branchPath);
-	}
-
-	<T> MappingStrategy<T> getMappingStrategy(String type) {
-		return (MappingStrategy<T>) mappings.getMappingStrategy(name, type);
-	}
-
-	Client client() {
-		return client;
-	}
-
 }
