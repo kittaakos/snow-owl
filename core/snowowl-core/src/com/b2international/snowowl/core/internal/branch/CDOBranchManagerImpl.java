@@ -33,8 +33,8 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.datastore.server.internal.IRepository;
-import com.b2international.snowowl.datastore.store.IndexStore;
-import com.b2international.snowowl.datastore.store.Store;
+import com.b2international.snowowl.core.store.IndexStore;
+import com.b2international.snowowl.core.store.Store;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.

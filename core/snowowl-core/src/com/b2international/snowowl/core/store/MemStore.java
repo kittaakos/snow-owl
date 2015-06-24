@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.core.store;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
-import com.b2international.snowowl.datastore.store.query.Query;
-import com.b2international.snowowl.datastore.store.query.Where;
+import com.b2international.snowowl.core.store.query.Query;
+import com.b2international.snowowl.core.store.query.Where;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store.query;
+package com.b2international.snowowl.core.store.query;
 
 import com.google.common.base.Predicate;
 

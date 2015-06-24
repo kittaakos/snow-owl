@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.core.store;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.datastore.store.query.Query;
+import com.b2international.snowowl.core.store.query.Query;
 
 
 /**

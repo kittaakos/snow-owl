@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.store;
+package com.b2international.snowowl.core.store;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
@@ -39,10 +39,10 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 
 import com.b2international.commons.ReflectionUtils;
-import com.b2international.snowowl.datastore.store.query.Clause;
-import com.b2international.snowowl.datastore.store.query.EqualsWhere;
-import com.b2international.snowowl.datastore.store.query.PrefixWhere;
-import com.b2international.snowowl.datastore.store.query.Where;
+import com.b2international.snowowl.core.store.query.Clause;
+import com.b2international.snowowl.core.store.query.EqualsWhere;
+import com.b2international.snowowl.core.store.query.PrefixWhere;
+import com.b2international.snowowl.core.store.query.Where;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
