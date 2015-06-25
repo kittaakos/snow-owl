@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store;
+package com.b2international.snowowl.core.store.mem;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.store.BaseStore;
 import com.b2international.snowowl.core.store.query.Query;
 import com.b2international.snowowl.core.store.query.Where;
 import com.google.common.base.Function;
