@@ -3,6 +3,7 @@ package com.b2international.snowowl.core.store;
 import java.util.Objects;
 
 import com.b2international.snowowl.core.store.index.Mapping;
+import com.b2international.snowowl.core.terminology.Component;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -12,24 +13,20 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 class Types {
 
 	@Mapping(type = "data")
-	static class Data {
-		
-		@Id
-		@JsonProperty
-		public String id;
+	static class Data extends Component {
 		
 		@JsonProperty
 		public String prop;
 		
 		@JsonCreator
 		public Data(@JsonProperty("id") String id, @JsonProperty("prop") String prop) {
-			this.id = id;
+			setId(id);
 			this.prop = prop;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hash(id, prop);
+			return Objects.hash(getId(), prop);
 		}
 		
 		@Override
@@ -37,7 +34,7 @@ class Types {
 			if (this == obj) return true;
 			if (!(obj instanceof Data)) return false;
 			final Data other = (Data) obj;
-			return Objects.equals(id, other.id) && Objects.equals(prop, other.prop);
+			return Objects.equals(getId(), other.getId()) && Objects.equals(prop, other.prop);
 		}
 		
 	}

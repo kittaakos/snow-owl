@@ -20,8 +20,7 @@ import org.junit.Rule;
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.store.BaseStoreTest;
 import com.b2international.snowowl.core.store.Store;
-import com.b2international.snowowl.core.store.index.Index;
-import com.b2international.snowowl.core.store.index.IndexStore;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.1
@@ -33,10 +32,11 @@ public class IndexStoreTest extends BaseStoreTest {
 	
 	@Override
 	protected <T> Store<T> createStore(Class<T> type) {
-		final Index index = new Index(es.client(), getClass().getSimpleName().toLowerCase());
-		index.delete();
-		index.create();
-		return new IndexStore<>(index, type);
+		final ObjectMapper mapper = new ObjectMapper();
+		final ElasticsearchIndex index = new ElasticsearchIndex(es.client(), getClass().getSimpleName().toLowerCase());
+		index.admin().delete();
+		index.admin().create(Mappings.of(mapper, type));
+		return new IndexStore<>(index, mapper, type);
 	}
 	
 }

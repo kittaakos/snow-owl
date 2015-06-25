@@ -13,27 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.terminology;
+package com.b2international.snowowl.core.store.index.tx;
 
-import com.b2international.snowowl.core.store.Id;
+import com.b2international.snowowl.core.store.index.IndexAdmin;
 
 /**
  * @since 5.0
  */
-public abstract class Component {
+public interface TransactionalIndexAdmin extends IndexAdmin {
 
-	@Id
-	private String id;
-	
-	protected Component() {
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
+	// add getCommits etc...
 	
 }

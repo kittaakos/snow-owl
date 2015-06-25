@@ -15,43 +15,18 @@
  */
 package com.b2international.snowowl.core.store.index;
 
-import java.util.Map;
-
 /**
  * @since 5.0
  * @param <T>
- *            - the type of the object to map from/to Map<String, Object>/JSON
+ *            - the admin interface's type
  */
-public interface MappingStrategy<T> {
+public interface Administrable<T> {
 
 	/**
-	 * Converts the POJO representation to a Map of String, Object pairs.
-	 * 
-	 * @param t
-	 * @return
-	 */
-	Map<String, Object> convert(T t);
-
-	/**
-	 * Converts the given Map of String, Object pairs to a POJO representation.
-	 * 
-	 * @param map
-	 * @return
-	 */
-	T convert(Map<String, Object> map);
-
-	/**
-	 * Returns the type of the value this mapping strategy can work with.
+	 * Returns the administration interface.
 	 * 
 	 * @return
 	 */
-	String getType();
-
-	/**
-	 * Returns the definition of the elasticsearch mapping for the component of this {@link MappingStrategy}.
-	 * 
-	 * @return
-	 */
-	String getMapping();
+	T admin();
 
 }

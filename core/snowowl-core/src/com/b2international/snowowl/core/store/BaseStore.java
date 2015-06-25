@@ -91,6 +91,9 @@ public abstract class BaseStore<T> implements Store<T> {
 				return field;
 			}
 		}
+		if (type.getSuperclass() != null) {
+			return getIdField(type.getSuperclass());
+		}
 		throw new IllegalArgumentException(String.format("Type '%s' does not have an ID field defined", type.getName()));
 	}
 

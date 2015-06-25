@@ -15,43 +15,37 @@
  */
 package com.b2international.snowowl.core.store.index;
 
-import java.util.Map;
-
 /**
+ * Administration interface managing an elasticsearch index.
+ * 
  * @since 5.0
- * @param <T>
- *            - the type of the object to map from/to Map<String, Object>/JSON
  */
-public interface MappingStrategy<T> {
+public interface IndexAdmin {
 
 	/**
-	 * Converts the POJO representation to a Map of String, Object pairs.
-	 * 
-	 * @param t
-	 * @return
+	 * Returns <code>true</code> if the index already exists, otherwise returns <code>false</code>.
 	 */
-	Map<String, Object> convert(T t);
+	boolean exists();
 
 	/**
-	 * Converts the given Map of String, Object pairs to a POJO representation.
+	 * Creates the index if and only if does not exist yet, otherwise this method is no-op.
 	 * 
-	 * @param map
-	 * @return
+	 * @param mappings
+	 *            - the mappings to use when creating the index
 	 */
-	T convert(Map<String, Object> map);
+	void create(Mappings mappings);
 
 	/**
-	 * Returns the type of the value this mapping strategy can work with.
-	 * 
-	 * @return
+	 * Deletes the entire index with its data if and only if does exist, otherwise this method is no-op.
 	 */
-	String getType();
+	void delete();
 
 	/**
-	 * Returns the definition of the elasticsearch mapping for the component of this {@link MappingStrategy}.
+	 * Clears a type and all its associated data from the index.
 	 * 
-	 * @return
+	 * @param type
+	 *            - the type to remove completely from the index
 	 */
-	String getMapping();
+	void clear(String type);
 
 }

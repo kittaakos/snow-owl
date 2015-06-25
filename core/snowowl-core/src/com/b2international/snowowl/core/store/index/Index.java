@@ -17,88 +17,102 @@ package com.b2international.snowowl.core.store.index;
 
 import java.util.Map;
 
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
-
 /**
- * General purpose index service implementation on top of Elasticsearch library.
+ * Generic interface for an elasticsearch index.
  * 
  * @since 5.0
  */
-public final class Index {
+public interface Index {
 
-	private Client client;
-	private String index;
+	/**
+	 * Fetch an object by type and key from the index.
+	 * 
+	 * @param type
+	 *            - the object's type to retrieve
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @return a {@link Map} of String, Object pairs representing the object
+	 */
+	Map<String, Object> get(String type, String key);
 
-	public Index(Client client, String index) {
-		this.client = client;
-		this.index = index;
-	}
-	
-	public boolean exists() {
-		return this.client.admin().indices().prepareExists(index).get().isExists();
-	}
-	
-	public void create() {
-		if (!exists()) {
-			this.client.admin().indices().prepareCreate(index).get();
-		}
-	}
-	
-	public void delete() {
-		if (exists()) {
-			this.client.admin().indices().prepareDelete(index).get();
-		}
-	}
-	
-	public Map<String, Object> get(String type, String id) {
-		// TODO not found exception conversion
-		final GetResponse getResponse = this.client.prepareGet(index, type, id).setFetchSource(true).get();
-		if (!getResponse.isExists()) {
-			throw new NotFoundException(type, id);
-		}
-		return getResponse.getSource();
-	}
-	
-	public void put(String type, String id, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj).setRefresh(true);
-		// TODO indexing strategy, IMMEDIATE, BULK, BULK_SIZED
-		// determines the refresh flag state as well, in IMMEDIATE the refresh should always be set
-		req.get();
-	}
-	
-	public void remove(String type, String id) {
-		// TODO not found exception conversion
-		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id).setRefresh(true);
-		// TODO indexing strategy
-		req.get();
-	}
-	
-	public SearchHits search(String type, QueryBuilder query) {
-		return search(type, query, 0, Integer.MAX_VALUE);
-	}
-	
-	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
-		final SearchResponse response = this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get();
-		if (response.getSuccessfulShards() <= 0) {
-			throw new RuntimeException("Failed to execute query on indexes: " + response);
-		}
-		return response.getHits();
-	}
-	
-	public String getName() {
-		return index;
-	}
+	/**
+	 * Store/Put an object represented by the given {@link Map} of String, Object pairs in this index under the given type with a generated ID and
+	 * parent key.
+	 * 
+	 * @param type
+	 *            - the object's type
+	 * @param parentKey
+	 *            - the document id of the parent document
+	 * @param obj
+	 *            - the {@link Map} representation of the object
+	 */
+	void putWithParent(String type, String parentKey, Map<String, Object> obj);
 
-	public void clear(String type) {
-		this.client.admin().indices().prepareDeleteMapping(index).setType(type).get();
-	}
-	
+	/**
+	 * Store/Put an object represented by the given {@link Map} of String, Object pairs in this index under the given type, identified with the given
+	 * key.
+	 * 
+	 * @param type
+	 *            - the object's type
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @param obj
+	 *            - the {@link Map} representation of the object
+	 */
+	void put(String type, String key, Map<String, Object> obj);
+
+	/**
+	 * Remove a document from the index from the given types with the given id.
+	 * 
+	 * @param type
+	 *            - the object's type
+	 * @param id
+	 *            - the unique identifier of the object
+	 */
+	void remove(String type, String id);
+
+	/**
+	 * Execute the given query among all stored documents with the given type.
+	 * 
+	 * @param type
+	 *            - the type to restrict the execution of the query
+	 * @param query
+	 *            - the query to execute and return hits for
+	 * @return - the search hits
+	 */
+	SearchHits search(String type, QueryBuilder query);
+
+	/**
+	 * Execute the given query among all stored documents with the given type. The size of the search hits will be restricted to the given limit
+	 * starting from the given offset.
+	 * 
+	 * @param type
+	 *            - the type to restrict execution of the query
+	 * @param query
+	 *            - the query to execute and return hits for
+	 * @param offset
+	 *            - the offset to use
+	 * @param limit
+	 *            - the result set limit to use
+	 * @return - the search hits
+	 */
+	SearchHits search(String type, QueryBuilder query, int offset, int limit);
+
+	/**
+	 * Returns the name of the index.
+	 * 
+	 * @return
+	 */
+	String name();
+
+	/**
+	 * Returns the administrator interface for this index.
+	 * 
+	 * @return
+	 */
+	IndexAdmin admin();
+
 }

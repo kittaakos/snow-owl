@@ -17,9 +17,13 @@ package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.IOException;
 import java.util.Map;
 
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 
 /**
  * @since 5.0
@@ -27,13 +31,21 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 
 	private ObjectMapper mapper;
-	private Class<T> type;
-	private String typeName;
+	private Class<T> typeClass;
+	
+	private String type;
+	private String mapping;
 
 	public DefaultMappingStrategy(ObjectMapper mapper, Class<T> type) {
 		this.mapper = checkNotNull(mapper, "mapper");
-		this.type = checkMapping(type);
-		this.typeName = getType(type);
+		this.typeClass = checkMapping(type);
+		final Mapping mapping = type.getAnnotation(Mapping.class);
+		this.type = mapping.type();
+		try {
+			this.mapping = Resources.toString(Resources.getResource(type, mapping.mapping()), Charsets.UTF_8);
+		} catch (IOException e) {
+			throw new FormattedRuntimeException("Failed to read mapping.json file at %s", mapping.mapping());
+		}
 	}
 	
 	private static String getType(Class<?> type) {
@@ -51,7 +63,7 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 	
 	@Override
 	public T convert(Map<String, Object> map) {
-		return mapper.convertValue(map, type);
+		return mapper.convertValue(map, typeClass);
 	}
 	
 	@Override
@@ -61,7 +73,12 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 
 	@Override
 	public String getType() {
-		return typeName;
+		return type;
+	}
+	
+	@Override
+	public String getMapping() {
+		return mapping;
 	}
 
 }

@@ -10,8 +10,8 @@
 			"type" : "string",
 			"index" : "not_analyzed"
 		},
-		"baseTimestamp" : {
-			"type" : "long"
+		"commitMessage" : {
+			"type" : "string"
 		}
 	}
 }

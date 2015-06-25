@@ -28,7 +28,6 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
 import com.b2international.snowowl.core.store.BaseStore;
-import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.query.Clause;
 import com.b2international.snowowl.core.store.query.EqualsWhere;
 import com.b2international.snowowl.core.store.query.PrefixWhere;
@@ -43,18 +42,6 @@ public class IndexStore<T> extends BaseStore<T> {
 	private Index index;
 	private MappingStrategy<T> mapping;
 
-	/**
-	 * Creates a new {@link Index} based {@link Store}.
-	 * 
-	 * @param index
-	 *            - the index to use
-	 * @param type
-	 *            - the value's type
-	 */
-	public IndexStore(Index index, Class<T> type) {
-		this(index, new ObjectMapper(), type);
-	}
-	
 	public IndexStore(Index index, ObjectMapper mapper, Class<T> type) {
 		super(type);
 		this.index = checkNotNull(index, "index");
@@ -99,12 +86,12 @@ public class IndexStore<T> extends BaseStore<T> {
 
 	@Override
 	public void clear() {
-		index.clear(getType());
+		index.admin().clear(getType());
 	}
 	
 	@Override
 	public String getName() {
-		return String.format("Index[%s/%s]", index.getName(), getType());
+		return String.format("Index[%s/%s]", index.name(), getType());
 	}
 	
 	private List<T> searchIndex(final QueryBuilder query) {

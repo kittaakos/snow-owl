@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.terminology;
+package com.b2international.snowowl.core.store.index.tx;
 
-import com.b2international.snowowl.core.store.Id;
+import com.b2international.snowowl.core.terminology.Component;
 
 /**
+ * Transaction working on top of a {@link TransactionalIndex}.
+ * 
  * @since 5.0
  */
-public abstract class Component {
-
-	@Id
-	private String id;
+public interface IndexTransaction {
 	
-	protected Component() {
-	}
+	void add(Component object);
 	
-	public String getId() {
-		return id;
-	}
+	void delete(String type, String id);
 	
-	public void setId(String id) {
-		this.id = id;
-	}
+	void commit(String commitMessage);
 	
 }

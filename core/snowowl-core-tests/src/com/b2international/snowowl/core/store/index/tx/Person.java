@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.index;
+package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 import java.util.Collections;
 
+import com.b2international.snowowl.core.store.index.Mapping;
+import com.b2international.snowowl.core.terminology.Component;
+
 /**
  * @since 4.2
  */
+@Mapping(type = "person", mapping = "person_mapping.json")
 public class Person extends Component {
 
 	private String firstName;
