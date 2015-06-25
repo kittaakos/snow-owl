@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store;
+package com.b2international.snowowl.core.store.index;
 
 import org.junit.Rule;
 
 import com.b2international.snowowl.core.ESRule;
+import com.b2international.snowowl.core.store.BaseStoreTest;
+import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexStore;
 
