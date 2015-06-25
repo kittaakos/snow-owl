@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.store.mem;
 
 import com.b2international.snowowl.core.store.BaseStoreTest;
-import com.b2international.snowowl.core.store.MemStore;
 import com.b2international.snowowl.core.store.Store;
 
 /**

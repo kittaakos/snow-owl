@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store;
+package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
@@ -28,8 +28,8 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
 import com.b2international.snowowl.core.index.Index;
-import com.b2international.snowowl.core.index.mapping.DefaultMappingStrategy;
-import com.b2international.snowowl.core.index.mapping.MappingStrategy;
+import com.b2international.snowowl.core.store.BaseStore;
+import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.query.Clause;
 import com.b2international.snowowl.core.store.query.EqualsWhere;
 import com.b2international.snowowl.core.store.query.PrefixWhere;

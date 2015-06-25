@@ -2,7 +2,7 @@ package com.b2international.snowowl.core.store;
 
 import java.util.Objects;
 
-import com.b2international.snowowl.core.index.mapping.Mapping;
+import com.b2international.snowowl.core.store.index.Mapping;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

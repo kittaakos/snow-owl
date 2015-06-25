@@ -19,6 +19,7 @@ import org.junit.Rule;
 
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.index.Index;
+import com.b2international.snowowl.core.store.index.IndexStore;
 
 /**
  * @since 4.1

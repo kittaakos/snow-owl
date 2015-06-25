@@ -19,7 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Map;
 
-import com.b2international.snowowl.core.index.mapping.MappingStrategy;
+import com.b2international.snowowl.core.store.index.MappingStrategy;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
