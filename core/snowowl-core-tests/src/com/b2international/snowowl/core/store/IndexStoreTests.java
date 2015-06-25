@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.store;
 import org.junit.Rule;
 
 import com.b2international.snowowl.core.ESRule;
-import com.b2international.snowowl.core.index.Index;
+import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexStore;
 
 /**

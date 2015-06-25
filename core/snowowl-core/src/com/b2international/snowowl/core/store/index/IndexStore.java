@@ -27,7 +27,6 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 
-import com.b2international.snowowl.core.index.Index;
 import com.b2international.snowowl.core.store.BaseStore;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.query.Clause;
