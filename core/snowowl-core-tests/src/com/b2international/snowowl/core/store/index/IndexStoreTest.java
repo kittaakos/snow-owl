@@ -26,7 +26,7 @@ import com.b2international.snowowl.core.store.index.IndexStore;
 /**
  * @since 4.1
  */
-public class IndexStoreTests extends BaseStoreTest {
+public class IndexStoreTest extends BaseStoreTest {
 
 	@Rule
 	public ESRule es = new ESRule(); 
