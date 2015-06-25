@@ -13,123 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.store;
+package com.b2international.snowowl.core.store;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import org.junit.Rule;
 
-import java.io.File;
-import java.util.UUID;
-
-import org.junit.Before;
-import org.junit.Test;
-
-import com.b2international.snowowl.datastore.server.store.Types.Data;
-import com.b2international.snowowl.datastore.server.store.Types.EmptyData;
-import com.b2international.snowowl.datastore.store.IndexStore;
-import com.b2international.snowowl.datastore.store.Store;
-import com.b2international.snowowl.datastore.store.StoreException;
-import com.google.common.io.Files;
+import com.b2international.snowowl.core.ESRule;
+import com.b2international.snowowl.core.index.Index;
 
 /**
  * @since 4.1
  */
-public class IndexStoreTests {
+public class IndexStoreTests extends BaseStoreTest {
 
-	private static final String KEY = "key";
-	private static final String KEY2 = "key2";
-	private Store<Data> store;
+	@Rule
+	public ESRule es = new ESRule(); 
 	
-	@Before
-	public void givenIndexStore() {
-		store = new IndexStore<Data>(tmpDir(), Data.class);
-	}
-
-	@Test(expected = StoreException.class)
-	public void whenStoringEmptyData_ThenThrowException() throws Exception {
-		final IndexStore<EmptyData> emptyStore = new IndexStore<EmptyData>(tmpDir(), EmptyData.class);
-		emptyStore.put(KEY, new EmptyData());
-	}
-	
-	@Test
-	public void whenStoringData_ThenItCanBeRetrieved() throws Exception {
-		final Data value = storeData();
-		final Data actual = store.get(KEY);
-		assertEquals(value, actual);
-	}
-	
-	@Test
-	public void whenStoringDataOnSameKey_ThenReplaceData() throws Exception {
-		storeData();
-		final Data newData = newData();
-		store.put(KEY, newData);
-		assertEquals(newData, store.get(KEY));
-	}
-
-	@Test
-	public void whenRemovingDataFromStore_ThenItShouldBeRemoved() throws Exception {
-		final Data value = storeData();
-		final Data removed = store.remove(KEY);
-		assertEquals(value, removed);
-		assertNull(store.get(KEY));
-	}
-	
-	@Test
-	public void whenStoringMultipleData_ThenAllCanBeRetrievedViaValues() throws Exception {
-		final Data value = storeData(KEY);
-		final Data value2 = storeData(KEY2);
-		assertThat(store.values()).containsOnly(value, value2);
-	}
-	
-	@Test
-	public void whenClearingStoredData_ThenValuesShouldReturnEmptyCollection() throws Exception {
-		whenStoringMultipleData_ThenAllCanBeRetrievedViaValues();
-		store.clear();
-		assertThat(store.values()).isEmpty();
-	}
-	
-	@Test
-	public void whenReplacingDataWithSameValue_ThenDoNothing() throws Exception {
-		Data value = storeData();
-		assertFalse(store.replace(KEY, value, value));
-	}
-	
-	@Test
-	public void whenReplacingDataWithInvalidOldValue_ThenDoNothing() throws Exception {
-		storeData();
-		final Data invalidOldValue = newData();
-		assertFalse(store.replace(KEY, invalidOldValue, newData()));
-	}
-	
-	@Test
-	public void whenReplacingDataWithNewValue_ThenReplaceDataAndRetrieve() throws Exception {
-		final Data value = storeData();
-		final Data newData = newData();
-		assertTrue(store.replace(KEY, value, newData));
-		assertEquals(newData, store.get(KEY));
-	}
-	
-	static File tmpDir() {
-		final File tmpDir = Files.createTempDir();
-		tmpDir.deleteOnExit();
-		return tmpDir;
-	}
-	
-	private Data storeData() {
-		return storeData(KEY);
-	}
-
-	private Data storeData(String key) {
-		final Data value = newData();
-		store.put(key, value);
-		return value;
-	}
-
-	private static Data newData() {
-		return new Data(UUID.randomUUID().toString());
+	@Override
+	protected <T> Store<T> createStore(Class<T> type) {
+		final Index index = new Index(es.client(), getClass().getSimpleName().toLowerCase());
+		index.delete();
+		index.create();
+		return new IndexStore<>(index, type);
 	}
 	
 }

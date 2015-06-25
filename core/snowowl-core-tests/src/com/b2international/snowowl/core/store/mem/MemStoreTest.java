@@ -13,38 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.index.mapping;
+package com.b2international.snowowl.core.store.mem;
 
-import java.util.Map;
+import com.b2international.snowowl.core.store.BaseStoreTest;
+import com.b2international.snowowl.core.store.MemStore;
+import com.b2international.snowowl.core.store.Store;
 
 /**
  * @since 5.0
- * @param <T>
- *            - the type of the object to map from/to Map<String, Object>/JSON
  */
-public interface MappingStrategy<T> {
+public class MemStoreTest extends BaseStoreTest {
 
-	/**
-	 * Converts the POJO representation to a Map of String, Object pairs.
-	 * 
-	 * @param t
-	 * @return
-	 */
-	Map<String, Object> convert(T t);
-
-	/**
-	 * Converts the given Map of String, Object pairs to a POJO representation.
-	 * 
-	 * @param map
-	 * @return
-	 */
-	T convert(Map<String, Object> map);
-
-	/**
-	 * Returns the type of the value this mapping strategy can work with.
-	 * 
-	 * @return
-	 */
-	String getType();
-
+	@Override
+	protected <T> Store<T> createStore(Class<T> type) {
+		return new MemStore<>(type);
+	}
+	
 }

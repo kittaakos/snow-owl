@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.query.Query;
 import com.b2international.snowowl.core.store.query.Where;
 import com.google.common.base.Function;
@@ -31,28 +32,36 @@ import com.google.common.collect.MapMaker;
 /**
  * @since 4.1
  */
-public class MemStore<T> implements Store<T> {
+public class MemStore<T> extends BaseStore<T> {
 
 	private final ConcurrentMap<String, T> values = new MapMaker().makeMap();
-
+	
+	public MemStore(Class<T> type) {
+		super(type);
+	}
+	
 	@Override
-	public void put(String key, T value) {
-		values.put(key, value);
+	public String getName() {
+		return String.format("Mem[%s]", getTypeClass().getSimpleName());
 	}
 
 	@Override
+	protected void doPut(String id, T value) {
+		values.put(id, value);
+	}
+	
+	@Override
 	public T get(String key) {
-		return values.get(key);
+		final T t = values.get(key);
+		if (t == null) {
+			throw new NotFoundException(getTypeClass().getSimpleName(), key);
+		}
+		return t;
 	}
 
 	@Override
 	public T remove(String key) {
 		return values.remove(key);
-	}
-
-	@Override
-	public boolean replace(String key, T oldValue, T newValue) {
-		return values.replace(key, oldValue, newValue);
 	}
 
 	@Override

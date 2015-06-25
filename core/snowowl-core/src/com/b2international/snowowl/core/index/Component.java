@@ -15,13 +15,14 @@
  */
 package com.b2international.snowowl.core.index;
 
-
+import com.b2international.snowowl.core.store.Id;
 
 /**
  * @since 5.0
  */
 public abstract class Component {
 
+	@Id
 	private String id;
 	
 	/*package*/ Component() {

@@ -19,7 +19,6 @@ import java.util.Collection;
 
 import com.b2international.snowowl.core.store.query.Query;
 
-
 /**
  * @since 4.1
  * @param <T>
@@ -27,20 +26,64 @@ import com.b2international.snowowl.core.store.query.Query;
  */
 public interface Store<T> {
 
-	void put(String key, T value);
-	
+	/**
+	 * Puts the value into this store.
+	 * 
+	 * @param value
+	 */
+	void put(T value);
+
+	/**
+	 * Returns the stored value for the given key.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	T get(String key);
-	
+
+	/**
+	 * Completely removes the stored value on the given key from this {@link Store}.
+	 * 
+	 * @param key
+	 * @return
+	 */
 	T remove(String key);
-	
-	boolean replace(String key, T oldValue, T newValue);
-	
+
+	/**
+	 * Replaces the oldValue with the given newValue if and only if the oldValue and the newValue have the exact same ID, and the oldValue does not
+	 * equal to the newValue, and the oldValue does equal to the currently hold value. If any of the above fails the this method return
+	 * <code>false</code> otherwise replaces the value and returns <code>true</code>. Note that the {@link #put(Object)} method may replace values in
+	 * the same manner as this method without checking the equality of the currently held value.
+	 * 
+	 * @param oldValue
+	 *            - the currently held value
+	 * @param newValue
+	 *            - the new value
+	 * @return - <code>true</code> or <code>false</code> depending on whether the replacement succeeded or not
+	 */
+	boolean replace(T oldValue, T newValue);
+
+	/**
+	 * Returns all currently persisted values from the store.
+	 * 
+	 * @return
+	 */
 	Collection<T> values();
-	
+
+	/**
+	 * Clears the store by completely removing all currently persisted values.
+	 */
 	void clear();
-	
+
 	Collection<T> search(Query query);
-	
+
 	Collection<T> search(Query query, int offset, int limit);
+
+	/**
+	 * Returns the name of the store.
+	 * 
+	 * @return
+	 */
+	String getName();
 
 }

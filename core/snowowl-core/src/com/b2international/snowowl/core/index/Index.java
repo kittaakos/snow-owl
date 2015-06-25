@@ -18,10 +18,14 @@ package com.b2international.snowowl.core.index;
 import java.util.Map;
 
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
+
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * General purpose index service implementation on top of Elasticsearch library.
@@ -38,13 +42,33 @@ public final class Index {
 		this.index = index;
 	}
 	
+	public boolean exists() {
+		return this.client.admin().indices().prepareExists(index).get().isExists();
+	}
+	
+	public void create() {
+		if (!exists()) {
+			this.client.admin().indices().prepareCreate(index).get();
+		}
+	}
+	
+	public void delete() {
+		if (exists()) {
+			this.client.admin().indices().prepareDelete(index).get();
+		}
+	}
+	
 	public Map<String, Object> get(String type, String id) {
 		// TODO not found exception conversion
-		return this.client.prepareGet(index, type, id).get().getSource();
+		final GetResponse getResponse = this.client.prepareGet(index, type, id).setFetchSource(true).get();
+		if (!getResponse.isExists()) {
+			throw new NotFoundException(type, id);
+		}
+		return getResponse.getSource();
 	}
 	
 	public void put(String type, String id, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj);
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj).setRefresh(true);
 		// TODO indexing strategy, IMMEDIATE, BULK, BULK_SIZED
 		// determines the refresh flag state as well, in IMMEDIATE the refresh should always be set
 		req.get();
@@ -52,7 +76,7 @@ public final class Index {
 	
 	public void remove(String type, String id) {
 		// TODO not found exception conversion
-		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id);
+		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id).setRefresh(true);
 		// TODO indexing strategy
 		req.get();
 	}
@@ -62,7 +86,11 @@ public final class Index {
 	}
 	
 	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
-		return this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get().getHits();
+		final SearchResponse response = this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get();
+		if (response.getSuccessfulShards() <= 0) {
+			throw new RuntimeException("Failed to execute query on indexes: " + response);
+		}
+		return response.getHits();
 	}
 	
 	public String getName() {

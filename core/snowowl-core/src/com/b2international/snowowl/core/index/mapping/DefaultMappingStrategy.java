@@ -28,10 +28,25 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 
 	private ObjectMapper mapper;
 	private Class<T> type;
+	private String typeName;
 
 	public DefaultMappingStrategy(ObjectMapper mapper, Class<T> type) {
 		this.mapper = checkNotNull(mapper, "mapper");
-		this.type = checkNotNull(type, "type");
+		this.type = checkMapping(type);
+		this.typeName = getType(type);
+	}
+	
+	private static String getType(Class<?> type) {
+		checkMapping(type);
+		return type.getAnnotation(Mapping.class).type();
+	}
+	
+	private static <T> Class<T> checkMapping(Class<T> type) {
+		checkNotNull(type, "type");
+		if (!type.isAnnotationPresent(Mapping.class)) {
+			throw new IllegalArgumentException(String.format("%s should define Mapping annotation to make it work in TypeIndex", type.getName()));
+		}
+		return type;
 	}
 	
 	@Override
@@ -42,6 +57,11 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 	@Override
 	public Map<String, Object> convert(T t) {
 		return mapper.convertValue(t, Map.class);
+	}
+
+	@Override
+	public String getType() {
+		return typeName;
 	}
 
 }

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.store;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
 import java.util.List;
@@ -23,9 +24,12 @@ import java.util.List;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 
 import com.b2international.snowowl.core.index.Index;
-import com.b2international.snowowl.core.index.TypeIndex;
+import com.b2international.snowowl.core.index.mapping.DefaultMappingStrategy;
+import com.b2international.snowowl.core.index.mapping.MappingStrategy;
 import com.b2international.snowowl.core.store.query.Clause;
 import com.b2international.snowowl.core.store.query.EqualsWhere;
 import com.b2international.snowowl.core.store.query.PrefixWhere;
@@ -35,9 +39,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 4.1
  */
-public class IndexStore<T> implements Store<T> {
+public class IndexStore<T> extends BaseStore<T> {
 
-	private TypeIndex<T> index;
+	private Index index;
+	private MappingStrategy<T> mapping;
 
 	/**
 	 * Creates a new {@link Index} based {@link Store}.
@@ -51,37 +56,31 @@ public class IndexStore<T> implements Store<T> {
 		this(index, new ObjectMapper(), type);
 	}
 	
-	public IndexStore(Index index, ObjectMapper objectMapper, Class<T> type) {
-		this.index = new TypeIndex<>(index, objectMapper, type);
+	public IndexStore(Index index, ObjectMapper mapper, Class<T> type) {
+		super(type);
+		this.index = checkNotNull(index, "index");
+		this.mapping = new DefaultMappingStrategy<>(mapper, type);
 	}
 	
 	@Override
-	public void put(String key, T value) {
-		index.put(value);
+	protected void doPut(String key, T value) {
+		this.index.put(getType(), key, mapping.convert(value));
+	}
+
+	private String getType() {
+		return this.mapping.getType();
 	}
 
 	@Override
 	public T get(String key) {
-		return index.get(key);
+		return mapping.convert(index.get(getType(), key));
 	}
 
 	@Override
 	public T remove(String key) {
 		final T t = get(key);
-		index.remove(key);
+		index.remove(getType(), key);
 		return t;
-	}
-
-	@Override
-	public boolean replace(String key, T oldValue, T newValue) {
-		checkNotNull(oldValue, "oldValue");
-		checkNotNull(newValue, "newValue");
-		if (oldValue.equals(newValue) || !oldValue.equals(get(key))) {
-			return false;
-		} else {
-			put(key, newValue);
-			return true;
-		}
 	}
 
 	@Override
@@ -101,7 +100,12 @@ public class IndexStore<T> implements Store<T> {
 
 	@Override
 	public void clear() {
-		index.clear();
+		index.clear(getType());
+	}
+	
+	@Override
+	public String getName() {
+		return String.format("Index[%s/%s]", index.getName(), getType());
 	}
 	
 	private List<T> searchIndex(final QueryBuilder query) {
@@ -113,7 +117,12 @@ public class IndexStore<T> implements Store<T> {
 	}
 	
 	private List<T> searchIndex(final QueryBuilder query, final int offset, final int limit) {
-		return this.index.search(query, offset, limit);
+		final SearchHits hits = index.search(getType(), query, offset, limit);
+		final List<T> result = newArrayList();
+		for (SearchHit hit : hits.getHits()) {
+			result.add(mapping.convert(hit.getSource()));
+		}
+		return result;
 	}
 	
 	private QueryBuilder convert(com.b2international.snowowl.core.store.query.Query query) {

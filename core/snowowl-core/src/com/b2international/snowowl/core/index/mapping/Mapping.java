@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.core.index.mapping;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 import org.elasticsearch.bootstrap.Elasticsearch;
 
 /**
@@ -22,6 +27,8 @@ import org.elasticsearch.bootstrap.Elasticsearch;
  * 
  * @since 5.0
  */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Mapping {
 
 	/**
@@ -37,13 +44,6 @@ public @interface Mapping {
 	 * @see Elasticsearch mapping definition
 	 * @return
 	 */
-	String mapping();
-
-	/**
-	 * The id field to use when indexing the instances of this type.
-	 * 
-	 * @return
-	 */
-	String id() default "id";
+	String mapping() default "";
 
 }

@@ -1,7 +1,8 @@
-package com.b2international.snowowl.datastore.server.store;
+package com.b2international.snowowl.core.store;
 
 import java.util.Objects;
 
+import com.b2international.snowowl.core.index.mapping.Mapping;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -10,28 +11,33 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 class Types {
 
-	static class EmptyData {
-	}
-	
+	@Mapping(type = "data")
 	static class Data {
+		
+		@Id
 		@JsonProperty
-		public String name;
+		public String id;
+		
+		@JsonProperty
+		public String prop;
 		
 		@JsonCreator
-		public Data(@JsonProperty("name") String name) {
-			this.name = name;
+		public Data(@JsonProperty("id") String id, @JsonProperty("prop") String prop) {
+			this.id = id;
+			this.prop = prop;
 		}
 		
 		@Override
 		public int hashCode() {
-			return Objects.hashCode(name);
+			return Objects.hash(id, prop);
 		}
 		
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj) return true;
 			if (!(obj instanceof Data)) return false;
-			return name.equals(((Data) obj).name);
+			final Data other = (Data) obj;
+			return Objects.equals(id, other.id) && Objects.equals(prop, other.prop);
 		}
 		
 	}
