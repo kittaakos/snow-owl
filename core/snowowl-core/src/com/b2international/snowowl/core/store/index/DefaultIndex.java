@@ -32,12 +32,12 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
  * 
  * @since 5.0
  */
-public class ElasticsearchIndex implements Index {
+public class DefaultIndex implements Index {
 
 	private Client client;
 	private String index;
 
-	public ElasticsearchIndex(Client client, String index) {
+	public DefaultIndex(Client client, String index) {
 		this.client = client;
 		this.index = index;
 	}

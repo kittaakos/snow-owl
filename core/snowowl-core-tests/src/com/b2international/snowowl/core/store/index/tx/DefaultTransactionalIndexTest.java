@@ -30,7 +30,7 @@ import org.junit.Test;
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.store.index.ElasticsearchIndex;
+import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
@@ -60,7 +60,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		
-		this.index = new DefaultTransactionalIndex(new ElasticsearchIndex(es.client(), TEST_INDEX), mapper);
+		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), TEST_INDEX), mapper);
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create(Mappings.of(mapper, Person.class));

@@ -33,7 +33,7 @@ public class IndexStoreTest extends BaseStoreTest {
 	@Override
 	protected <T> Store<T> createStore(Class<T> type) {
 		final ObjectMapper mapper = new ObjectMapper();
-		final ElasticsearchIndex index = new ElasticsearchIndex(es.client(), getClass().getSimpleName().toLowerCase());
+		final DefaultIndex index = new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase());
 		index.admin().delete();
 		index.admin().create(Mappings.of(mapper, type));
 		return new IndexStore<>(index, mapper, type);
