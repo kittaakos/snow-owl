@@ -20,6 +20,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.Map;
 
+import org.elasticsearch.common.base.Strings;
+
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -41,10 +43,13 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 		this.typeClass = checkMapping(type);
 		final Mapping mapping = type.getAnnotation(Mapping.class);
 		this.type = mapping.type();
+		final String file = mapping.mapping();
 		try {
-			this.mapping = Resources.toString(Resources.getResource(type, mapping.mapping()), Charsets.UTF_8);
+			if (!Strings.isNullOrEmpty(file)) {
+				this.mapping = Resources.toString(Resources.getResource(type, file), Charsets.UTF_8);
+			}
 		} catch (IOException e) {
-			throw new FormattedRuntimeException("Failed to read mapping.json file at %s", mapping.mapping());
+			throw new FormattedRuntimeException("Failed to read mapping.json file at %s", file);
 		}
 	}
 	

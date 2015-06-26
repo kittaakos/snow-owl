@@ -15,13 +15,13 @@
  */
 package com.b2international.snowowl.core.store.index;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 /**
@@ -30,38 +30,34 @@ import com.google.common.collect.Maps;
 public class Mappings {
 
 	private ObjectMapper mapper;
-	private Map<String, MappingStrategy<?>> mappings;
+	private Map<Class<?>, MappingStrategy<?>> mappings;
 	
 	public Mappings(ObjectMapper mapper) {
-		this(mapper, Maps.<String, MappingStrategy<?>>newHashMap());
+		this(mapper, Maps.<Class<?>, MappingStrategy<?>>newHashMap());
 	}
 	
 	Mappings(Mappings mappings) {
 		this(mappings.mapper, newHashMap(mappings.mappings));
 	}
 	
-	Mappings(ObjectMapper mapper, Map<String, MappingStrategy<?>> mappings) {
+	Mappings(ObjectMapper mapper, Map<Class<?>, MappingStrategy<?>> mappings) {
 		this.mapper = mapper;
 		this.mappings = mappings;
 	}
 	
 	private void addMapping(Class<?> type) {
+		// TODO provider of mapping strategy???
 		final MappingStrategy<?> strategy = new DefaultMappingStrategy<>(mapper, type);
-		mappings.put(strategy.getType(), strategy);
+		mappings.put(type, strategy);
 	}
 	
-	public String getMapping(String type) {
-		checkArgument(mappings.containsKey(type), "No mapping defined for %s", type);
-		return mappings.get(type).getMapping();
-	}
-	
-	public MappingStrategy<?> getMappingStrategy(String type) {
-		checkArgument(mappings.containsKey(type), "No mapping strategy defined for %s", type);
-		return mappings.get(type);
+	@SuppressWarnings("unchecked")
+	public <T> MappingStrategy<T> getMapping(Class<T> type) {
+		return (MappingStrategy<T>) mappings.get(type);
 	}
 	
 	public Collection<MappingStrategy<?>> getMappings() {
-		return mappings.values();
+		return ImmutableList.copyOf(mappings.values());
 	}
 
 	@SafeVarargs

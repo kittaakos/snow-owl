@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import org.elasticsearch.client.AdminClient;
+
 /**
  * Administration interface managing an elasticsearch index.
  * 
@@ -28,12 +30,9 @@ public interface IndexAdmin {
 	boolean exists();
 
 	/**
-	 * Creates the index if and only if does not exist yet, otherwise this method is no-op.
-	 * 
-	 * @param mappings
-	 *            - the mappings to use when creating the index
+	 * Creates the index if and only if does not exist yet, otherwise this method is no-op. Configure the defined {@link #mappings()} as well.
 	 */
-	void create(Mappings mappings);
+	void create();
 
 	/**
 	 * Deletes the entire index with its data if and only if does exist, otherwise this method is no-op.
@@ -47,5 +46,26 @@ public interface IndexAdmin {
 	 *            - the type to remove completely from the index
 	 */
 	void clear(String type);
+
+	/**
+	 * Returns all defined mappings.
+	 * 
+	 * @return
+	 */
+	Mappings mappings();
+
+	/**
+	 * Returns the index name this {@link IndexAdmin} is responsible for.
+	 * 
+	 * @return
+	 */
+	String name();
+
+	/**
+	 * Returns the admin client to directly work with elasticsearch. TODO move this to internal or remove if possible
+	 * 
+	 * @return
+	 */
+	AdminClient client();
 
 }

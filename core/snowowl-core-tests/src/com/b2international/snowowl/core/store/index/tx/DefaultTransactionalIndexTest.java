@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.store.index.tx;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,9 +31,11 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
+import com.b2international.snowowl.core.terminology.Component;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -42,7 +46,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultTransactionalIndexTest extends PersonFixtures {
 	
-	private static final String TEST_INDEX = "test";
 	private static final String COMMIT_MESSAGE = "Commit Message XXX";
 	
 	@Rule
@@ -52,6 +55,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	
 	private AtomicLong timestampProvider = new AtomicLong(0L);
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
+	private Branch main;
 	
 	@Before
 	public void givenTransactionalIndex() {
@@ -59,11 +63,17 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.NON_PRIVATE);
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		
-		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), TEST_INDEX), mapper);
+		// mock branching support
+		final BranchManager manager = mock(BranchManager.class);
+		main = mock(Branch.class);
+		when(manager.getBranch(Branch.MAIN_PATH)).thenReturn(main);
+		when(manager.getMainBranch()).thenReturn(main);
+		when(main.path()).thenReturn(Branch.MAIN_PATH);
+		// create transactional index
+		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
-		admin.create(Mappings.of(mapper, Person.class));
+		admin.create();
 	}
 
 	@Test(expected = NotFoundException.class)
@@ -73,11 +83,11 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	
 	@Test
 	public void whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex() throws Exception {
+		final IndexTransaction tx = openTransaction(main);
 		final Person p1 = createPerson1();
-		final IndexTransaction tx = openTransaction(Branch.MAIN_PATH);
 		tx.add(p1);
 		tx.commit(COMMIT_MESSAGE);
-		// start a new query to find the indexed person on MAIN branch
+		
 		final Map<String, Object> p = (Map<String, Object>) index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_KEY);
 		assertNotNull(p);
 		assertThat(p).isNotEmpty();
@@ -87,7 +97,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	public void whenCommittingTwoRevisionsOnMAIN_ThenLoadShouldReturnTheModifiedEntity() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
 		
-		final IndexTransaction tx2 = openTransaction(Branch.MAIN_PATH);
+		final IndexTransaction tx2 = openTransaction(main);
 		final Person person = createPerson1();
 		person.setYob(1997);
 		tx2.add(person);
@@ -203,8 +213,28 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 //		assertThat(changes).hasSize(changeSetSize);
 //	}
 	
-	private IndexTransaction openTransaction(String branchPath) {
-		return index.transaction(commitIdProvider.getAndIncrement(), timestampProvider.getAndIncrement(), branchPath);
+	private IndexTransaction openTransaction(final Branch branch) {
+		final int commitId = commitIdProvider.incrementAndGet();
+		final long commitTimestamp = timestampProvider.incrementAndGet();
+		final IndexTransaction original = index.transaction(commitId, commitTimestamp, branch.path());
+		return new IndexTransaction() {
+			@Override
+			public void delete(String type, String id) {
+				original.delete(type, id);
+			}
+			
+			@Override
+			public void commit(String commitMessage) {
+				original.commit(commitMessage);
+				// make commit available in the branch as timestamp
+				when(branch.headTimestamp()).thenReturn(commitTimestamp);
+			}
+			
+			@Override
+			public void add(Component object) {
+				original.add(object);
+			}
+		};
 	}
 	
 }

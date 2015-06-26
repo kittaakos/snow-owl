@@ -32,7 +32,6 @@ import com.b2international.snowowl.core.store.query.Clause;
 import com.b2international.snowowl.core.store.query.EqualsWhere;
 import com.b2international.snowowl.core.store.query.PrefixWhere;
 import com.b2international.snowowl.core.store.query.Where;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.1
@@ -42,10 +41,10 @@ public class IndexStore<T> extends BaseStore<T> {
 	private Index index;
 	private MappingStrategy<T> mapping;
 
-	public IndexStore(Index index, ObjectMapper mapper, Class<T> type) {
+	public IndexStore(Index index, Class<T> type) {
 		super(type);
 		this.index = checkNotNull(index, "index");
-		this.mapping = new DefaultMappingStrategy<>(mapper, type);
+		this.mapping = index.mapping(getTypeClass());
 	}
 	
 	@Override

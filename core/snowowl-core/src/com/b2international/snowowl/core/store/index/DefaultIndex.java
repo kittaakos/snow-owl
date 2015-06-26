@@ -20,10 +20,12 @@ import java.util.Map;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.sort.SortBuilder;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -37,10 +39,12 @@ public class DefaultIndex implements Index {
 
 	private Client client;
 	private String index;
+	private DefaultIndexAdmin admin;
 
-	public DefaultIndex(Client client, String index) {
+	public DefaultIndex(Client client, String index, Mappings mappings) {
 		this.client = client;
 		this.index = index;
+		this.admin = new DefaultIndexAdmin(this.client.admin(), index, mappings);
 	}
 	
 	@Override
@@ -84,21 +88,48 @@ public class DefaultIndex implements Index {
 	
 	@Override
 	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
-		final SearchResponse response = this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get();
-		if (response.getSuccessfulShards() <= 0) {
-			throw new FormattedRuntimeException("Failed to execute query on index %s/%s: ", name(), type, response);
-		}
-		return response.getHits();
+		return query(type)
+					.where(query)
+					.page(offset, limit)
+					.search();
 	}
 	
 	@Override
 	public final String name() {
 		return index;
 	}
+	
+	@Override
+	public <T> MappingStrategy<T> mapping(Class<T> type) {
+		return admin().mappings().getMapping(type);
+	}
 
 	@Override
 	public IndexAdmin admin() {
-		return new DefaultIndexAdmin(this.client.admin(), index);
+		return admin;
+	}
+	
+	@Override
+	public IndexQueryBuilder query(String type) {
+		return new IndexQueryBuilder(this, type);
+	}
+	
+	@Override
+	public SearchHits search(IndexQueryBuilder query) {
+		final String type = query.type();
+		final SearchRequestBuilder req = this.client.prepareSearch(index)
+				.setTypes(type)
+				.setQuery(query.toIndexQuery())
+				.setFrom(query.offset())
+				.setSize(query.limit());
+		for (SortBuilder sort : query.sorts()) {
+			req.addSort(sort);
+		}
+		final SearchResponse response = req.get();
+		if (response.getSuccessfulShards() <= 0) {
+			throw new FormattedRuntimeException("Failed to execute query '%s' on index '%s/%s': ", name(), type, response);
+		}
+		return response.getHits();
 	}
 	
 }

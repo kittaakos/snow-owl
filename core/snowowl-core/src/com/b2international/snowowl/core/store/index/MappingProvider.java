@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store.index.tx;
-
-import com.b2international.snowowl.core.store.index.DefaultIndexAdmin;
-import com.b2international.snowowl.core.store.index.IndexAdmin;
-import com.b2international.snowowl.core.store.index.Mappings;
+package com.b2international.snowowl.core.store.index;
 
 /**
- * @since 5.0 
+ * @since 5.0
  */
-public class DefaultTransactionalIndexAdmin extends DefaultIndexAdmin implements TransactionalIndexAdmin {
+public interface MappingProvider {
 
-	public DefaultTransactionalIndexAdmin(IndexAdmin admin) {
-		super(admin.client(), admin.name(), Mappings.of(admin.mappings(), IndexCommit.class));
-	}
-
+	/**
+	 * Returns the mapping strategy for a type.
+	 * 
+	 * @param type
+	 *            - the object's type
+	 * @return
+	 */
+	<T> MappingStrategy<T> mapping(Class<T> type);
+	
 }

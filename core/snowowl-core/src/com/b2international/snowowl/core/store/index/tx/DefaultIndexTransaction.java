@@ -37,7 +37,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	public DefaultIndexTransaction(TransactionalIndex index, int commitId, long commitTimestamp, String branchPath, ObjectMapper mapper) {
 		this.commitId = commitId;
 		this.commitTimestamp = commitTimestamp;
-		this.branchPath = branchPath;
+		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.index = checkNotNull(index, "index");
 		this.mapper = checkNotNull(mapper, "mapper");
 	}

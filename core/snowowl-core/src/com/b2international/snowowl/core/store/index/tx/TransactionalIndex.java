@@ -18,11 +18,12 @@ package com.b2international.snowowl.core.store.index.tx;
 import java.util.Map;
 
 import com.b2international.snowowl.core.store.index.Administrable;
+import com.b2international.snowowl.core.store.index.MappingProvider;
 
 /**
  * @since 5.0
  */
-public interface TransactionalIndex extends Administrable<TransactionalIndexAdmin> {
+public interface TransactionalIndex extends Administrable<TransactionalIndexAdmin>, MappingProvider {
 
 	/**
 	 * Loads the latest revision (Map of String, Object value pairs) from the index with the given type and key as identifier.

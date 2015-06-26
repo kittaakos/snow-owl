@@ -15,9 +15,18 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.List;
+
+import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.client.AdminClient;
+import org.elasticsearch.cluster.service.PendingClusterTask;
+import org.elasticsearch.common.base.Strings;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 
@@ -28,10 +37,12 @@ public class DefaultIndexAdmin implements IndexAdmin {
 
 	private AdminClient admin;
 	private String index;
+	private Mappings mappings;
 
-	public DefaultIndexAdmin(AdminClient admin, String index) {
-		this.admin = admin;
-		this.index = index;
+	public DefaultIndexAdmin(AdminClient admin, String index, Mappings mappings) {
+		this.admin = checkNotNull(admin, "admin");
+		this.index = checkNotNull(index, "index");
+		this.mappings = checkNotNull(mappings, "mappings");
 	}
 	
 	@Override
@@ -40,11 +51,14 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public void create(Mappings mappings) {
+	public void create() {
 		if (!exists()) {
 			final CreateIndexRequestBuilder create = this.admin.indices().prepareCreate(index);
 			for (MappingStrategy<?> mapping : mappings.getMappings()) {
-				create.addMapping(mapping.getType(), mapping.getMapping());
+				final String mappingJson = mapping.getMapping();
+				if (!Strings.isNullOrEmpty(mappingJson)) {
+					create.addMapping(mapping.getType(), mapping.getMapping());
+				}
 			}
 			final CreateIndexResponse response = create.get();
 			if (response.isAcknowledged()) {
@@ -52,19 +66,55 @@ public class DefaultIndexAdmin implements IndexAdmin {
 			} else {
 				throw new FormattedRuntimeException("Failed to create index '%s'", index);
 			}
+			awaitEndOfInitialization();
 		}
 	}
-
+	
 	@Override
 	public void delete() {
 		if (exists()) {
-			this.admin.indices().prepareDelete(index).get();
+			final DeleteIndexRequestBuilder req = this.admin.indices().prepareDelete(index);
+			final DeleteIndexResponse response = req.get();
+			if (response.isAcknowledged()) {
+				System.out.println(String.format("Deleted index '%s'", index));
+			} else {
+				throw new FormattedRuntimeException("Failed to delete index '%s'", index);
+			}
 		}
 	}
 
 	@Override
 	public void clear(String type) {
 		this.admin.indices().prepareDeleteMapping(index).setType(type).get();
+	}
+	
+	@Override
+	public Mappings mappings() {
+		return mappings;
+	}
+	
+	@Override
+	public AdminClient client() {
+		return admin;
+	}
+	
+	@Override
+	public String name() {
+		return index;
+	}
+	
+	private void awaitEndOfInitialization() {
+		int pendingTaskCount = 0;
+		do {
+			final List<PendingClusterTask> pendingTasks = admin.cluster().pendingClusterTasks(new PendingClusterTasksRequest()).actionGet()
+					.getPendingTasks();
+			pendingTaskCount = pendingTasks.size();
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		} while (pendingTaskCount > 0);
 	}
 
 }

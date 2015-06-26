@@ -25,7 +25,7 @@ import org.elasticsearch.search.SearchHits;
  * 
  * @since 5.0
  */
-public interface Index {
+public interface Index extends MappingProvider {
 
 	/**
 	 * Fetch an object by type and key from the index.
@@ -114,5 +114,25 @@ public interface Index {
 	 * @return
 	 */
 	IndexAdmin admin();
+
+	/**
+	 * Returns a query builder scoped to the given type.
+	 * 
+	 * @param type
+	 *            - the type to restrict the execution of the query
+	 * @return
+	 */
+	IndexQueryBuilder query(String type);
+
+	/**
+	 * Execute the given query among all stored documents with the given type.
+	 * 
+	 * @param type
+	 *            - the type to restrict execution of the query
+	 * @param indexQueryBuilder
+	 *            - the builder defining all aspects of your query
+	 * @return - the search hits
+	 */
+	SearchHits search(IndexQueryBuilder indexQueryBuilder);
 
 }

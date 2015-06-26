@@ -33,10 +33,11 @@ public class IndexStoreTest extends BaseStoreTest {
 	@Override
 	protected <T> Store<T> createStore(Class<T> type) {
 		final ObjectMapper mapper = new ObjectMapper();
-		final DefaultIndex index = new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase());
-		index.admin().delete();
-		index.admin().create(Mappings.of(mapper, type));
-		return new IndexStore<>(index, mapper, type);
+		final Index index = new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, type));
+		final IndexAdmin admin = index.admin();
+		admin.delete();
+		admin.create();
+		return new IndexStore<>(index, type);
 	}
 	
 }

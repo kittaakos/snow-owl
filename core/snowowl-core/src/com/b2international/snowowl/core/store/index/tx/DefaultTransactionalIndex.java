@@ -21,7 +21,6 @@ import static org.elasticsearch.index.query.FilterBuilders.hasParentFilter;
 import static org.elasticsearch.index.query.FilterBuilders.orFilter;
 import static org.elasticsearch.index.query.FilterBuilders.rangeFilter;
 import static org.elasticsearch.index.query.FilterBuilders.termFilter;
-import static org.elasticsearch.index.query.QueryBuilders.filteredQuery;
 import static org.elasticsearch.index.query.QueryBuilders.termQuery;
 
 import java.util.Map;
@@ -29,40 +28,50 @@ import java.util.Map;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.OrFilterBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.Index;
+import com.b2international.snowowl.core.store.index.MappingStrategy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Adds transaction support to an existing {@link Index} using a combination of components with revision properties and commit groups, the index can
  * act as a transactional store.
  * 
- * Each {@link TransactionalIndex} works on a single branch and wraps the same {@link Index} instance to communicate with the index via a single
- * service object.
- * 
  * @since 5.0
  */
 public class DefaultTransactionalIndex implements TransactionalIndex {
 	
+	// TODO implicit knowledge about the ID_FIELD???
 	private static final String ID_FIELD = "id";
 	
 	private Index index;
 	private ObjectMapper mapper;
 
-	public DefaultTransactionalIndex(Index index, ObjectMapper mapper) {
+	private BranchManager branchManager;
+	private TransactionalIndexAdmin admin;
+
+	public DefaultTransactionalIndex(Index index, ObjectMapper mapper, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
 		this.mapper = checkNotNull(mapper, "mapper");
+		this.branchManager = checkNotNull(branchManager, "branchManager");
+		this.admin = new DefaultTransactionalIndexAdmin(index.admin());
 	}
 
 	@Override
 	public Map<String, Object> loadRevision(String type, String branchPath, String key) {
 		try {
-			final SearchHits hits = index.search(type, toBranchQuery(branchPath, termQuery(ID_FIELD, key)), 0, 1);
+			final SearchHits hits = index
+					.query(type)
+					.where(termQuery(ID_FIELD, key))
+					.filter(branchFilter(branchPath))
+					.sortDesc(IndexCommit.COMMIT_TIMESTAMP_FIELD)
+					.sortAsc(ID_FIELD)
+					.search();
 			if (hits.totalHits() <= 0) {
 				// TODO add branchPath to exception message
 				throw new NotFoundException(type, key);
@@ -89,7 +98,9 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public void commit(int commitId, long commitTimestamp, String branchPath, String commitMessage) {
-		this.index.put(IndexCommit.COMMIT_TYPE, String.valueOf(commitId), this.mapper.convertValue(new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage), Map.class));
+		final MappingStrategy<IndexCommit> commitMapping = mapping(IndexCommit.class);
+		final Map<String, Object> commit = commitMapping.convert(new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage));
+		this.index.put(IndexCommit.COMMIT_TYPE, String.valueOf(commitId), commit);
 	}
 	
 	@Override
@@ -99,15 +110,16 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public TransactionalIndexAdmin admin() {
-		return new DefaultTransactionalIndexAdmin(index.admin());
+		return admin;
 	}
 	
-	private QueryBuilder toBranchQuery(String branchPath, QueryBuilder query) {
-		return filteredQuery(query, branchFilter(branchPath));
+	@Override
+	public <T> MappingStrategy<T> mapping(Class<T> type) {
+		return admin().mappings().getMapping(type);
 	}
-
+	
 	private FilterBuilder branchFilter(String branchPath) {
-		final String[] segments = branchPath.split("/");
+		final String[] segments = branchPath.split(Branch.SEPARATOR);
 		if (/*!branchOnly && */(segments.length > 1 /*|| additionalFilter != null*/)) {
 			final OrFilterBuilder or = orFilter();
 			String prev = "";
@@ -117,13 +129,13 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 				String current = "";
 				String next = null;
 				if (!Branch.MAIN_PATH.equals(segment)) {
-					current = prev.concat("/");
+					current = prev.concat(Branch.SEPARATOR);
 				}
 				// if not the last segment, compute next one
 				current = current.concat(segment);
 				if (!segments[segments.length - 1].equals(segment)) {
-					if (!current.endsWith("/")) {
-						next = current.concat("/");
+					if (!current.endsWith(Branch.SEPARATOR)) {
+						next = current.concat(Branch.SEPARATOR);
 					}
 					next = next.concat(segments[i+1]);
 				}
@@ -135,44 +147,23 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 			return hasParentFilter(IndexCommit.COMMIT_TYPE, andFilter(termFilter(IndexCommit.BRANCH_PATH_FIELD, branchPath), timestampFilter(branchPath)));
 		}
 	}
-	
+
+	/*restricts given branchPath's HEAD to baseTimestamp of child*/
 	private FilterBuilder timestampFilter(String parentBranchPath, String childToRestrict) {
-		// restrict given branchPath's HEAD to baseTimestamp of child
-		final long baseTimestamp = 0L; //this.index.getBaseTimestamp(childToRestrict);
+		final long baseTimestamp = branchManager.getBranch(childToRestrict).baseTimestamp();
 		return timestampFilter(parentBranchPath, baseTimestamp);
 	}
 	
 	private FilterBuilder timestampFilter(String branchPath) {
-		final long headTimestamp = 0L; //this.index.getHeadTimestamp(branchPath);
+		final long headTimestamp = branchManager.getBranch(branchPath).headTimestamp();
 		return timestampFilter(branchPath, headTimestamp);
 	}
 	
 	private FilterBuilder timestampFilter(String branchPath, long headTimestamp) {
-		final long baseTimestamp = 0L; //this.index.getBaseTimestamp(branchPath);
+		final long baseTimestamp = branchManager.getBranch(branchPath).baseTimestamp();
 		return rangeFilter(IndexCommit.COMMIT_TIMESTAMP_FIELD).gte(baseTimestamp).lte(headTimestamp);
 	}
 	
-//	private static final String TRANSACTION_MAPPING_JSON = "commit_mapping.json";
-//	
-//	static final String MAIN_BRANCH = "MAIN";
-//
-//	static final String ID_FIELD = "id";
-//	static final String BRANCH_PATH_FIELD = "branchPath";
-//	static final String DELETED_FIELD = "deleted";
-//	static final String COMMIT_ID_FIELD = "commitId";
-//	static final String COMMIT_TIMESTAMP_FIELD = "commitTimestamp";
-//	static final String COMMIT_TYPE = "commit";
-//	static final String BASE_TIMESTAMP_FIELD = "baseTimestamp";
-//	
-//	private AtomicInteger transactionIds = new AtomicInteger(0);
-//	private AtomicLong timestampProvider = new AtomicLong(0L);
-//	private Client client;
-//	private IndicesAdminClient indicesClient;
-//	private String name;
-//	private Mappings mappings;
-//	private Map<String, Long> baseTimestampMap = new MapMaker().makeMap();
-//	private Map<String, Long> headTimestampMap = new MapMaker().makeMap();
-//
 //	public TransactionalIndex(Client client, String name, Mappings mappings, ObjectMapper mapper) {
 //		this.client = checkNotNull(client, "client");
 //		this.indicesClient = this.client.admin().indices();
