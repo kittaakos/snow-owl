@@ -41,6 +41,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * TODO remove/delete test case
+ * 
  * @since 5.0
  */
 public class DefaultTransactionalIndexTest extends PersonFixtures {

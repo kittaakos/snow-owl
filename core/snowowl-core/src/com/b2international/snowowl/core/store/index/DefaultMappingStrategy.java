@@ -53,11 +53,6 @@ public class DefaultMappingStrategy<T> implements MappingStrategy<T> {
 		}
 	}
 	
-	private static String getType(Class<?> type) {
-		checkMapping(type);
-		return type.getAnnotation(Mapping.class).type();
-	}
-	
 	private static <T> Class<T> checkMapping(Class<T> type) {
 		checkNotNull(type, "type");
 		if (!type.isAnnotationPresent(Mapping.class)) {
