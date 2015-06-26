@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.store.Id;
 
 /**
  * @since 4.1
@@ -182,16 +183,12 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     	return deleted;
     }
 
+    @Id
 	@Override
 	public String path() {
         return parentPath + SEPARATOR + name;
     }
 	
-	@Override
-	public IBranchPath branchPath() {
-		return BranchPathUtils.createPath(path());
-	}
-
     @Override
 	public Branch.BranchState state() {
 		return state(parent());
