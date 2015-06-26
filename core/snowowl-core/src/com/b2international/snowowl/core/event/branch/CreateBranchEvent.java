@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.core.event.branch;
 
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.datastore.server.branch.Branch;
+import com.b2international.snowowl.core.branch.Branch;
 
 
 /**

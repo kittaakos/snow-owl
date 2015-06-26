@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server.events;
+package com.b2international.snowowl.core.event.branch;
 
 import com.google.common.base.Strings;
 
