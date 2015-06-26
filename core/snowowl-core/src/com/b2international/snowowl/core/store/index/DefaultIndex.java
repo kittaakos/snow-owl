@@ -25,6 +25,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 
+import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
@@ -71,7 +72,9 @@ public class DefaultIndex implements Index {
 		// TODO not found exception conversion
 		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id).setRefresh(true);
 		// TODO indexing strategy
-		req.get();
+		if (!req.get().isFound()) {
+			throw new NotFoundException(type, id);
+		}
 	}
 	
 	@Override
@@ -83,7 +86,7 @@ public class DefaultIndex implements Index {
 	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
 		final SearchResponse response = this.client.prepareSearch(index).setTypes(type).setQuery(query).setFrom(offset).setSize(limit).get();
 		if (response.getSuccessfulShards() <= 0) {
-			throw new RuntimeException("Failed to execute query on indexes: " + response);
+			throw new FormattedRuntimeException("Failed to execute query on index %s/%s: ", name(), type, response);
 		}
 		return response.getHits();
 	}
