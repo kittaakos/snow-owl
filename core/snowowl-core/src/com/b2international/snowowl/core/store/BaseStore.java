@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
@@ -84,9 +85,13 @@ public abstract class BaseStore<T> implements Store<T> {
 	/*Extracts the ID value from the given T value*/
 	private String extractId(T value) {
 		try {
-			return String.valueOf(idField.get(value));
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new FormattedRuntimeException("Cannot extract identifier from: %s", value);
+			if (idField != null) {
+				return String.valueOf(idField.get(value));
+			} else {
+				return (String) idGetter.invoke(value);
+			}
+		} catch (IllegalArgumentException | IllegalAccessException | InvocationTargetException e) {
+			throw new FormattedRuntimeException("Cannot extract identifier from: %s", value, e);
 		}
 	}
 	
@@ -107,6 +112,7 @@ public abstract class BaseStore<T> implements Store<T> {
 	private static Method getIdGetter(Class<?> type) {
 		for (Method method : type.getMethods()) {
 			if (method.isAnnotationPresent(Id.class)) {
+				checkArgument(method.getReturnType() == String.class, "The method '%s' marked with Id annotation should have String as return type", method.getName());
 				return method;
 			}
 		}
