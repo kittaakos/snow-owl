@@ -26,13 +26,10 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
 
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
-import com.b2international.snowowl.datastore.cdo.ICDOConnection;
-import com.b2international.snowowl.datastore.cdo.ICDORepository;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.server.internal.IRepository;
+import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.IndexStore;
 
@@ -43,9 +40,9 @@ import com.b2international.snowowl.core.store.index.IndexStore;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-    private final IRepository repository;
+    private final Repository repository;
 	
-    public CDOBranchManagerImpl(final IRepository repository, final Store<InternalBranch> branchStore) {
+    public CDOBranchManagerImpl(final Repository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
         if (branchStore instanceof IndexStore) {
@@ -119,7 +116,6 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         }
 
         final long timeStamp = basePath[basePath.length - 1].getTimeStamp();
-        repository.getIndexUpdater().reopen(BranchPathUtils.createPath(childCDOBranch), cdoBranchPath, timeStamp);
 		return reopen(parent, name, metadata, timeStamp, childCDOBranch.getID());
     }
 
