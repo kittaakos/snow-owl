@@ -20,6 +20,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
+import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 
 /**
@@ -27,13 +28,30 @@ import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
  */
 public interface Repository {
 
-	// TODO remove these methods or move them to InternalRepository interface 
+	// TODO remove these methods or move them to InternalRepository interface
 	CDOBranch getCdoMainBranch();
+
 	IRepository getCdoRepository();
+
 	CDOBranchManager getCdoBranchManager();
+
 	CDOTransaction createTransaction(CDOBranch branch);
 
 	// TODO is this the proper place for this method???
 	ICDOConflictProcessor getConflictProcessor();
-	
+
+	/**
+	 * Returns the branch manager of this repository.
+	 * 
+	 * @return
+	 */
+	BranchManager branching();
+
+	/**
+	 * Returns the repository name.
+	 * 
+	 * @return
+	 */
+	String name();
+
 }
