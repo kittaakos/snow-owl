@@ -16,8 +16,8 @@
 package com.b2international.snowowl.core.store.index.tx;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.branch.Branch;
@@ -56,6 +58,8 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private AtomicLong timestampProvider = new AtomicLong(0L);
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
 	private Branch main;
+
+	private BranchManager manager;
 	
 	@Before
 	public void givenTransactionalIndex() {
@@ -64,16 +68,51 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// mock branching support
-		final BranchManager manager = mock(BranchManager.class);
+		manager = mock(BranchManager.class);
 		main = mock(Branch.class);
 		when(manager.getBranch(Branch.MAIN_PATH)).thenReturn(main);
 		when(manager.getMainBranch()).thenReturn(main);
 		when(main.path()).thenReturn(Branch.MAIN_PATH);
+		when(main.headTimestamp()).thenReturn(0L);
+		when(main.baseTimestamp()).thenReturn(0L);
+		when(main.createChild(anyString())).thenAnswer(new Answer<Branch>() {
+			@Override
+			public Branch answer(InvocationOnMock invocation) throws Throwable {
+				final Branch parent = (Branch) invocation.getMock();
+				final String name = (String) invocation.getArguments()[0];
+				final Branch child = mock(Branch.class);
+				final long head = parent.headTimestamp();
+				final String path = parent.path() + Branch.SEPARATOR + name;
+				when(child.name()).thenReturn(name);
+				when(child.path()).thenReturn(path);
+				when(child.parent()).thenReturn(parent);
+				when(child.createChild(anyString())).thenAnswer(this);
+				when(child.headTimestamp()).thenReturn(head);
+				when(child.baseTimestamp()).thenReturn(head);
+				when(manager.getBranch(path)).thenReturn(child);
+				mockRebase(child);
+				return child;
+			}
+		});
 		// create transactional index
 		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();
+	}
+
+	private void mockRebase(final Branch branch) {
+		when(branch.rebase(anyString())).thenAnswer(new Answer<Branch>() {
+			@Override
+			public Branch answer(InvocationOnMock invocation) throws Throwable {
+				final Branch parent = branch.parent();
+				final long head = parent.headTimestamp(); 
+				when(branch.baseTimestamp()).thenReturn(head);
+				when(branch.headTimestamp()).thenReturn(head);
+				// TODO do we have to apply changes to reopened branch, just like in the impl???
+				return branch;
+			}
+		});
 	}
 
 	@Test(expected = NotFoundException.class)
@@ -103,83 +142,114 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx2.add(person);
 		tx2.commit(COMMIT_MESSAGE);
 		
-		final Map<String, Object> p3 = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_KEY);
-		assertEquals(1997, p3.get("yob"));
+		final Map<String, Object> personRev = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_KEY);
+		assertThat(personRev)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 1997)
+			.containsEntry("firstName", "Foo")
+			.containsEntry("lastName", "Bar");
 	}
 	
-//	@Test
-//	public void whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN() throws Exception {
-//		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
-//		index.createBranch("MAIN", "a");
-//		final IndexTransaction tx2 = index.transaction("MAIN/a");
-//		assertNotNull(tx2.get(PERSONS, PERSON_1_ID));
-//	}
-//	
-//	@Test
-//	public void whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch() throws Exception {
-//		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
-//		index.createBranch("MAIN", "a");
-//		final IndexTransaction tx = index.transaction("MAIN/a");
-//		final Person person = (Person) tx.get(PERSONS, PERSON_1_ID);
-//		person.setYob(1997);
-//		tx.index(person);
-//		tx.commit();
-//		// verify that MAIN version is still has yob 2015
-//		final Person personMain = (Person) index.load(PERSONS, "MAIN", PERSON_1_ID);
-//		assertEquals(2015, personMain.getYob());
-//		// check successful commit on branch
-//		final Person personBranch = (Person) index.load(PERSONS, "MAIN/a", PERSON_1_ID);
-//		assertEquals(1997, personBranch.getYob());
-//	}
-//	
-//	@Test
-//	public void whenCommittingOnBranchAndOnMain_ThenQueriesShouldReturnRespectiveVersions() throws Exception {
-//		whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch();
-//		
-//		final IndexTransaction tx = index.transaction(RevisionIndex.MAIN_BRANCH);
-//		final Person p1 = (Person) tx.get(PERSONS, PERSON_1_ID);
-//		p1.setFirstName("MAIN");
-//		tx.index(p1);
-//		tx.commit();
-//		
-//		final Person personMain = (Person) index.load(PERSONS, "MAIN", PERSON_1_ID);
-//		assertEquals(2015, personMain.getYob());
-//		assertEquals("MAIN", personMain.getFirstName());
-//		
-//		final Person personBranch = (Person) index.load(PERSONS, "MAIN/a", PERSON_1_ID);
-//		assertEquals(1997, personBranch.getYob());
-//		assertEquals("Foo", personBranch.getFirstName());
-//	}
-//	
-//	@Test
-//	public void whenRebasingBranch_ThenQueryShouldReturnNewVersionOnBranch() throws Exception {
-//		whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN();
-//		
-//		// make a change on MAIN, but leave branch unchanged
-//		final IndexTransaction tx = index.transaction(RevisionIndex.MAIN_BRANCH);
-//		final Person p1 = (Person) tx.get(PERSONS, PERSON_1_ID);
-//		p1.setFirstName("MAIN");
-//		tx.index(p1);
-//		tx.commit();
-//
-//		// verify that person has Foo before rebase
-//		final Person personBeforeRebase = (Person) index.load(PERSONS, "MAIN/a", PERSON_1_ID);
-//		assertEquals("Foo", personBeforeRebase.getFirstName());
-//		
-//		// rebase branch should move baseTimestamp forward
-//		index.rebase("MAIN/a");
-//		
-//		final Person personAfterRebase = (Person) index.load(PERSONS, "MAIN/a", PERSON_1_ID);
-//		assertEquals("MAIN", personAfterRebase.getFirstName());
-//	}
-//	
+	@Test
+	public void whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN() throws Exception {
+		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
+		final Branch branchA = createBranch(Branch.MAIN_PATH, "a");
+		final Map<String, Object> personRev = index.loadRevision(PERSON_TYPE, branchA.path(), PERSON_1_KEY);
+		assertThat(personRev)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 2015)
+			.containsEntry("firstName", "Foo")
+			.containsEntry("lastName", "Bar");
+	}
+
+	@Test
+	public void whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch() throws Exception {
+		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
+		
+		// open branch
+		final Branch branchA = createBranch(Branch.MAIN_PATH, "a");
+		
+		// make commit on branch
+		final IndexTransaction tx = openTransaction(branchA);
+		final Person person = createPerson1();
+		person.setYob(1997);
+		tx.add(person);
+		tx.commit(COMMIT_MESSAGE);
+		// verify that MAIN version still has yob 2015
+		final Map<String, Object> personMain = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_KEY);
+		assertThat(personMain)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 2015)
+			.containsEntry("firstName", "Foo")
+			.containsEntry("lastName", "Bar");
+		
+		// verify that Branch A has new version with yob 1997
+		final Map<String, Object> personBranch = index.loadRevision(PERSON_TYPE, branchA.path(), PERSON_1_KEY);
+		assertThat(personBranch)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 1997)
+			.containsEntry("firstName", "Foo")
+			.containsEntry("lastName", "Bar");
+	}
+	
+	@Test
+	public void whenCommittingOnBranchAndOnMain_ThenQueriesShouldReturnRespectiveVersions() throws Exception {
+		// execute commit on Branch A
+		whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch();
+		
+		// execute commit on MAIN
+		final IndexTransaction tx = openTransaction(main);
+		final Person p1 = createPerson1();
+		p1.setFirstName("MAIN");
+		tx.add(p1);
+		tx.commit(COMMIT_MESSAGE);
+		
+		// verify that MAIN version still has yob 2015, but firstName 'MAIN'
+		final Map<String, Object> personMain = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_KEY);
+		assertThat(personMain)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 2015)
+			.containsEntry("firstName", "MAIN")
+			.containsEntry("lastName", "Bar");
+		
+		// verify that Branch A has new version with yob 1997
+		final Map<String, Object> personBranch = index.loadRevision(PERSON_TYPE, manager.getBranch("MAIN/a").path(), PERSON_1_KEY);
+		assertThat(personBranch)
+			.containsEntry("id", PERSON_1_KEY)
+			.containsEntry("yob", 1997)
+			.containsEntry("firstName", "Foo")
+			.containsEntry("lastName", "Bar");
+	}
+	
+	@Test
+	public void whenRebasingBranch_ThenQueryShouldReturnNewVersionOnBranch() throws Exception {
+		whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN();
+		
+		// make a change on MAIN, but leave branch unchanged
+		final IndexTransaction tx = openTransaction(main);
+		final Person p1 = createPerson1();
+		p1.setFirstName("MAIN");
+		tx.add(p1);
+		tx.commit(COMMIT_MESSAGE);
+
+		// verify that person has Foo before rebase
+		final Map<String, Object> personBeforeRebase = index.loadRevision(PERSON_TYPE, "MAIN/a", PERSON_1_KEY);
+		assertThat(personBeforeRebase).containsEntry("firstName", "Foo");
+		
+		// rebase branch should move baseTimestamp forward
+		manager.getBranch("MAIN/a").rebase("Rebased branch A");
+		// verify that person has MAIN after rebase
+		final Map<String, Object> personAfterRebase = index.loadRevision(PERSON_TYPE, "MAIN/a", PERSON_1_KEY);
+		assertThat(personAfterRebase).containsEntry("firstName", "MAIN");
+	}
+	
 //	@Test
 //	public void whenGettingChangesOnBranch_ThenItShouldReturnAllChanges() throws Exception {
 //		whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch();
 //		final IndexTransaction tx = index.transaction("MAIN/a");
 //		assertThat(tx.changes()).hasSize(1);
 //	}
-//	
+
 //	@Test
 //	public void whenGettingMultipleChangesOnBranch_ThenItShouldReturnOnlyTheLatestOnePerComponent() throws Exception {
 //		whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch();
@@ -235,6 +305,10 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 				original.add(object);
 			}
 		};
+	}
+	
+	private Branch createBranch(String parent, String name) {
+		return manager.getBranch(parent).createChild(name);
 	}
 	
 }
