@@ -71,8 +71,9 @@ public interface Index extends MappingProvider {
 	 *            - the object's type
 	 * @param id
 	 *            - the unique identifier of the object
+	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
 	 */
-	void remove(String type, String id);
+	boolean remove(String type, String id);
 
 	/**
 	 * Execute the given query among all stored documents with the given type.

@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.store;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
@@ -25,7 +26,6 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.Types.Data;
 
 /**
@@ -43,9 +43,9 @@ public abstract class BaseStoreTest {
 		store = createStore(Data.class);
 	}
 	
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void whenGettingMissingData_ThenThrowNotFoundException() throws Exception {
-		store.get(KEY);
+		assertNull(store.get(KEY));
 	}
 	
 	@Test
@@ -63,12 +63,12 @@ public abstract class BaseStoreTest {
 		assertEquals(newData, store.get(KEY));
 	}
 
-	@Test(expected = NotFoundException.class)
+	@Test
 	public void whenRemovingDataFromStore_ThenItShouldBeRemoved() throws Exception {
 		final Data value = storeData(KEY);
 		final Data removed = store.remove(KEY);
 		assertEquals(value, removed);
-		store.get(KEY);
+		assertNull(store.get(KEY));
 	}
 	
 	@Test

@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.BaseStore;
 import com.b2international.snowowl.core.store.query.Query;
 import com.b2international.snowowl.core.store.query.Where;
@@ -53,11 +52,7 @@ public class MemStore<T> extends BaseStore<T> {
 	
 	@Override
 	public T get(String key) {
-		final T t = values.get(key);
-		if (t == null) {
-			throw new NotFoundException(getTypeClass().getSimpleName(), key);
-		}
-		return t;
+		return values.get(key);
 	}
 
 	@Override

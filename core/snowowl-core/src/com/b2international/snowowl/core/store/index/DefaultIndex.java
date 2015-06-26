@@ -28,7 +28,6 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilder;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 
 /**
  * General purpose index service implementation on top of Elasticsearch library.
@@ -50,10 +49,11 @@ public class DefaultIndex implements Index {
 	@Override
 	public Map<String, Object> get(String type, String id) {
 		final GetResponse getResponse = this.client.prepareGet(index, type, id).setFetchSource(true).get();
-		if (!getResponse.isExists()) {
-			throw new NotFoundException(type, id);
+		if (getResponse.isExists()) {
+			return getResponse.getSource();
+		} else {
+			return null;
 		}
-		return getResponse.getSource();
 	}
 	
 	@Override
@@ -72,13 +72,11 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public void remove(String type, String id) {
+	public boolean remove(String type, String id) {
 		// TODO not found exception conversion
 		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id).setRefresh(true);
 		// TODO indexing strategy
-		if (!req.get().isFound()) {
-			throw new NotFoundException(type, id);
-		}
+		return req.get().isFound();
 	}
 	
 	@Override
