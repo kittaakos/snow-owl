@@ -5,7 +5,6 @@ Bundle-SymbolicName: snowowl-core;singleton:=true
 Bundle-Version: 5.0.0.qualifier
 Bundle-Vendor: B2iHealthcare
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
-Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .,
  lib/elasticsearch-1.6.0.jar,
  lib/antlr-runtime-3.5.jar,
@@ -31,3 +30,16 @@ Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
  com.b2international.snowowl.eventbus,
  org.eclipse.xtext.util;bundle-version="[2.6.2,2.7.0)"
 Import-Package: org.slf4j;version="1.7.2"
+Export-Package: com.b2international.snowowl.core,
+ com.b2international.snowowl.core.branch,
+ com.b2international.snowowl.core.event,
+ com.b2international.snowowl.core.event.util,
+ com.b2international.snowowl.core.exceptions,
+ com.b2international.snowowl.core.internal.branch;x-internal:=true,
+ com.b2international.snowowl.core.internal.exceptions;x-internal:=true,
+ com.b2international.snowowl.core.store,
+ com.b2international.snowowl.core.store.index,
+ com.b2international.snowowl.core.store.index.tx,
+ com.b2international.snowowl.core.store.mem,
+ com.b2international.snowowl.core.store.query,
+ com.b2international.snowowl.core.terminology
