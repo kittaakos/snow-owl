@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.internal.branch;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.store.Id;
 
 
 /**
@@ -23,6 +24,10 @@ import com.b2international.snowowl.core.branch.Branch;
  */
 public interface InternalBranch extends Branch {
 
+	@Id
+	@Override
+	String path();
+	
 	void setBranchManager(BranchManagerImpl branchManager);
 	
 	InternalBranch withDeleted();
