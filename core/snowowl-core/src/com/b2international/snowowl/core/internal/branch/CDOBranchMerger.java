@@ -21,7 +21,7 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.spi.cdo.DefaultCDOMerger;
 
 import com.b2international.snowowl.core.branch.BranchMergeException;
-import com.b2international.snowowl.datastore.server.cdo.ICDOConflictProcessor;
+import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 
 /**
  * An extension of CDO's {@link ManyValued many-valued} merger implementation, that delegates to a terminology-specific

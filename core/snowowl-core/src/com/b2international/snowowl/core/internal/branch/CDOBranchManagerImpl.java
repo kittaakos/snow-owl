@@ -29,9 +29,9 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.store.Store;
-import com.b2international.snowowl.core.store.index.IndexStore;
 
 /**
  * {@link BranchManager} implementation based on {@link CDOBranch} functionality.
@@ -45,10 +45,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     public CDOBranchManagerImpl(final Repository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
-        if (branchStore instanceof IndexStore) {
-        	((IndexStore<InternalBranch>) branchStore).configureSearchable(PATH_FIELD);
-        }
-        registerCommitListener(repository.getCdoRepository());
+        registerCommitListener(repository);
     }
 
     @Override
@@ -62,7 +59,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
         if (branchId != null) {
             return loadCDOBranch(branchId);
         }
-        throw new SnowowlRuntimeException("Missing registered CDOBranch identifier for branch at path: " + branch.path());
+        throw new SnowOwlException("Missing registered CDOBranch identifier for branch at path: %s", branch.path());
     }
 
     private CDOBranch loadCDOBranch(Integer branchId) {
@@ -77,8 +74,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
 
         try {
 
-            ICDOConnection connection = repository.getConnection();
-            targetTransaction = connection.createTransaction(targetBranch);
+            targetTransaction = repository.createTransaction(targetBranch);
 
             CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
             targetTransaction.merge(sourceBranch.getHead(), merger);
@@ -131,8 +127,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @SuppressWarnings("restriction")
-    private void registerCommitListener(ICDORepository repository) {
-        repository.getRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
+    private void registerCommitListener(Repository repository) {
+        repository.getCdoRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
             public void handleCommitInfo(CDOCommitInfo commitInfo) {
                 if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {

@@ -15,11 +15,25 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
+import org.eclipse.emf.cdo.server.IRepository;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+
+import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
+
 /**
  * @since 5.0
  */
 public interface Repository {
 
-	
+	// TODO remove these methods or move them to InternalRepository interface 
+	CDOBranch getCdoMainBranch();
+	IRepository getCdoRepository();
+	CDOBranchManager getCdoBranchManager();
+	CDOTransaction createTransaction(CDOBranch branch);
+
+	// TODO is this the proper place for this method???
+	ICDOConflictProcessor getConflictProcessor();
 	
 }

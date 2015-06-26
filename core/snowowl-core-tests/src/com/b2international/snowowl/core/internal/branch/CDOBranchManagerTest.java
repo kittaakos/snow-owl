@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.store.mem.MemStore;
 
@@ -57,6 +58,7 @@ public class CDOBranchManagerTest {
 		Repository repository = mock(Repository.class, RETURNS_MOCKS);
 		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
+		when(repository.getConflictProcessor()).thenReturn(mock(ICDOConflictProcessor.class));
 		
 		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>(InternalBranch.class));
 		main = (CDOMainBranchImpl) manager.getMainBranch();
