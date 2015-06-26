@@ -18,24 +18,24 @@ package com.b2international.snowowl.core.internal.branch;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.event.branch.BranchEvent;
+import com.b2international.snowowl.core.event.branch.BranchReply;
+import com.b2international.snowowl.core.event.branch.BranchesReply;
+import com.b2international.snowowl.core.event.branch.CreateBranchEvent;
+import com.b2international.snowowl.core.event.branch.DeleteBranchEvent;
+import com.b2international.snowowl.core.event.branch.MergeEvent;
+import com.b2international.snowowl.core.event.branch.ReadAllBranchEvent;
+import com.b2international.snowowl.core.event.branch.ReadBranchChildrenEvent;
+import com.b2international.snowowl.core.event.branch.ReadBranchEvent;
+import com.b2international.snowowl.core.event.branch.ReopenBranchEvent;
 import com.b2international.snowowl.core.event.util.ApiEventHandler;
 import com.b2international.snowowl.core.event.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.branch.BranchMergeException;
-import com.b2international.snowowl.core.events.BranchEvent;
-import com.b2international.snowowl.core.events.BranchReply;
-import com.b2international.snowowl.core.events.BranchesReply;
-import com.b2international.snowowl.core.events.CreateBranchEvent;
-import com.b2international.snowowl.core.events.DeleteBranchEvent;
-import com.b2international.snowowl.core.events.MergeEvent;
-import com.b2international.snowowl.core.events.ReadAllBranchEvent;
-import com.b2international.snowowl.core.events.ReadBranchChildrenEvent;
-import com.b2international.snowowl.core.events.ReadBranchEvent;
-import com.b2international.snowowl.core.events.ReopenBranchEvent;
 
 /**
  * @since 4.1
