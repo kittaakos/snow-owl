@@ -18,12 +18,12 @@ package com.b2international.snowowl.core.internal.branch;
 import java.util.Collection;
 
 import com.b2international.snowowl.core.Metadata;
-import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
-import com.b2international.snowowl.core.exceptions.BadRequestException;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
 import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.query.QueryBuilder;
 
@@ -46,7 +46,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	void registerBranch(final InternalBranch branch) {
 		branch.setBranchManager(this);
-		branchStore.put(branch.path(), branch);
+		branchStore.put(branch);
 	}
 	
 	final InternalBranch createBranch(final InternalBranch parent, final String name, final Metadata metadata) {
@@ -126,7 +126,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	private InternalBranch doDelete(final InternalBranch branchImpl) {
 		final InternalBranch deleted = branchImpl.withDeleted();
-		branchStore.replace(branchImpl.path(), branchImpl, deleted);
+		branchStore.replace(branchImpl, deleted);
 		return deleted;
 	}
 	
