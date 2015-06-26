@@ -24,11 +24,12 @@ Bundle-ClassPath: .,
  lib/lucene-suggest-4.10.4.jar,
  lib/spatial4j-0.4.1.jar
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.8.0,3.9.0)",
- org.eclipse.emf.cdo;bundle-version="4.1.2",
+ org.eclipse.emf.cdo;bundle-version="[4.1.2,4.2.0)",
+ org.eclipse.emf.cdo.server;bundle-version="[4.1.1,4.2.0)",
  org.yaml.snakeyaml;bundle-version="1.12.0",
+ org.eclipse.xtext.util;bundle-version="[2.6.2,2.7.0)",
  com.b2international.commons,
- com.b2international.snowowl.eventbus,
- org.eclipse.xtext.util;bundle-version="[2.6.2,2.7.0)"
+ com.b2international.snowowl.eventbus
 Import-Package: org.slf4j;version="1.7.2"
 Export-Package: com.b2international.snowowl.core,
  com.b2international.snowowl.core.branch,
