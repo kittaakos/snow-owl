@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SNOMED Core
+Bundle-SymbolicName: snowowl-snomed-core;singleton:=true
+Bundle-Version: 5.0.0.qualifier
+Bundle-Vendor: B2i Healthcare
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.4.5",
+ snowowl-core;bundle-version="5.0.0",
+ com.fasterxml.jackson.core.jackson-databind
+Export-Package: com.b2international.snowowl.snomed.core.index

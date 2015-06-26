@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Snow Owl SNOMED Core Tests
+Bundle-SymbolicName: snowowl-snomed-core-tests;singleton:=true
+Bundle-Version: 5.0.0.qualifier
+Bundle-ClassPath: .
+Bundle-Vendor: B2i Healthcare
+Fragment-Host: snowowl-core;bundle-version="5.0.0"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Require-Bundle: org.junit;bundle-version="4.11.0",
+ org.assertj.core;bundle-version="1.7.1",
+ org.eclipse.core.runtime,
+ org.eclipse.emf.ecore;visibility:=reexport,
+ com.google.guava;bundle-version="15.0.0",
+ snowowl-snomed-core;bundle-version="5.0.0"
+Bundle-ActivationPolicy: lazy

@@ -1,0 +1,936 @@
+{
+    "settings": {
+        "analysis": {
+            "analyzer": {
+                "tokenized": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token"
+                    ]
+                },
+                "exact_match": {
+                    "tokenizer": "keyword",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase"
+                    ]
+                },
+                "search_stemming": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "unique_token",
+                        "english_stemmer"
+                    ]
+                },
+                "stemming": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token",
+                        "english_stemmer"
+                    ]
+                },
+                "search_synonym": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "unique_token",
+                        "synonym"
+                    ]
+                },
+                "synonym": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token",
+                        "synonym"
+                    ]
+                },
+                "case_sensitive_ascii_folding": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token"
+                    ]
+                },
+                "case_sensitive_ascii_folding_exact_match": {
+                    "tokenizer": "keyword",
+                    "filter": [
+                        "asciifolding"
+                    ]
+                },
+                "case_sensitive": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "possessive",
+                        "word_splitter",
+                        "unique_token"
+                    ]
+                },
+                "case_sensitive_exact_match": {
+                    "tokenizer": "keyword"
+                },
+                "prefix": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "lowercase",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token",
+                        "edge_ngram"
+                    ]
+                },
+                "case_sensitive_prefix": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "asciifolding",
+                        "possessive",
+                        "word_splitter",
+                        "unique_token",
+                        "edge_ngram"
+                    ]
+                },
+                "highlight": {
+                    "tokenizer": "edge_ngram_tokenizer",
+                    "filter": [
+                        "lowercase"
+                    ]
+                },
+                "case_sensitive_highlight": {
+                    "tokenizer": "edge_ngram_tokenizer"
+                }
+            },
+            "tokenizer": {
+                "edge_ngram_tokenizer": {
+                    "type": "edgeNGram",
+                    "min_gram": "1",
+                    "max_gram": "20",
+                    "token_chars": [
+                        "letter",
+                        "digit",
+                        "punctuation",
+                        "symbol"
+                    ]
+                }
+            },
+            "filter": {
+                "synonym": {
+                    "type": "synonym",
+                    "synonyms_path": "synonyms.txt"
+                },
+                "english_stemmer": {
+                    "type": "stemmer",
+                    "name": "english"
+                },
+                "edge_ngram": {
+                    "type": "edgeNGram",
+                    "min_gram": 1,
+                    "max_gram": 20
+                },
+                "possessive": {
+                    "type": "stemmer",
+                    "name": "possessive_english"
+                },
+                "word_splitter": {
+                    "type": "word_delimiter",
+                    "split_on_case_change": "false",
+                    "preserve_original": "true",
+                    "stem_english_possessive": "false",
+                    "type_table": [
+                        ", => DIGIT",
+                        ". => DIGIT"
+                    ]
+                },
+                "unique_token": {
+                    "type": "unique",
+                    "only_on_same_position": "true"
+                }
+            }
+        }
+    },
+    "mappings": {
+        "commit": {
+            "properties": {
+                "timestamp": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "comment": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "author": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "branchPath": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        },
+        "concept": {
+            "_parent": {
+                "type": "commit"
+            },
+            "properties": {
+                "storageKey": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "deleted": {
+                    "type": "boolean"
+                },
+                "commitTimestamp": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "released": {
+                    "type": "boolean"
+                },
+                "active": {
+                    "type": "boolean"
+                },
+                "effectiveTime": {
+                    "type": "date"
+                },
+                "moduleId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "definitionStatusId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "subclassDisjointedness": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "parentIds": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "ancestorIds": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "referenceSetType": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "referencedComponentType": {
+                    "type": "integer"
+                },
+                "mapTargetType": {
+                    "type": "integer"
+                },
+                "concreteDomains": {
+                    "type": "nested",
+                    "properties": {
+                        "type": {
+                            "type": "string"
+                        },
+                        "released": {
+                            "type": "boolean"
+                        },
+                        "active": {
+                            "type": "boolean"
+                        },
+                        "effectiveTime": {
+                            "type": "date"
+                        },
+                        "moduleId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "label": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "valueString": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "valueBoolean": {
+                            "type": "boolean"
+                        },
+                        "valueDecimal": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "characteristicTypeId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "operatorId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "uomId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "referenceSetId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "memberId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        }
+                    }
+                },
+                "memberships": {
+                    "type": "nested",
+                    "properties": {
+                        "released": {
+                            "type": "boolean"
+                        },
+                        "active": {
+                            "type": "boolean"
+                        },
+                        "effectiveTime": {
+                            "type": "date"
+                        },
+                        "moduleId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "id": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "referenceSetId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "query": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "descriptionFormat": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "descriptionLength": {
+                            "type": "integer"
+                        },
+                        "valueId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "targetComponentId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "mapTarget": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "mapGroup": {
+                            "type": "byte"
+                        },
+                        "mapPriority": {
+                            "type": "byte"
+                        },
+                        "mapRule": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "mapAdvice": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "correlationId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "mapCategoryId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "sourceEffectiveTime": {
+                            "type": "date"
+                        },
+                        "targetEffectiveTime": {
+                            "type": "date"
+                        }
+                    }
+                },
+                "descriptions": {
+                    "type": "nested",
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "released": {
+                            "type": "boolean"
+                        },
+                        "active": {
+                            "type": "boolean"
+                        },
+                        "effectiveTime": {
+                            "type": "date"
+                        },
+                        "moduleId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "typeId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "languageCode": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "caseSensitivityId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "term": {
+                            "type": "multi_field",
+                            "fields": {
+                                "tokenized": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "tokenized"
+                                },
+                                "exact_match": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "exact_match"
+                                },
+                                "stemming": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "stemming"
+                                },
+                                "synonym": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "synonym"
+                                },
+                                "case_sensitive_ascii_folding": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_ascii_folding"
+                                },
+                                "case_sensitive": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive"
+                                },
+                                "case_sensitive_exact_match": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_exact_match"
+                                },
+                                "prefix": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "index_analyzer": "prefix",
+                                    "search_analyzer": "tokenized"
+                                }
+                            }
+                        },
+                        "normalized_term": {
+                            "type": "multi_field",
+                            "fields": {
+                                "case_sensitive_ascii_folding": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_ascii_folding"
+                                },
+                                "case_sensitive": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive"
+                                },
+                                "case_sensitive_exact_match": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_exact_match"
+                                },
+                                "case_sensitive_ascii_folding_exact_match": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_ascii_folding_exact_match"
+                                },
+                                "case_sensitive_prefix": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "index_analyzer": "case_sensitive_prefix",
+                                    "search_analyzer": "case_sensitive_ascii_folding"
+                                }
+                            }
+                        },
+                        "memberships": {
+                            "type": "nested",
+                            "properties": {
+                                "released": {
+                                    "type": "boolean"
+                                },
+                                "active": {
+                                    "type": "boolean"
+                                },
+                                "effectiveTime": {
+                                    "type": "date"
+                                },
+                                "moduleId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "id": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "referenceSetId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "query": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "descriptionFormat": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "descriptionLength": {
+                                    "type": "integer"
+                                },
+                                "valueId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "targetComponentId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "mapTarget": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "mapGroup": {
+                                    "type": "byte"
+                                },
+                                "mapPriority": {
+                                    "type": "byte"
+                                },
+                                "mapRule": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "mapAdvice": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "correlationId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "mapCategoryId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "sourceEffectiveTime": {
+                                    "type": "date"
+                                },
+                                "targetEffectiveTime": {
+                                    "type": "date"
+                                }
+                            }
+                        }
+                    }
+                },
+                "relationshipGroups": {
+                    "type": "nested",
+                    "properties": {
+                        "group": {
+                            "type": "integer"
+                        },
+                        "relationships": {
+                            "type": "nested",
+                            "properties": {
+                                "id": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "released": {
+                                    "type": "boolean"
+                                },
+                                "active": {
+                                    "type": "boolean"
+                                },
+                                "effectiveTime": {
+                                    "type": "date"
+                                },
+                                "moduleId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "group": {
+                                    "type": "integer"
+                                },
+                                "unionGroup": {
+                                    "type": "integer"
+                                },
+                                "typeId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "typeAllAncestorIds": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "destinationId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "destinationAllAncestorIds": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "characteristicTypeId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "modifierId": {
+                                    "type": "string",
+                                    "index": "not_analyzed"
+                                },
+                                "memberships": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "released": {
+                                            "type": "boolean"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "effectiveTime": {
+                                            "type": "date"
+                                        },
+                                        "moduleId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "id": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "referenceSetId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "query": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "descriptionFormat": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "descriptionLength": {
+                                            "type": "integer"
+                                        },
+                                        "valueId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "targetComponentId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "mapTarget": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "mapGroup": {
+                                            "type": "byte"
+                                        },
+                                        "mapPriority": {
+                                            "type": "byte"
+                                        },
+                                        "mapRule": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "mapAdvice": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "correlationId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "mapCategoryId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "sourceEffectiveTime": {
+                                            "type": "date"
+                                        },
+                                        "targetEffectiveTime": {
+                                            "type": "date"
+                                        }
+                                    }
+                                },
+                                "concreteDomains": {
+                                    "type": "nested",
+                                    "properties": {
+                                        "type": {
+                                            "type": "string"
+                                        },
+                                        "released": {
+                                            "type": "boolean"
+                                        },
+                                        "active": {
+                                            "type": "boolean"
+                                        },
+                                        "effectiveTime": {
+                                            "type": "date"
+                                        },
+                                        "moduleId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "label": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "valueString": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "valueBoolean": {
+                                            "type": "boolean"
+                                        },
+                                        "valueDecimal": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "characteristicTypeId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "operatorId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "uomId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "referenceSetId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        },
+                                        "memberId": {
+                                            "type": "string",
+                                            "index": "not_analyzed"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "predicate": {
+            "_parent": {
+                "type": "commit"
+            },
+            "properties": {
+                "deleted": {
+                    "type": "boolean"
+                },
+                "commitTimestamp": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "id": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "domainExpression": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "min": {
+                    "type": "integer"
+                },
+                "max": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "descriptionTypeId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "relationshipTypeExpression": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "relationshipValueExpression": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "relationshipCharacteristicTypeExpression": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "relationshipGroupRule": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "concreteDomainLabel": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "concreteDomainDisplayName": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "concreteDomainType": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        },
+        "label": {
+            "_parent": {
+                "type": "commit"
+            },
+            "properties": {
+                "commitTimestamp": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "deleted": {
+                    "type": "boolean"
+                },
+                "conceptId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "iconId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "labels": {
+                    "type": "nested",
+                    "properties": {
+                        "typeId": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "term": {
+                            "type": "multi_field",
+                            "fields": {
+                                "term": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "tokenized",
+                                    "term_vector": "with_positions_offsets",
+                                    "store": true
+                                },
+                                "exact_match": {
+                                    "type": "string",
+                                    "store": true,
+                                    "index": "analyzed",
+                                    "search_analyzer": "standard",
+                                    "index_analyzer": "exact_match",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "stemming": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "stemming",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "synonym": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "synonym",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "case_sensitive_ascii_folding": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_ascii_folding",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "case_sensitive": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "case_sensitive_exact_match": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "analyzer": "case_sensitive_exact_match",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "prefix": {
+                                    "type": "string",
+                                    "index": "analyzed",
+                                    "index_analyzer": "prefix",
+                                    "search_analyzer": "tokenized",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "highlight": {
+                                    "type": "string",
+                                    "analyzer": "highlight",
+                                    "term_vector": "with_positions_offsets"
+                                },
+                                "case_sensitive_highlight": {
+                                    "type": "string",
+                                    "analyzer": "case_sensitive_highlight",
+                                    "term_vector": "with_positions_offsets"
+                                }
+                            }
+                        },
+                        "preferredIds": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "acceptableIds": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
