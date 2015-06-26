@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
@@ -28,12 +26,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
@@ -59,60 +56,22 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
 	private Branch main;
 
-	private BranchManager manager;
+	private BranchManager manager = new MockBranchManager();
 	
 	@Before
 	public void givenTransactionalIndex() {
+		// branch support
+		main = manager.getMainBranch();
+		// json support
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.NON_PRIVATE);
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-		// mock branching support
-		manager = mock(BranchManager.class);
-		main = mock(Branch.class);
-		when(manager.getBranch(Branch.MAIN_PATH)).thenReturn(main);
-		when(manager.getMainBranch()).thenReturn(main);
-		when(main.path()).thenReturn(Branch.MAIN_PATH);
-		when(main.headTimestamp()).thenReturn(0L);
-		when(main.baseTimestamp()).thenReturn(0L);
-		when(main.createChild(anyString())).thenAnswer(new Answer<Branch>() {
-			@Override
-			public Branch answer(InvocationOnMock invocation) throws Throwable {
-				final Branch parent = (Branch) invocation.getMock();
-				final String name = (String) invocation.getArguments()[0];
-				final Branch child = mock(Branch.class);
-				final long head = parent.headTimestamp();
-				final String path = parent.path() + Branch.SEPARATOR + name;
-				when(child.name()).thenReturn(name);
-				when(child.path()).thenReturn(path);
-				when(child.parent()).thenReturn(parent);
-				when(child.createChild(anyString())).thenAnswer(this);
-				when(child.headTimestamp()).thenReturn(head);
-				when(child.baseTimestamp()).thenReturn(head);
-				when(manager.getBranch(path)).thenReturn(child);
-				mockRebase(child);
-				return child;
-			}
-		});
 		// create transactional index
 		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();
-	}
-
-	private void mockRebase(final Branch branch) {
-		when(branch.rebase(anyString())).thenAnswer(new Answer<Branch>() {
-			@Override
-			public Branch answer(InvocationOnMock invocation) throws Throwable {
-				final Branch parent = branch.parent();
-				final long head = parent.headTimestamp(); 
-				when(branch.baseTimestamp()).thenReturn(head);
-				when(branch.headTimestamp()).thenReturn(head);
-				// TODO do we have to apply changes to reopened branch, just like in the impl???
-				return branch;
-			}
-		});
 	}
 
 	@Test(expected = NotFoundException.class)
