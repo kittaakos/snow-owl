@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
  * 
  * @since 5.0
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Id {
 }

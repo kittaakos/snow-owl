@@ -19,6 +19,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
@@ -32,11 +33,17 @@ public abstract class BaseStore<T> implements Store<T> {
 
 	private Class<T> type;
 	private Field idField;
+	private Method idGetter;
 
 	public BaseStore(Class<T> type) {
 		this.type = checkNotNull(type, "Type may not be null");
 		this.idField = getIdField(type);
-		this.idField.setAccessible(true);
+		if (this.idField != null) {
+			this.idField.setAccessible(true);
+		} else {
+			this.idGetter = getIdGetter(type);
+			checkArgument(this.idGetter != null, "Type '%s' should mark one field or public method with the Id annotation", type);
+		}
 	}
 
 	/**
@@ -94,7 +101,28 @@ public abstract class BaseStore<T> implements Store<T> {
 		if (type.getSuperclass() != null) {
 			return getIdField(type.getSuperclass());
 		}
-		throw new IllegalArgumentException(String.format("Type '%s' does not have an ID field defined", type.getName()));
+		return null;
+	}
+	
+	private static Method getIdGetter(Class<?> type) {
+		for (Method method : type.getMethods()) {
+			if (method.isAnnotationPresent(Id.class)) {
+				return method;
+			}
+		}
+		if (type.getSuperclass() != null) {
+			final Method idGetter = getIdGetter(type.getSuperclass());
+			if (idGetter != null) {
+				return idGetter;
+			}
+		}
+		for (Class<?> iface : type.getInterfaces()) {
+			final Method idGetter = getIdGetter(iface);
+			if (idGetter != null) {
+				return idGetter;
+			}
+		}
+		return null;
 	}
 
 }

@@ -12,6 +12,21 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  */
 class Types {
 
+	@Mapping(type = "typewoid")
+	static class TypeWithoutIdAnnotation {
+		
+		private String id;
+		
+		public TypeWithoutIdAnnotation(String id) {
+			this.id = id;
+		}
+		
+		public String getId() {
+			return id;
+		}
+		
+	}
+	
 	@Mapping(type = "data")
 	static class Data extends Component {
 		
@@ -39,44 +54,39 @@ class Types {
 		
 	}
 	
-	static class ComplexData {
+	static class TypeWithIdMethod {
 		
-		@JsonProperty
 		private String id;
 		
-		@JsonProperty
-		private String name;
-		
-		@JsonProperty
-		private State state;
-
-		@JsonCreator
-		public ComplexData(@JsonProperty("id") String id, @JsonProperty("name") String name, @JsonProperty("state") State state) {
+		public TypeWithIdMethod(String id) {
 			this.id = id;
-			this.name = name;
-			this.state = state;
 		}
 		
+		@Id
 		public String getId() {
 			return id;
 		}
 		
-		@Override
-		public int hashCode() {
-			return Objects.hashCode(id);
-		}
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == this) return true;
-			if (!(obj instanceof ComplexData)) return false;
-			return Objects.equals(id, id);
-		}
-		
 	}
 	
-	static enum State {
-		SCHEDULED, RUNNING, FAILED
+	static interface TypeWithIdInterface {
+		@Id
+		String getId();
+	}
+	
+	static class TypeWithIdInterfaceSubclass implements TypeWithIdInterface {
+
+		private String id;
+
+		public TypeWithIdInterfaceSubclass(String id) {
+			this.id = id;
+		}
+		
+		@Override
+		public String getId() {
+			return id;
+		}
+		
 	}
 	
 }
