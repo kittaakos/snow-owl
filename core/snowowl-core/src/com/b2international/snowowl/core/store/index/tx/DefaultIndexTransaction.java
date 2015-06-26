@@ -43,13 +43,13 @@ class DefaultIndexTransaction implements IndexTransaction {
 	}
 	
 	@Override
-	public void add(Component object) {
-		index.addRevision(commitId, commitTimestamp, branchPath, getType(object), mapper.convertValue(object, Map.class));
+	public void add(long storageKey, Component object) {
+		index.addRevision(commitId, commitTimestamp, storageKey, branchPath, getType(object), mapper.convertValue(object, Map.class));
 	}
 	
 	@Override
-	public void delete(String type, String id) {
-		index.remove(commitId, commitTimestamp, branchPath, type, id);
+	public void delete(long storageKey, String type) {
+		index.remove(commitId, commitTimestamp, storageKey, branchPath, type);
 	}
 	
 	@Override

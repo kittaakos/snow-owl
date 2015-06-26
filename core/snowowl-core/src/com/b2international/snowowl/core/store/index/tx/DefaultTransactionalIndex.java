@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.elasticsearch.index.query.FilterBuilders.andFilter;
 import static org.elasticsearch.index.query.FilterBuilders.hasParentFilter;
@@ -46,9 +47,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class DefaultTransactionalIndex implements TransactionalIndex {
 	
-	// TODO implicit knowledge about the ID_FIELD???
-	private static final String ID_FIELD = "id";
-	
 	private Index index;
 	private ObjectMapper mapper;
 
@@ -63,36 +61,36 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 
 	@Override
-	public Map<String, Object> loadRevision(String type, String branchPath, String key) {
+	public Map<String, Object> loadRevision(String type, String branchPath, long storageKey) {
 		try {
 			final SearchHits hits = index
 					.query(type)
-					.where(termQuery(ID_FIELD, key))
+					.where(termQuery(IndexRevision.STORAGE_KEY, storageKey))
 					.filter(branchFilter(branchPath))
 					.sortDesc(IndexCommit.COMMIT_TIMESTAMP_FIELD)
-					.sortAsc(ID_FIELD)
+					.sortAsc(IndexRevision.STORAGE_KEY)
 					.search();
 			if (hits.totalHits() <= 0) {
 				// TODO add branchPath to exception message
-				throw new NotFoundException(type, key);
+				throw new NotFoundException(type, String.valueOf(storageKey));
 			}
 			return this.mapper.convertValue(hits.hits()[0].getSource(), IndexRevision.class).getData();
 		} catch (ElasticsearchException e) {
-			throw new FormattedRuntimeException("Failed to retrieve '%s' from branch '%s' in index %s/%s", key, branchPath, index.name(), type, e);
+			throw new FormattedRuntimeException("Failed to retrieve '%s' from branch '%s' in index %s/%s", storageKey, branchPath, index.name(), type, e);
 		}
 	}
 
 	@Override
-	public void addRevision(int commitId, long commitTimestamp, String branchPath, String type, Map<String, Object> data) {
-		checkNotNull(data.get(ID_FIELD), "Revision of %s should have an ID field, %s", type, data);
-		final Map<String, Object> revData = this.mapper.convertValue(new IndexRevision(commitId, commitTimestamp, false, data), Map.class);
+	public void addRevision(int commitId, long commitTimestamp, long storageKey, String branchPath, String type, Map<String, Object> data) {
+		checkArgument(storageKey > 0, "StorageKey should be greater than zero");
+		final Map<String, Object> revData = this.mapper.convertValue(new IndexRevision(commitId, commitTimestamp, storageKey, false, data), Map.class);
 		this.index.putWithParent(type, String.valueOf(commitId), revData);
 	}
 	
 	@Override
-	public void remove(int commitId, long commitTimestamp, String branchPath, String type, String key) {
-		final Map<String, Object> revData = loadRevision(type, branchPath, key);
-		final Map<String, Object> revision = this.mapper.convertValue(new IndexRevision(commitId, commitTimestamp, true, revData), Map.class);
+	public void remove(int commitId, long commitTimestamp, long storageKey, String branchPath, String type) {
+		final Map<String, Object> revData = loadRevision(type, branchPath, storageKey);
+		final Map<String, Object> revision = this.mapper.convertValue(new IndexRevision(commitId, commitTimestamp, storageKey, true, revData), Map.class);
 		this.index.putWithParent(type, String.valueOf(commitId), revision);
 	}
 	

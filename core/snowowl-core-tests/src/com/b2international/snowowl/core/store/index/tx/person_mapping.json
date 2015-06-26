@@ -3,15 +3,19 @@
 		"type" : "commit"
 	},
 	"properties" : {
+		"commitId" : {
+			"type" : "long"
+		},
 		"commitTimestamp" : {
 			"type" : "long"
+		},
+		"storageKey" : {
+			"type": "long"		
 		},
 		"deleted" : {
 			"type" : "boolean"
 		},
-		"commitId" : {
-			"type" : "long"
-		},
+		
 		"id" : {
 			"type" : "long"
 		},

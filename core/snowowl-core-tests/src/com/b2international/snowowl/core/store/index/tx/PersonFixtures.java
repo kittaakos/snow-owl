@@ -24,6 +24,7 @@ import java.util.Map;
 public class PersonFixtures {
 
 	public static final String PERSON_TYPE = "person";
+	public static final long PERSON_1_STORAGEKEY = 1L;
 	public static final String PERSON_1_KEY = "1";
 	
 	public static Person createRandomPerson(int id) {

@@ -29,23 +29,26 @@ import com.google.common.collect.Maps;
 /**
  * @since 5.0
  */
-class IndexRevision {
+final class IndexRevision {
 
+	static final String STORAGE_KEY = "storageKey";
 	static final String DELETED_FIELD = "deleted";
 	
 	private Map<String, Object> data;
+	private long storageKey;
 	private int commitId;
 	private long commitTimestamp;
 	private boolean deleted = false;
 	
 	@JsonCreator
-	IndexRevision(@JsonProperty("commitId") int commitId, @JsonProperty("commitTimestamp") long commitTimestamp, @JsonProperty("deleted") boolean deleted) {
-		this(commitId, commitTimestamp, deleted, Maps.<String, Object>newHashMap());
+	IndexRevision(@JsonProperty("commitId") int commitId, @JsonProperty("commitTimestamp") long commitTimestamp, @JsonProperty("storageKey") long storageKey, @JsonProperty("deleted") boolean deleted) {
+		this(commitId, commitTimestamp, storageKey, deleted, Maps.<String, Object>newHashMap());
 	}
 	
-	IndexRevision(int commitId, long commitTimestamp, boolean deleted, Map<String, Object> data) {
+	IndexRevision(int commitId, long commitTimestamp, long storageKey, boolean deleted, Map<String, Object> data) {
 		this.commitId = commitId;
 		this.commitTimestamp = commitTimestamp;
+		this.storageKey = storageKey;
 		this.deleted = deleted;
 		this.data = checkNotNull(data, "data");
 	}
@@ -70,6 +73,10 @@ class IndexRevision {
 	
 	public boolean isDeleted() {
 		return deleted;
+	}
+	
+	public long getStorageKey() {
+		return storageKey;
 	}
 
 	@Override

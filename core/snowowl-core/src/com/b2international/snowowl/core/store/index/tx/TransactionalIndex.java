@@ -26,15 +26,17 @@ import com.b2international.snowowl.core.store.index.MappingProvider;
 public interface TransactionalIndex extends Administrable<TransactionalIndexAdmin>, MappingProvider {
 
 	/**
-	 * Loads the latest revision (Map of String, Object value pairs) from the index with the given type and key as identifier.
+	 * Loads the latest revision (Map of String, Object value pairs) from the index with the given type and storageKey as identifier.
 	 * 
 	 * @param type
 	 *            - the type of the data object held by the returned revision
-	 * @param key
-	 *            - the ID of the data object held by the returned revision
+	 * @param branchPath
+	 *            - the branchPath to restrict the loading of revisions
+	 * @param storageKey
+	 *            - the storage identifier of the revision
 	 * @return the loaded data object, holding all values of the revision
 	 */
-	Map<String, Object> loadRevision(String type, String branchPath, String key);
+	Map<String, Object> loadRevision(String type, String branchPath, long storageKey);
 
 	// TODO Map<String, Object> loadRevision(String type, String branchPath, long timestamp, String key);
 
@@ -45,12 +47,16 @@ public interface TransactionalIndex extends Administrable<TransactionalIndexAdmi
 	 *            - commit group this revision belongs to
 	 * @param commitTimestamp
 	 *            - the commit group's timestamp
+	 * @param storageKey
+	 *            - the storage identifier of the data object/revision
+	 * @param branchPath
+	 *            - the branchPath to use when adding the revision
 	 * @param type
 	 *            - the type of the data object
 	 * @param data
 	 *            - the data object itself
 	 */
-	void addRevision(int commitId, long commitTimestamp, String branchPath, String type, Map<String, Object> data);
+	void addRevision(int commitId, long commitTimestamp, long storageKey, String branchPath, String type, Map<String, Object> data);
 
 	/**
 	 * Marks the latest revision of the object identified by the given key as deleted and reindexes it.
@@ -60,11 +66,11 @@ public interface TransactionalIndex extends Administrable<TransactionalIndexAdmi
 	 * @param commitTimestamp
 	 *            - the commit group's timestamp
 	 * @param branchPath
+	 *            - the branch to use when adding the deleted revision
 	 * @param type
-	 * @param key
-	 *            - the unique identifier of the component, which has been deleted since the latest change processing
+	 *            - the type of the data object
 	 */
-	void remove(int commitId, long commitTimestamp, String branchPath, String type, String key);
+	void remove(int commitId, long commitTimestamp, long storageKey, String branchPath, String type);
 
 	/**
 	 * Indexes a commit group as parent for all previously added revision (with the given commitId) available for search.

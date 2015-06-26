@@ -24,9 +24,10 @@ import com.b2international.snowowl.core.terminology.Component;
  */
 public interface IndexTransaction {
 	
-	void add(Component object);
+	void add(long storageKey, Component object);
 	
-	void delete(String type, String id);
+	// TODO do we need the type???
+	void delete(long storageKey, String type);
 	
 	void commit(String commitMessage);
 	

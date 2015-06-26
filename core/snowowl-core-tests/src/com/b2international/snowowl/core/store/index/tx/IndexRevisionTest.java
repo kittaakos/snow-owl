@@ -45,17 +45,17 @@ public class IndexRevisionTest {
 	
 	@Test(expected = NullPointerException.class)
 	public void createRevisionWithNullDataShouldThrowException() throws Exception {
-		new IndexRevision(0, 0L, false, null);
+		new IndexRevision(0, 0L, 1L, false, null);
 	}
 	
 	@Test
 	public void testSerializationOfIndexRevision() throws Exception {
 		final Map<String, Object> data = newHashMap();
 		data.put("prop", "value");
-		final IndexRevision rev = new IndexRevision(0, 0L, false, data);
+		final IndexRevision rev = new IndexRevision(0, 0L, 1L, false, data);
 		
 		final String json = mapper.writeValueAsString(rev);
-		assertEquals("{\"commitId\":0,\"commitTimestamp\":0,\"deleted\":false,\"prop\":\"value\"}", json);
+		assertEquals("{\"commitId\":0,\"commitTimestamp\":0,\"storageKey\":1,\"deleted\":false,\"prop\":\"value\"}", json);
 		
 		final IndexRevision revDeserialized = mapper.readValue(json, IndexRevision.class);
 		assertEquals(rev, revDeserialized);
