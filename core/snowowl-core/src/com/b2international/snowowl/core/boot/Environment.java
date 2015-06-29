@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.setup;
+package com.b2international.snowowl.core.boot;
 
 import java.io.File;
 
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
-import org.osgi.service.prefs.PreferencesService;
 
-import com.b2international.commons.platform.PlatformUtil;
-import com.b2international.snowowl.core.ApplicationContext;
-import com.b2international.snowowl.core.api.preferences.FileBasedPreferencesService;
-import com.b2international.snowowl.core.config.ClientPreferences;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.google.inject.Provider;
 
 /**
  * @since 3.3
  */
 public final class Environment {
 
-	private final ApplicationContext context = ApplicationContext.getInstance();
+//	private final ApplicationContext context = ApplicationContext.getInstance();
 
 	private final IManagedContainer container = IPluginContainer.INSTANCE;
 
@@ -44,11 +38,11 @@ public final class Environment {
 
 	public Environment(final Bootstrap bootstrap, final SnowOwlConfiguration configuration) throws Exception {
 		initializeEnvironmentDirectories(bootstrap.getInstallationDirectory(), configuration);
-		services().registerService(PreferencesService.class,
-				PlatformUtil.getPreferencesService(bootstrap.getBundleContext()));
-		services().registerService(FileBasedPreferencesService.class,
-				new FileBasedPreferencesService(getConfigDirectory()));
-		services().registerService(SnowOwlConfiguration.class, configuration);
+//		services().registerService(PreferencesService.class,
+//				PlatformUtil.getPreferencesService(bootstrap.getBundleContext()));
+//		services().registerService(FileBasedPreferencesService.class,
+//				new FileBasedPreferencesService(getConfigDirectory()));
+//		services().registerService(SnowOwlConfiguration.class, configuration);
 	}
 	
 	private void initializeEnvironmentDirectories(File installationDirectory, SnowOwlConfiguration configuration) throws Exception {
@@ -70,9 +64,9 @@ public final class Environment {
 	 * 
 	 * @return
 	 */
-	public ApplicationContext services() {
-		return context;
-	}
+//	public ApplicationContext services() {
+//		return context;
+//	}
 
 	/**
 	 * Returns the {@link IManagedContainer} to register Net4J and CDO services.
@@ -88,9 +82,9 @@ public final class Environment {
 	 * 
 	 * @return
 	 */
-	public FileBasedPreferencesService filePreferences() {
-		return service(FileBasedPreferencesService.class);
-	}
+//	public FileBasedPreferencesService filePreferences() {
+//		return service(FileBasedPreferencesService.class);
+//	}
 
 	/**
 	 * Returns the current installation directory.
@@ -134,9 +128,9 @@ public final class Environment {
 	 * 
 	 * @return
 	 */
-	public PreferencesService preferences() {
-		return services().getServiceChecked(PreferencesService.class);
-	}
+//	public PreferencesService preferences() {
+//		return services().getServiceChecked(PreferencesService.class);
+//	}
 
 	/**
 	 * Returns the given service or throws an exception if none found in the
@@ -145,9 +139,9 @@ public final class Environment {
 	 * @param type
 	 * @return the currently registered service implementation for the given service interface, never <code>null</code>
 	 */
-	public <T> T service(Class<T> type) {
-		return services().getServiceChecked(type);
-	}
+//	public <T> T service(Class<T> type) {
+//		return services().getServiceChecked(type);
+//	}
 	
 	/**
 	 * Returns a {@link Provider} to provide the given type when needed by using {@link #service(Class)}, so the returned
@@ -157,41 +151,41 @@ public final class Environment {
 	 * @param type
 	 * @return
 	 */
-	public <T> Provider<T> provider(final Class<T> type) {
-		return new Provider<T>() {
-			@Override
-			public T get() {
-				return service(type);
-			}
-		};
-	}
+//	public <T> Provider<T> provider(final Class<T> type) {
+//		return new Provider<T>() {
+//			@Override
+//			public T get() {
+//				return service(type);
+//			}
+//		};
+//	}
 
 	/**
 	 * Returns if Snow Owl running in embedded mode or not.
 	 * 
 	 * @return
 	 */
-	public boolean isEmbedded() {
-		return service(ClientPreferences.class).isClientEmbedded();
-	}
+//	public boolean isEmbedded() {
+//		return service(ClientPreferences.class).isClientEmbedded();
+//	}
 
 	/**
 	 * Returns <code>true</code> if Snow Owl is running on a client environment.
 	 * 
 	 * @return
 	 */
-	public boolean isClient() {
-		return !isServer();
-	}
+//	public boolean isClient() {
+//		return !isServer();
+//	}
 
 	/**
 	 * Returns <code>true</code> if Snow Owl is running on a server environment.
 	 * 
 	 * @return
 	 */
-	public boolean isServer() {
-		return services().isServerMode();
-	}
+//	public boolean isServer() {
+//		return services().isServerMode();
+//	}
 
 	private File createDirectory(File parent, String path) throws Exception {
 		return createDirectory(new File(parent, path));

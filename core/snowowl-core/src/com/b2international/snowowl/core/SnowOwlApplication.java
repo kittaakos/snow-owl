@@ -18,9 +18,7 @@ package com.b2international.snowowl.core;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -35,12 +33,10 @@ import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.config.ConfigurationFactory;
 import com.b2international.commons.config.FileConfigurationSourceProvider;
-import com.b2international.snowowl.core.ApplicationContext.ServiceRegistryEntry;
+import com.b2international.snowowl.core.boot.Bootstrap;
+import com.b2international.snowowl.core.boot.BootstrapFragment;
+import com.b2international.snowowl.core.boot.Environment;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
-import com.b2international.snowowl.core.setup.Bootstrap;
-import com.b2international.snowowl.core.setup.BootstrapFragment;
-import com.b2international.snowowl.core.setup.Environment;
-import com.b2international.snowowl.core.users.IUserManager;
 import com.b2international.snowowl.hibernate.validator.ValidationUtil;
 import com.google.common.base.Strings;
 
@@ -108,11 +104,11 @@ public enum SnowOwlApplication {
 			logEnvironment();
 			this.bootstrap.init(this.configuration, this.environment);
 			// after init checks
-			try {
-				this.environment.service(IUserManager.class);
-			} catch (Exception e) {
-				throw new InitializationException("UserManager should be registered after the bootstrap process.");
-			}
+//			try {
+//				this.environment.service(IUserManager.class);
+//			} catch (Exception e) {
+//				throw new InitializationException("UserManager should be registered after the bootstrap process.");
+//			}
 		}
 	}
 
@@ -191,7 +187,7 @@ public enum SnowOwlApplication {
 			}
 			LOG.info("Preparing to run Snow Owl...");
 			this.bootstrap.run(configuration, environment, monitor);
-			checkApplicationState();
+//			checkApplicationState();
 			running.set(true);
 			LOG.info("Snow Owl successfully started.");
 		} else {
@@ -206,26 +202,26 @@ public enum SnowOwlApplication {
 	 * @throws InitializationException
 	 *             - on application init failures
 	 */
-	private void checkApplicationState() throws InitializationException {
-		// check all registered services
-		final Collection<ServiceRegistryEntry<?>> failedServices = this.environment.services().checkStrictServices();
-		if (!failedServices.isEmpty()) {
-			final String errorMessage = serviceRegistryErrorMessage(failedServices);
-			throw new InitializationException(errorMessage);
-		}
-	}
+//	private void checkApplicationState() throws InitializationException {
+//		// check all registered services
+//		final Collection<ServiceRegistryEntry<?>> failedServices = this.environment.services().checkStrictServices();
+//		if (!failedServices.isEmpty()) {
+//			final String errorMessage = serviceRegistryErrorMessage(failedServices);
+//			throw new InitializationException(errorMessage);
+//		}
+//	}
 
-	private String serviceRegistryErrorMessage(Collection<ServiceRegistryEntry<?>> failedServices) {
-		final StringBuilder builder = new StringBuilder();
-		for (Iterator<ServiceRegistryEntry<?>> iter = failedServices.iterator(); iter.hasNext();) {
-			final ServiceRegistryEntry<?> next = iter.next();
-			builder.append("Missing implementation of service: " + next.getServiceInterface());
-			if (iter.hasNext()) {
-				builder.append(NEW_LINE);
-			}
-		}
-		return builder.toString();
-	}
+//	private String serviceRegistryErrorMessage(Collection<ServiceRegistryEntry<?>> failedServices) {
+//		final StringBuilder builder = new StringBuilder();
+//		for (Iterator<ServiceRegistryEntry<?>> iter = failedServices.iterator(); iter.hasNext();) {
+//			final ServiceRegistryEntry<?> next = iter.next();
+//			builder.append("Missing implementation of service: " + next.getServiceInterface());
+//			if (iter.hasNext()) {
+//				builder.append(NEW_LINE);
+//			}
+//		}
+//		return builder.toString();
+//	}
 
 	/**
 	 * Shuts down the Snow Owl application by performing shut down logic.
@@ -233,7 +229,7 @@ public enum SnowOwlApplication {
 	public void shutdown() {
 		if (isRunning()) {
 			LOG.info("Snow Owl is shutting down.");
-			this.environment.services().dispose();
+//			this.environment.services().dispose();
 			LifecycleUtil.deactivate(environment.container());
 			running.set(false);
 		}

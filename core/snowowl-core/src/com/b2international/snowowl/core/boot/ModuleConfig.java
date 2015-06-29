@@ -13,28 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.setup;
+package com.b2international.snowowl.core.boot;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+
 /**
- * Supports multiple {@link ModuleConfig} annotation on a single
- * {@link BootstrapFragment} class.
+ * Additional configurations can be added to {@link SnowOwlConfiguration} by
+ * annotating an implementation of {@link BootstrapFragment} with this
+ * annotation and specifying the configuration class.
  * 
- * @since 3.4
+ * @since 3.3
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ModuleConfigs {
+public @interface ModuleConfig {
 
 	/**
-	 * The {@link ModuleConfig} annotation array.
+	 * The class of a configuration object.
 	 * 
 	 * @return
 	 */
-	ModuleConfig[] value();
+	Class<?> type();
+
+	/**
+	 * The field name of the configuration object.
+	 * 
+	 * @return
+	 */
+	String fieldName();
 
 }

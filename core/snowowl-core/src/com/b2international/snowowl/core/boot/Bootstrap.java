@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.setup;
+package com.b2international.snowowl.core.boot;
 
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
@@ -28,8 +28,8 @@ import org.eclipse.core.runtime.URIUtil;
 import org.osgi.framework.BundleContext;
 
 import com.b2international.commons.platform.Extensions;
-import com.b2international.snowowl.core.CoreActivator;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.internal.CoreActivator;
 
 /**
  * @since 3.3
