@@ -30,7 +30,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
-import com.b2international.snowowl.core.repository.Repository;
+import com.b2international.snowowl.core.internal.repository.InternalRepository;
 import com.b2international.snowowl.core.store.Store;
 
 /**
@@ -40,9 +40,9 @@ import com.b2international.snowowl.core.store.Store;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
-    private final Repository repository;
+    private final InternalRepository repository;
 	
-    public CDOBranchManagerImpl(final Repository repository, final Store<InternalBranch> branchStore) {
+    public CDOBranchManagerImpl(final InternalRepository repository, final Store<InternalBranch> branchStore) {
         super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
         this.repository = repository;
         registerCommitListener(repository);
@@ -127,7 +127,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @SuppressWarnings("restriction")
-    private void registerCommitListener(Repository repository) {
+    private void registerCommitListener(InternalRepository repository) {
         repository.getCdoRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
             public void handleCommitInfo(CDOCommitInfo commitInfo) {

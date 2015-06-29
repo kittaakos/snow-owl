@@ -13,31 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.repository;
+package com.b2international.snowowl.core.internal.repository;
 
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
+import org.eclipse.emf.cdo.server.IRepository;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+
+import com.b2international.snowowl.core.repository.Repository;
 
 /**
  * @since 5.0
  */
-public interface Repository {
+public interface InternalRepository extends Repository {
 
-	// TODO is this the proper place for this method???
-	ICDOConflictProcessor getConflictProcessor();
+	// CDO stuff
+	CDOBranch getCdoMainBranch();
 
-	/**
-	 * Returns the branch manager of this repository.
-	 * 
-	 * @return
-	 */
-	BranchManager branching();
+	IRepository getCdoRepository();
 
-	/**
-	 * Returns the repository name.
-	 * 
-	 * @return
-	 */
-	String name();
+	CDOBranchManager getCdoBranchManager();
+
+	CDOTransaction createTransaction(CDOBranch branch);
 	
 }
