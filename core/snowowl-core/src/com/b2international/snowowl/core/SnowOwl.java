@@ -20,6 +20,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.File;
 import java.util.Enumeration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 
@@ -43,34 +44,36 @@ import com.google.common.base.Strings;
 /**
  * @since 3.3
  */
-public enum SnowOwlApplication {
-
-	INSTANCE;
+public class SnowOwl {
 
 	private static final String NEW_LINE = "\r\n"; //$NON-NLS-1$
 	private static final String DEFAULT_CONFIGURATION_FILE_NAME = "snowowl_config"; //$NON-NLS-1$
 	private static final String[] SUPPORTED_CONFIG_EXTENSIONS = new String[]{"yml", "yaml", "json"};
-	private static final Logger LOG = LoggerFactory.getLogger(SnowOwlApplication.class);
+	private static final Logger LOG = LoggerFactory.getLogger(SnowOwl.class);
 
+	private static AtomicReference<SnowOwl> SNOW_OWL = new AtomicReference<>();
+	
 	private AtomicBoolean running = new AtomicBoolean(false);
 	private AtomicBoolean preRunCompleted = new AtomicBoolean(false);
 
 	private Bootstrap bootstrap;
 	private Environment environment;
 	private SnowOwlConfiguration configuration;
+	
+	private SnowOwl() {}
 
 	/**
 	 * Returns the {@link Environment} of the Snow Owl Application.
 	 * 
 	 * @return
 	 */
-	public Environment getEnviroment() {
+	public Environment env() {
 		return environment;
 	}
 
 	/**
 	 * Returns the global {@link SnowOwlConfiguration} of this
-	 * {@link SnowOwlApplication}.
+	 * {@link SnowOwl}.
 	 * 
 	 * @return
 	 */
@@ -283,6 +286,13 @@ public enum SnowOwlApplication {
 				javaLogger.setLevel(Level.SEVERE);
 			}
 		}
+	}
+
+	public static SnowOwl owl() {
+		if (SNOW_OWL.compareAndSet(null, new SnowOwl())) {
+			// TODO initialize app
+		}
+		return SNOW_OWL.get();
 	}
 
 }

@@ -21,7 +21,7 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.b2international.snowowl.core.SnowOwlApplication;
+import com.b2international.snowowl.core.SnowOwl;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 
@@ -216,8 +216,9 @@ public class DatabaseConfiguration {
 		return location;
 	}
 
+	// TODO move this to initialization
 	private String getDefaultLocation() {
-		final File dataDir = SnowOwlApplication.INSTANCE.getEnviroment().getDataDirectory();
+		final File dataDir = SnowOwl.owl().env().getDataDirectory();
 		final File cdoDataDir = new File(dataDir, getDirectory());
 		// Add trailing separator here
 		return cdoDataDir.getAbsolutePath() + File.separator;
