@@ -1,0 +1,167 @@
+{
+	"analysis": {
+	    "analyzer": {
+	        "tokenized": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token"
+	            ]
+	        },
+	        "exact_match": {
+	            "tokenizer": "keyword",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase"
+	            ]
+	        },
+	        "search_stemming": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "unique_token",
+	                "english_stemmer"
+	            ]
+	        },
+	        "stemming": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token",
+	                "english_stemmer"
+	            ]
+	        },
+	        "search_synonym": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "unique_token",
+	                "synonym"
+	            ]
+	        },
+	        "synonym": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token",
+	                "synonym"
+	            ]
+	        },
+	        "case_sensitive_ascii_folding": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token"
+	            ]
+	        },
+	        "case_sensitive_ascii_folding_exact_match": {
+	            "tokenizer": "keyword",
+	            "filter": [
+	                "asciifolding"
+	            ]
+	        },
+	        "case_sensitive": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "possessive",
+	                "word_splitter",
+	                "unique_token"
+	            ]
+	        },
+	        "case_sensitive_exact_match": {
+	            "tokenizer": "keyword"
+	        },
+	        "prefix": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "lowercase",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token",
+	                "edge_ngram"
+	            ]
+	        },
+	        "case_sensitive_prefix": {
+	            "tokenizer": "whitespace",
+	            "filter": [
+	                "asciifolding",
+	                "possessive",
+	                "word_splitter",
+	                "unique_token",
+	                "edge_ngram"
+	            ]
+	        },
+	        "highlight": {
+	            "tokenizer": "edge_ngram_tokenizer",
+	            "filter": [
+	                "lowercase"
+	            ]
+	        },
+	        "case_sensitive_highlight": {
+	            "tokenizer": "edge_ngram_tokenizer"
+	        }
+	    },
+	    "tokenizer": {
+	        "edge_ngram_tokenizer": {
+	            "type": "edgeNGram",
+	            "min_gram": "1",
+	            "max_gram": "20",
+	            "token_chars": [
+	                "letter",
+	                "digit",
+	                "punctuation",
+	                "symbol"
+	            ]
+	        }
+	    },
+	    "filter": {
+	        "synonym": {
+	            "type": "synonym",
+	            "synonyms_path": "synonyms.txt"
+	        },
+	        "english_stemmer": {
+	            "type": "stemmer",
+	            "name": "english"
+	        },
+	        "edge_ngram": {
+	            "type": "edgeNGram",
+	            "min_gram": 1,
+	            "max_gram": 20
+	        },
+	        "possessive": {
+	            "type": "stemmer",
+	            "name": "possessive_english"
+	        },
+	        "word_splitter": {
+	            "type": "word_delimiter",
+	            "split_on_case_change": "false",
+	            "preserve_original": "true",
+	            "stem_english_possessive": "false",
+	            "type_table": [
+	                ", => DIGIT",
+	                ". => DIGIT"
+	            ]
+	        },
+	        "unique_token": {
+	            "type": "unique",
+	            "only_on_same_position": "true"
+	        }
+	    }
+	}
+}

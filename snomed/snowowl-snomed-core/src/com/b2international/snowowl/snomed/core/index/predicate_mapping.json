@@ -1,0 +1,64 @@
+{
+    "_parent": {
+        "type": "commit"
+    },
+    "properties": {
+        "deleted": {
+            "type": "boolean"
+        },
+        "commitTimestamp": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "id": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "domainExpression": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "min": {
+            "type": "integer"
+        },
+        "max": {
+            "type": "integer"
+        },
+        "type": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "descriptionTypeId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "relationshipTypeExpression": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "relationshipValueExpression": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "relationshipCharacteristicTypeExpression": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "relationshipGroupRule": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "concreteDomainLabel": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "concreteDomainDisplayName": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "concreteDomainType": {
+            "type": "string",
+            "index": "not_analyzed"
+        }
+    }
+}

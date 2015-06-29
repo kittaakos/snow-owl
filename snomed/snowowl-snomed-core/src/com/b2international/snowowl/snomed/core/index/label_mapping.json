@@ -1,0 +1,106 @@
+{
+    "_parent": {
+        "type": "commit"
+    },
+    "properties": {
+        "commitTimestamp": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "deleted": {
+            "type": "boolean"
+        },
+        "conceptId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "iconId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "labels": {
+            "type": "nested",
+            "properties": {
+                "typeId": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "term": {
+                    "type": "multi_field",
+                    "fields": {
+                        "term": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "tokenized",
+                            "term_vector": "with_positions_offsets",
+                            "store": true
+                        },
+                        "exact_match": {
+                            "type": "string",
+                            "store": true,
+                            "index": "analyzed",
+                            "search_analyzer": "standard",
+                            "index_analyzer": "exact_match",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "stemming": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "stemming",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "synonym": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "synonym",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "case_sensitive_ascii_folding": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "case_sensitive_ascii_folding",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "case_sensitive": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "case_sensitive",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "case_sensitive_exact_match": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "analyzer": "case_sensitive_exact_match",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "prefix": {
+                            "type": "string",
+                            "index": "analyzed",
+                            "index_analyzer": "prefix",
+                            "search_analyzer": "tokenized",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "highlight": {
+                            "type": "string",
+                            "analyzer": "highlight",
+                            "term_vector": "with_positions_offsets"
+                        },
+                        "case_sensitive_highlight": {
+                            "type": "string",
+                            "analyzer": "case_sensitive_highlight",
+                            "term_vector": "with_positions_offsets"
+                        }
+                    }
+                },
+                "preferredIds": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "acceptableIds": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        }
+    }
+}
