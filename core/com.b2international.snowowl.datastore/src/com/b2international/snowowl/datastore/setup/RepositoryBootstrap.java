@@ -15,10 +15,10 @@
  */
 package com.b2international.snowowl.datastore.setup;
 
+import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.setup.DefaultBootstrapFragment;
 import com.b2international.snowowl.core.setup.ModuleConfig;
 import com.b2international.snowowl.core.setup.ModuleConfigs;
-import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.rpc.RpcConfiguration;
 
 /**

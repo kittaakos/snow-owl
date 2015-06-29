@@ -53,10 +53,10 @@ import org.slf4j.LoggerFactory;
 import com.b2international.snowowl.core.ApplicationContext;
 import com.b2international.snowowl.core.api.NsUri;
 import com.b2international.snowowl.core.config.SnowOwlConfiguration;
+import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.cdo.CDOContainer;
 import com.b2international.snowowl.datastore.cdo.CDOManagedItem;
 import com.b2international.snowowl.datastore.cdo.ICDORepository;
-import com.b2international.snowowl.datastore.config.RepositoryConfiguration;
 import com.b2international.snowowl.datastore.server.cdo.TaskContextAwareRepositoryHandler;
 import com.google.common.base.Preconditions;
 
