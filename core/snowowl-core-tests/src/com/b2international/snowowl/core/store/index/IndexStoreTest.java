@@ -17,9 +17,9 @@ package com.b2international.snowowl.core.store.index;
 
 import org.junit.Rule;
 
-import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.store.BaseStoreTest;
 import com.b2international.snowowl.core.store.Store;
+import com.b2international.snowowl.core.tests.ESRule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**

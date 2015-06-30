@@ -1,4 +1,4 @@
-package com.b2international.snowowl.core;
+package com.b2international.snowowl.core.tests;
 
 import org.elasticsearch.client.Client;
 import org.elasticsearch.node.Node;

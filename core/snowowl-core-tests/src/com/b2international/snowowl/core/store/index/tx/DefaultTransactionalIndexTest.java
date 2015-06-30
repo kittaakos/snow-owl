@@ -27,7 +27,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.b2international.snowowl.core.ESRule;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.MockBranchManager;
@@ -35,6 +34,7 @@ import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.terminology.Component;
+import com.b2international.snowowl.core.tests.ESRule;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
