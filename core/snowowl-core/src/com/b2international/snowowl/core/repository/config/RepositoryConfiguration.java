@@ -36,6 +36,11 @@ import com.google.common.net.HostAndPort;
  */
 public class RepositoryConfiguration {
 	
+	public static final String DATASOURCE_PASS = "password";
+	public static final String DATASOURCE_USER = "user";
+	public static final String DATASOURCE_URL = "uRL";
+	public static final String DATASOURCE_CLASS = "class";
+
 	private boolean compressed = false;
 
 	@NotEmpty
@@ -159,7 +164,11 @@ public class RepositoryConfiguration {
 	 * @return the JDBC URL of the database for the repository
 	 */
 	public JdbcUrl getDatabaseUrl() {
-		return new JdbcUrl(getDatabaseConfiguration().getScheme(), getDatabaseConfiguration().getLocation(), getDatabaseConfiguration().getSettings());
+		String location = getDatabaseConfiguration().getLocation();
+		if (!location.endsWith("/")) {
+			location = location.concat("/");
+		}
+		return new JdbcUrl(getDatabaseConfiguration().getScheme(), location, getDatabaseConfiguration().getSettings());
 	}
 	
 	/**
@@ -170,10 +179,10 @@ public class RepositoryConfiguration {
 	 */
 	public Map<Object, Object> getDatasourceProperties(String repositoryName) {
 		final ImmutableMap.Builder<Object, Object> properties = ImmutableMap.builder();
-		properties.put("class", getDatabaseConfiguration().getDatasourceClass());
-		properties.put("uRL", getDatabaseUrl().build(repositoryName)); // XXX: strange casing required by net4j's uncapitalizer method when inspecting setters!
-		properties.put("user", getDatabaseConfiguration().getPassword());
-		properties.put("password", getDatabaseConfiguration().getUsername());
+		properties.put(DATASOURCE_CLASS, getDatabaseConfiguration().getDatasourceClass());
+		properties.put(DATASOURCE_URL, getDatabaseUrl().build(repositoryName)); // XXX: strange casing required by net4j's uncapitalizer method when inspecting setters!
+		properties.put(DATASOURCE_USER, getDatabaseConfiguration().getUsername());
+		properties.put(DATASOURCE_PASS, getDatabaseConfiguration().getPassword());
 		return properties.build();
 	}
 
