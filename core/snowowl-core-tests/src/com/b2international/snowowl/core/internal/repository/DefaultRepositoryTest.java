@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.internal.repository;
 
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.util.Collection;
@@ -93,6 +94,13 @@ public class DefaultRepositoryTest {
 	public void createAndActivateRepository_ShouldConvertRepositoryNameToFilePathWithoutSpaces() throws Exception {
 		createPersonRepository(REPO_NAME_2).activate();
 		assertThat(new File(LOC, REPO_NAME_2.replaceAll(" ", "_").toLowerCase()+".h2.db")).exists();
+	}
+	
+	@Test
+	public void createAndActivateRepository_ShouldCreateBranchingSupport() throws Exception {
+		final Repository repository = createPersonRepository();
+		repository.activate();
+		assertNotNull(repository.branching());
 	}
 	
 	private DefaultRepository createPersonRepository() {

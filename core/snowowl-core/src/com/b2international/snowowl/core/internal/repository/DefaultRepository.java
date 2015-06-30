@@ -50,8 +50,11 @@ import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
+import com.b2international.snowowl.core.internal.branch.CDOBranchManagerImpl;
+import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.core.terminology.Component;
 
 /**
@@ -61,14 +64,16 @@ public class DefaultRepository implements InternalRepository {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 
+	// information
 	private String id;
 	private String name;
 	private Collection<Class<? extends Component>> components;
-	private RepositoryConfiguration configuration;
-
-	private org.eclipse.emf.cdo.spi.server.InternalRepository cdoRepository;
-
 	private Collection<EPackage> ePackages;
+	private RepositoryConfiguration configuration;
+	
+	// services
+	private org.eclipse.emf.cdo.spi.server.InternalRepository cdoRepository;
+	private BranchManager branching;
 
 	// TODO create customized local RepositoryConfiguration and RepositoryInfo
 	/*package*/ DefaultRepository(String name, Collection<Class<? extends Component>> components, Collection<EPackage> ePackages, RepositoryConfiguration configuration) {
@@ -88,7 +93,7 @@ public class DefaultRepository implements InternalRepository {
 
 	@Override
 	public BranchManager branching() {
-		throw new UnsupportedOperationException();
+		return this.branching;
 	}
 
 	@Override
@@ -103,17 +108,17 @@ public class DefaultRepository implements InternalRepository {
 
 	@Override
 	public CDOBranch getCdoMainBranch() {
-		throw new UnsupportedOperationException();
+		return this.cdoRepository.getBranchManager().getMainBranch();
 	}
 
 	@Override
 	public IRepository getCdoRepository() {
-		throw new UnsupportedOperationException();
+		return this.cdoRepository;
 	}
 
 	@Override
 	public CDOBranchManager getCdoBranchManager() {
-		throw new UnsupportedOperationException();
+		return this.cdoRepository.getBranchManager();
 	}
 
 	@Override
@@ -140,12 +145,16 @@ public class DefaultRepository implements InternalRepository {
 //		((org.eclipse.emf.cdo.server.internal.db.DBStore) dbStore).setIdHandler(idHandler);
 		
 		LOG.info("Successfully started '{}' repository", name());
+		// initialize branching with implicit branchStore
+		// TODO make branchStore configurable
+		this.branching = new CDOBranchManagerImpl(this, new MemStore<>(InternalBranch.class));
 	}
 
 	@Override
 	public void deactivate() {
 		LOG.info("Stopping '{}' repository", name());
 		LifecycleUtil.deactivate(cdoRepository);
+		this.branching = null;
 		LOG.info("Successfully stopped '{}' repository", name());
 	}
 	
