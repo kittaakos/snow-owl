@@ -23,7 +23,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.b2international.snowowl.core.SnowOwl;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.Strings;
 
 /**
  * @since 3.4
@@ -210,13 +209,13 @@ public class DatabaseConfiguration {
 	 */
 	@JsonProperty
 	public String getLocation() {
-		if (Strings.isNullOrEmpty(this.location)) {
-			setLocation(getDefaultLocation());
-		}
+//		if (Strings.isNullOrEmpty(this.location)) {
+//			setLocation(getDefaultLocation());
+//		}
 		return location;
 	}
 
-	// TODO move this to initialization
+	// TODO move this to initialization of SnowOwl
 	private String getDefaultLocation() {
 		final File dataDir = SnowOwl.owl().env().getDataDirectory();
 		final File cdoDataDir = new File(dataDir, getDirectory());
