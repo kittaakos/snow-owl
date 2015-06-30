@@ -32,6 +32,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 import com.b2international.snowowl.core.internal.repository.InternalRepository;
+import com.b2international.snowowl.core.session.Session;
+import com.b2international.snowowl.core.session.SessionContext;
 import com.b2international.snowowl.core.store.mem.MemStore;
 
 /**
@@ -60,6 +62,9 @@ public class CDOBranchManagerTest {
 		
 		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>(InternalBranch.class));
 		main = (CDOMainBranchImpl) manager.getMainBranch();
+		
+		// set custom Session to SessionContext
+		SessionContext.setSession(mock(Session.class, RETURNS_MOCKS));
 	}
 	
 	@Test
@@ -98,6 +103,7 @@ public class CDOBranchManagerTest {
 		final CDOBranch cdoBranchA = manager.getCDOBranch(branchA);
 		// commit and rebase
 		manager.handleCommit(main, clock.getTimeStamp());
+
 		final Branch rebasedBranchA = branchA.rebase("Rebase");
 		final CDOBranch rebasedCdoBranchA = manager.getCDOBranch(rebasedBranchA);
 		assertNotEquals(rebasedCdoBranchA.getID(), cdoBranchA.getID());
