@@ -27,14 +27,17 @@ import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.client.AdminClient;
 import org.elasticsearch.cluster.service.PendingClusterTask;
 import org.elasticsearch.common.base.Strings;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.snowowl.core.log.Loggers;
 
 /**
  * @since 5.0
  */
 public class DefaultIndexAdmin implements IndexAdmin {
 
+	private static Logger LOG = Loggers.REPOSITORY.log();
 	private AdminClient admin;
 	private String index;
 	private Mappings mappings;
@@ -62,7 +65,7 @@ public class DefaultIndexAdmin implements IndexAdmin {
 			}
 			final CreateIndexResponse response = create.get();
 			if (response.isAcknowledged()) {
-				System.out.println(String.format("Created index '%s'", index));
+				LOG.info("Created index '{}'", index);
 			} else {
 				throw new FormattedRuntimeException("Failed to create index '%s'", index);
 			}
@@ -76,7 +79,7 @@ public class DefaultIndexAdmin implements IndexAdmin {
 			final DeleteIndexRequestBuilder req = this.admin.indices().prepareDelete(index);
 			final DeleteIndexResponse response = req.get();
 			if (response.isAcknowledged()) {
-				System.out.println(String.format("Deleted index '%s'", index));
+				LOG.info("Deleted index '{}'", index);
 			} else {
 				throw new FormattedRuntimeException("Failed to delete index '%s'", index);
 			}

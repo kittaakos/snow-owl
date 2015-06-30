@@ -26,8 +26,10 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilder;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.snowowl.core.log.Loggers;
 
 /**
  * General purpose index service implementation on top of Elasticsearch library.
@@ -36,6 +38,7 @@ import com.b2international.commons.exceptions.FormattedRuntimeException;
  */
 public class DefaultIndex implements Index {
 
+	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private Client client;
 	private String index;
 	private DefaultIndexAdmin admin;
@@ -123,7 +126,7 @@ public class DefaultIndex implements Index {
 		for (SortBuilder sort : query.sorts()) {
 			req.addSort(sort);
 		}
-		System.out.println("Executing query:\n" + req);
+		LOG.info("Executing query: {}", req);
 		final SearchResponse response = req.get();
 		if (response.getSuccessfulShards() <= 0) {
 			throw new FormattedRuntimeException("Failed to execute query '%s' on index '%s/%s': ", name(), type, response);
