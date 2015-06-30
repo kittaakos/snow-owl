@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.event;
 
+import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -22,7 +23,7 @@ import com.b2international.snowowl.eventbus.IMessage;
 /**
  * @since 4.1
  */
-public abstract class BaseEvent implements Event {
+public abstract class BaseEvent extends MetadataHolderImpl implements Event {
 
 	@Override
 	public void send(IEventBus bus) {

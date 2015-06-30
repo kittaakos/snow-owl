@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.event;
 
+import com.b2international.snowowl.core.Metadata;
+import com.b2international.snowowl.core.MetadataHolder;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -24,10 +26,25 @@ import com.b2international.snowowl.eventbus.IMessage;
  * 
  * @since 4.1
  */
-public interface Event {
+public interface Event extends MetadataHolder {
 
 	void send(IEventBus bus);
-	
+
 	void send(IEventBus bus, IHandler<IMessage> replyHandler);
-	
+
+	/**
+	 * Support headers available in event {@link Metadata}.
+	 * 
+	 * @since 5.0
+	 */
+	class Headers {
+
+		private Headers() {
+		}
+
+		public static final String SESSION_ID = "sessionId";
+		public static final String BRANCH_PATH = "branchPath";
+
+	}
+
 }
