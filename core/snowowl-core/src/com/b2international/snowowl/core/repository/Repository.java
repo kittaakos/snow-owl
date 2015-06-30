@@ -15,8 +15,11 @@
  */
 package com.b2international.snowowl.core.repository;
 
+import org.eclipse.emf.ecore.EPackage;
+
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
+import com.b2international.snowowl.core.terminology.Component;
 
 /**
  * @since 5.0
@@ -34,10 +37,32 @@ public interface Repository {
 	BranchManager branching();
 
 	/**
-	 * Returns the repository name.
+	 * Returns a human-readable repository name.
 	 * 
 	 * @return
 	 */
 	String name();
+
+	/**
+	 * Returns the identifier of the repository.
+	 * 
+	 * @return
+	 */
+	String id();
+
+	// activation, deactivation
+	void activate();
+
+	void deactivate();
 	
+	interface Builder {
+		
+		Builder addComponent(Class<? extends Component> component);
+		
+		Builder addEPackage(EPackage ePackage);
+		
+		Repository build();
+		
+	}
+
 }
