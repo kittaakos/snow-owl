@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 
 import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.util.CDOTimeProvider;
-import org.eclipse.emf.cdo.spi.common.branch.InternalCDOBranch;
+import org.eclipse.emf.cdo.server.IRepository;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,7 +41,6 @@ import com.b2international.snowowl.core.store.mem.MemStore;
 public class CDOBranchManagerTest {
 
 	private CDOTimeProvider clock;
-	private MockInternalCDOBranchManager cdoBranchManager;
 	
 	private CDOBranchManagerImpl manager;
 	private CDOMainBranchImpl main;
@@ -50,14 +49,13 @@ public class CDOBranchManagerTest {
 	@Before
 	public void givenCDOBranchManager() {
 		clock = new AtomicLongTimestampAuthority();
-		cdoBranchManager = new MockInternalCDOBranchManager(clock);
+		final MockInternalCDOBranchManager cdoBranchManager = new MockInternalCDOBranchManager(clock);
 		cdoBranchManager.initMainBranch(false, clock.getTimeStamp());
-
-		InternalCDOBranch mainBranch = cdoBranchManager.getMainBranch();
 		
-		InternalRepository repository = mock(InternalRepository.class, RETURNS_MOCKS);
-		when(repository.getCdoBranchManager()).thenReturn(cdoBranchManager);
-		when(repository.getCdoMainBranch()).thenReturn(mainBranch);
+		final InternalRepository repository = mock(InternalRepository.class, RETURNS_MOCKS);
+		final IRepository cdoRepository = mock(IRepository.class, RETURNS_MOCKS);
+		when(repository.getCdoRepository()).thenReturn(cdoRepository);
+		when(cdoRepository.getBranchManager()).thenReturn(cdoBranchManager);
 		when(repository.getConflictProcessor()).thenReturn(mock(ICDOConflictProcessor.class));
 		
 		manager = new CDOBranchManagerImpl(repository, new MemStore<InternalBranch>(InternalBranch.class));

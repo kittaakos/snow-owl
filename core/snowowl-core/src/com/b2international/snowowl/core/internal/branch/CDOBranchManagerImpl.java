@@ -21,6 +21,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchPoint;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfoHandler;
+import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.transaction.CDOMerger;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.CommitException;
@@ -31,6 +32,8 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.BranchMergeException;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.internal.repository.InternalRepository;
+import com.b2international.snowowl.core.repository.RepositorySession;
+import com.b2international.snowowl.core.session.SessionContext;
 import com.b2international.snowowl.core.store.Store;
 
 /**
@@ -40,12 +43,14 @@ import com.b2international.snowowl.core.store.Store;
  */
 public class CDOBranchManagerImpl extends BranchManagerImpl {
 
+	private final IRepository cdoRepository;
     private final InternalRepository repository;
 	
     public CDOBranchManagerImpl(final InternalRepository repository, final Store<InternalBranch> branchStore) {
-        super(branchStore, getBasetimestamp(repository.getCdoMainBranch()));
+        super(branchStore, getBasetimestamp(repository.getCdoRepository().getBranchManager().getMainBranch()));
         this.repository = repository;
-        registerCommitListener(repository);
+        this.cdoRepository = repository.getCdoRepository();
+        registerCommitListener(this.cdoRepository);
     }
 
     @Override
@@ -63,18 +68,19 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     private CDOBranch loadCDOBranch(Integer branchId) {
-        return repository.getCdoBranchManager().getBranch(branchId);
+        return cdoRepository.getBranchManager().getBranch(branchId);
     }
 
     @Override
     InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
+    	final RepositorySession repositorySession = SessionContext.getRepositorySession(repository);
+    	
         CDOBranch targetBranch = getCDOBranch(target);
         CDOBranch sourceBranch = getCDOBranch(source);
         CDOTransaction targetTransaction = null;
-
+        
         try {
-
-            targetTransaction = repository.createTransaction(targetBranch);
+            targetTransaction = repositorySession.openTransaction(targetBranch);
 
             CDOBranchMerger merger = new CDOBranchMerger(repository.getConflictProcessor());
             targetTransaction.merge(sourceBranch.getHead(), merger);
@@ -127,8 +133,8 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @SuppressWarnings("restriction")
-    private void registerCommitListener(InternalRepository repository) {
-        repository.getCdoRepository().addCommitInfoHandler(new CDOCommitInfoHandler() {
+    private void registerCommitListener(IRepository repository) {
+        repository.addCommitInfoHandler(new CDOCommitInfoHandler() {
 			@Override
             public void handleCommitInfo(CDOCommitInfo commitInfo) {
                 if (!(commitInfo instanceof org.eclipse.emf.cdo.internal.common.commit.FailureCommitInfo)) {
