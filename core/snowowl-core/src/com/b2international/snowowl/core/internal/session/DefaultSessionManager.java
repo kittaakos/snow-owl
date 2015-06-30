@@ -46,4 +46,9 @@ public class DefaultSessionManager implements SessionManager {
 		sessions.remove(user);
 	}
 	
+	@Override
+	public Session getSession(String sessionId) {
+		return sessions.get(sessionId);
+	}
+	
 }

@@ -32,4 +32,8 @@ public class NotImplementedException extends ApiException {
 		super(message);
 	}
 	
+	public NotImplementedException(String template, Object...args) {
+		super(template, args);
+	}
+	
 }

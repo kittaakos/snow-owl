@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.event.util.Handler;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.ConflictException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.session.SessionManager;
 
 /**
  * @since 4.1
@@ -44,7 +45,8 @@ public class BranchEventHandler extends ApiEventHandler {
 
 	private BranchManager branchManager;
 	
-	public BranchEventHandler(BranchManager branchManager) {
+	public BranchEventHandler(SessionManager sessionManager, BranchManager branchManager) {
+		super(sessionManager);
 		this.branchManager = checkNotNull(branchManager, "manager");
 	}
 	

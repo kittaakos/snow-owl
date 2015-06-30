@@ -21,7 +21,15 @@ package com.b2international.snowowl.core.session;
 public interface SessionManager {
 
 	void login(String user, String password);
-	
+
 	void logout(String user);
+
+	/**
+	 * Returns the {@link Session} associated with the given sessionId unique identifier.
+	 * 
+	 * @param sessionId
+	 * @return
+	 */
+	Session getSession(String sessionId);
 
 }

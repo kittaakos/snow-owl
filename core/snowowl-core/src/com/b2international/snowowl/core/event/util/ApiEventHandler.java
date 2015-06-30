@@ -15,13 +15,22 @@
  */
 package com.b2international.snowowl.core.event.util;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import java.lang.reflect.Method;
 import java.util.Collections;
 
 import org.eclipse.xtext.util.PolymorphicDispatcher;
+import org.elasticsearch.common.base.Strings;
 
+import com.b2international.snowowl.core.event.Event;
 import com.b2international.snowowl.core.exceptions.ApiException;
 import com.b2international.snowowl.core.exceptions.NotImplementedException;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
+import com.b2international.snowowl.core.session.Session;
+import com.b2international.snowowl.core.session.SessionContext;
+import com.b2international.snowowl.core.session.SessionManager;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
 import com.google.common.base.Predicate;
@@ -40,18 +49,41 @@ public abstract class ApiEventHandler implements IHandler<IMessage> {
 		@Override
 		public Object handle(Object[] params, Throwable e) {
 			if (e instanceof NoSuchMethodException) {
-				throw new NotImplementedException("Event handling not implemented: " + params[0]);
+				throw new NotImplementedException("Event handling not implemented: %s", params, e);
 			}
 			return super.handle(params, e);
 		}
 	});
 	
+	private SessionManager sessionManager;
+	
+	protected ApiEventHandler(SessionManager sessionManager) {
+		this.sessionManager = checkNotNull(sessionManager, "sessionManager");
+	}
+	
 	@Override
 	public final void handle(IMessage message) {
 		try {
-			message.reply(handlerDispatcher.invoke(message.body()));
+			// TODO support serializationed forms
+			final Object body = message.body();
+			checkState(body instanceof Event, "Message body should be an instance of Event");
+			final String sessionId = ((Event) body).metadata().getString(Event.Headers.SESSION_ID);
+			
+			if (Strings.isNullOrEmpty(sessionId)) {
+				throw new SnowOwlException("Missing session identifier when handling event '%s'", message);
+			}
+			
+			final Session session = sessionManager.getSession(sessionId);
+			if (session == null) {
+				throw new SnowOwlException("No session found for identifier '%s'", sessionId);
+			}
+			SessionContext.setSession(session);
+			
+			message.reply(handlerDispatcher.invoke(body));
 		} catch (ApiException e) {
 			message.fail(e);
+		} finally {
+			SessionContext.setSession(null);
 		}
 	}
 	

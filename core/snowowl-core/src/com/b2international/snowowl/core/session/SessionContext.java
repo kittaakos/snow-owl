@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.session;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 
@@ -28,7 +26,6 @@ public final class SessionContext {
 	private static ThreadLocal<Session> sessionThreadLocal = new ThreadLocal<>();
 
 	public static void setSession(Session session) {
-		checkNotNull(session, "Session may not be null");
 		sessionThreadLocal.set(session);
 	}
 
