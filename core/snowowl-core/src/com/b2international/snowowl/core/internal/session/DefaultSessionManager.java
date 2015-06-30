@@ -15,8 +15,7 @@
  */
 package com.b2international.snowowl.core.internal.session;
 
-import java.math.BigInteger;
-import java.security.SecureRandom;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentMap;
 
 import org.elasticsearch.common.collect.MapMaker;
@@ -31,10 +30,8 @@ public class DefaultSessionManager implements SessionManager {
 
 	private ConcurrentMap<String, Session> sessions = new MapMaker().makeMap(); 
 	
-	private SecureRandom rnd = new SecureRandom();
-	
 	String generate() {
-		return new BigInteger(128, rnd).toString(32);
+		return UUID.randomUUID().toString();
 	}
 	
 	@Override
