@@ -31,8 +31,8 @@ import person.PersonPackage;
 
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
-import com.b2international.snowowl.core.store.index.tx.Person;
 import com.b2international.snowowl.core.terminology.Component;
+import com.b2international.snowowl.core.tests.person.Person;
 
 
 

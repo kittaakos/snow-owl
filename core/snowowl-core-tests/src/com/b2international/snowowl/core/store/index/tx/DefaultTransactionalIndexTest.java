@@ -35,6 +35,8 @@ import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.ESRule;
+import com.b2international.snowowl.core.tests.person.Person;
+import com.b2international.snowowl.core.tests.person.PersonFixtures;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
