@@ -30,7 +30,9 @@ import org.junit.Test;
 
 import person.PersonPackage;
 
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.repository.Repository;
+import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.person.Person;
@@ -42,6 +44,9 @@ import com.b2international.snowowl.core.tests.person.Person;
  */
 public class DefaultRepositoryTest {
 
+	private static final String USER = "user";
+	private static final char[] PASS = new char[]{'p', 'a', 's', 's'};
+	
 	private static final String REPO_NAME = "person";
 	private static final String REPO_NAME_2 = "Person Store";
 	private static final String LOC = "target/store";
@@ -96,12 +101,38 @@ public class DefaultRepositoryTest {
 		assertThat(new File(LOC, REPO_NAME_2.replaceAll(" ", "_").toLowerCase()+".h2.db")).exists();
 	}
 	
+	@Test(expected = IllegalStateException.class)
+	public void getSessionsOnInactiveRepository_ShouldThrowSnowOwlException() throws Exception {
+		final Repository repository = createPersonRepository();
+		repository.sessions();
+	}
+	
 	@Test
-	public void createAndActivateRepository_ShouldCreateBranchingSupport() throws Exception {
+	public void createAndActivateRepository_ShouldCreateBasicRepositoryServices() throws Exception {
 		final Repository repository = createPersonRepository();
 		repository.activate();
 		assertNotNull(repository.branching());
+		assertNotNull(repository.sessions());
 	}
+	
+	@Test(expected = SnowOwlException.class)
+	public void openSessionForUnknownUser_ShouldThrowException() throws Exception {
+		final Repository repository = createPersonRepository();
+		repository.activate();
+		repository.sessions().open(USER, PASS);
+	}
+	
+	@Test
+	public void openSessionWithKnownUser_ShouldBeSuccessful() throws Exception {
+		final Repository repository = createPersonRepository();
+		repository.activate();
+		// mocked app login
+		((InternalRepository)repository).addUser(USER, PASS);
+		final RepositorySession session = repository.sessions().open(USER, PASS);
+		assertThat(repository.sessions().getSessions()).contains(session);
+	}
+	
+	// TODO test automatic session close (1 sec wait then check that the session has been closed)
 	
 	private DefaultRepository createPersonRepository() {
 		return createPersonRepository(REPO_NAME);

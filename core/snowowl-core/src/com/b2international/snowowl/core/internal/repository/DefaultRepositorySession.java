@@ -15,21 +15,33 @@
  */
 package com.b2international.snowowl.core.internal.repository;
 
-import org.eclipse.emf.cdo.server.IRepository;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.repository.Repository;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.net4j.CDONet4jSession;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
+
+import com.b2international.snowowl.core.repository.RepositorySession;
 
 /**
  * @since 5.0
  */
-public interface InternalRepository extends Repository {
+public class DefaultRepositorySession implements RepositorySession {
 
-	// CDO stuff
-	IRepository getCdoRepository();
+	private CDONet4jSession session;
 
-	// TODO move these to somewhere else
-	void addUser(String user, char[] token);
+	public DefaultRepositorySession(CDONet4jSession session) {
+		this.session = checkNotNull(session, "session");
+	}
 	
-	void removeUser(String user);
-	
+	@Override
+	public String getUser() {
+		return session.getUserID();
+	}
+
+	@Override
+	public CDOTransaction openTransaction(CDOBranch branch) {
+		return session.openTransaction(branch);
+	}
+
 }

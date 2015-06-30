@@ -26,26 +26,30 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.eclipse.emf.cdo.common.branch.CDOBranch;
-import org.eclipse.emf.cdo.common.branch.CDOBranchManager;
 import org.eclipse.emf.cdo.common.model.EMFUtil;
 import org.eclipse.emf.cdo.server.CDOServerUtil;
 import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.server.db.CDODBUtil;
 import org.eclipse.emf.cdo.server.db.IDBStore;
 import org.eclipse.emf.cdo.server.db.mapping.IMappingStrategy;
-import org.eclipse.emf.cdo.transaction.CDOTransaction;
+import org.eclipse.emf.cdo.server.net4j.CDONet4jServerUtil;
+import org.eclipse.emf.cdo.spi.server.InternalSessionManager;
 import org.eclipse.emf.ecore.EClassifier;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.db.DBUtil;
 import org.eclipse.net4j.db.IDBAdapter;
 import org.eclipse.net4j.db.IDBConnectionProvider;
+import org.eclipse.net4j.jvm.JVMUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
+import org.eclipse.net4j.util.lifecycle.Lifecycle;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.eclipse.net4j.util.security.IUserManager;
+import org.eclipse.net4j.util.security.UserManager;
 import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.branch.BranchManager;
@@ -53,6 +57,7 @@ import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 import com.b2international.snowowl.core.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.snowowl.core.repository.RepositorySessions;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.core.terminology.Component;
@@ -60,7 +65,7 @@ import com.b2international.snowowl.core.terminology.Component;
 /**
  * @since 5.0
  */
-public class DefaultRepository implements InternalRepository {
+public class DefaultRepository extends Lifecycle implements InternalRepository {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 
@@ -74,6 +79,7 @@ public class DefaultRepository implements InternalRepository {
 	// services
 	private org.eclipse.emf.cdo.spi.server.InternalRepository cdoRepository;
 	private BranchManager branching;
+	private RepositorySessions sessions;
 
 	// TODO create customized local RepositoryConfiguration and RepositoryInfo
 	/*package*/ DefaultRepository(String name, Collection<Class<? extends Component>> components, Collection<EPackage> ePackages, RepositoryConfiguration configuration) {
@@ -87,13 +93,34 @@ public class DefaultRepository implements InternalRepository {
 	}
 	
 	@Override
+	public void addUser(String user, char[] token) {
+		getCdoUserManager().addUser(user, token);
+	}
+
+	@Override
+	public void removeUser(String user) {
+		getCdoUserManager().removeUser(user);
+	}
+	
+	private IUserManager getCdoUserManager() {
+		return ((InternalSessionManager)getCdoRepository().getSessionManager()).getUserManager();
+	}
+	
+	@Override
 	public ICDOConflictProcessor getConflictProcessor() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BranchManager branching() {
+		checkActive();
 		return this.branching;
+	}
+	
+	@Override
+	public RepositorySessions sessions() {
+		checkActive();
+		return sessions;
 	}
 
 	@Override
@@ -107,27 +134,13 @@ public class DefaultRepository implements InternalRepository {
 	}
 
 	@Override
-	public CDOBranch getCdoMainBranch() {
-		return this.cdoRepository.getBranchManager().getMainBranch();
-	}
-
-	@Override
 	public IRepository getCdoRepository() {
 		return this.cdoRepository;
 	}
 
 	@Override
-	public CDOBranchManager getCdoBranchManager() {
-		return this.cdoRepository.getBranchManager();
-	}
-
-	@Override
-	public CDOTransaction createTransaction(CDOBranch branch) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public void activate() {
+	protected void doActivate() throws Exception {
+		super.doActivate();
 		// TODO remove implicit container reference, minor issue
 		final IPluginContainer container = IPluginContainer.INSTANCE;
 		final Map<Object, Object> datasourceProperties = configuration.getDatasourceProperties(id());
@@ -138,23 +151,39 @@ public class DefaultRepository implements InternalRepository {
 //		repository.addHandler(changeManager);
 		CDOServerUtil.addRepository(container, this.cdoRepository);
 		
+		// TODO make this configurable if possible and needed
+		final UserManager um = new UserManager();
+		um.activate();
+		this.cdoRepository.getSessionManager().setUserManager(um);
+		
 //		final IIDHandler idHandler =
 //				new org.eclipse.emf.cdo.server.internal.db.LongIDHandler((org.eclipse.emf.cdo.server.internal.db.DBStore) dbStore);
-//	
 //		idHandler.setLastObjectID(CDOIDUtil.createLong(((long) getNamespaceId()) << 56L));
 //		((org.eclipse.emf.cdo.server.internal.db.DBStore) dbStore).setIdHandler(idHandler);
 		
-		LOG.info("Successfully started '{}' repository", name());
-		// initialize branching with implicit branchStore
+		// init Net4J stuff
+		Net4jUtil.prepareContainer(container);
+		JVMUtil.prepareContainer(container);
+		CDONet4jServerUtil.prepareContainer(container);
+		// initialize JVM based access
+		JVMUtil.getAcceptor(container, id);
+		
+		// initialize services
 		// TODO make branchStore configurable
 		this.branching = new CDOBranchManagerImpl(this, new MemStore<>(InternalBranch.class));
+		this.sessions = new DefaultRepositorySessions(this.id);
+		
+		LOG.info("Successfully started '{}' repository", name());
 	}
 
 	@Override
-	public void deactivate() {
+	protected void doDeactivate() throws Exception {
+		super.doDeactivate();
 		LOG.info("Stopping '{}' repository", name());
 		LifecycleUtil.deactivate(cdoRepository);
 		this.branching = null;
+		// TODO inactivate all active sessions and transactions (or wait them)
+		this.sessions = null;
 		LOG.info("Successfully stopped '{}' repository", name());
 	}
 	

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.repository;
 
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.net4j.util.lifecycle.ILifecycle;
 
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
@@ -24,7 +25,7 @@ import com.b2international.snowowl.core.terminology.Component;
 /**
  * @since 5.0
  */
-public interface Repository {
+public interface Repository extends ILifecycle {
 
 	// TODO is this the proper place for this method???
 	ICDOConflictProcessor getConflictProcessor();
@@ -35,6 +36,13 @@ public interface Repository {
 	 * @return
 	 */
 	BranchManager branching();
+
+	/**
+	 * Returns the repository session management.
+	 * 
+	 * @return
+	 */
+	RepositorySessions sessions();
 
 	/**
 	 * Returns a human-readable repository name.
@@ -50,19 +58,14 @@ public interface Repository {
 	 */
 	String id();
 
-	// activation, deactivation
-	void activate();
-
-	void deactivate();
-	
 	interface Builder {
-		
+
 		Builder addComponent(Class<? extends Component> component);
-		
+
 		Builder addEPackage(EPackage ePackage);
 		
 		Repository build();
-		
+
 	}
 
 }

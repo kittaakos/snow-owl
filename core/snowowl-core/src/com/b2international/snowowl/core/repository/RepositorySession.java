@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.internal.repository;
+package com.b2international.snowowl.core.repository;
 
-import org.eclipse.emf.cdo.server.IRepository;
-
-import com.b2international.snowowl.core.repository.Repository;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
+import org.eclipse.emf.cdo.transaction.CDOTransaction;
 
 /**
  * @since 5.0
  */
-public interface InternalRepository extends Repository {
+public interface RepositorySession {
 
-	// CDO stuff
-	IRepository getCdoRepository();
+	/**
+	 * Returns the user name associated with this repository transaction.
+	 * 
+	 * @return
+	 */
+	String getUser();
 
-	// TODO move these to somewhere else
-	void addUser(String user, char[] token);
-	
-	void removeUser(String user);
-	
+	/**
+	 * Opens a {@link CDOTransaction} on the given branch associated with this {@link RepositorySession}.
+	 * 
+	 * @param branch
+	 * @return
+	 */
+	CDOTransaction openTransaction(CDOBranch branch);
+
 }
