@@ -37,11 +37,10 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 /**
- * Bare minimum implementation of the {@link ICDOCommitChangeSet} interface.
- *
+ * Bare minimum implementation of the {@link CommitChangeSet} interface.
  */
 @Immutable
-public class CDOCommitChangeSet implements ICDOCommitChangeSet {
+public class DefaultCommitChangeSet implements CommitChangeSet {
 
 	private final CDOView view;
 	private final String userId;
@@ -51,33 +50,17 @@ public class CDOCommitChangeSet implements ICDOCommitChangeSet {
 	private final Map<CDOID, CDORevisionDelta> revisionDeltas;
 	private final long timestamp;
 	
-	/**
-	 * Private constructor.
-	 * @param view 
-	 * @param newComponents the new components.
-	 * @param detachedComponents the dirty components.
-	 * @param dirtyComponents the detached components.
-	 * @param timestamp the timestamp.
-	 */
-	private CDOCommitChangeSet(final CDOView view, final String userId, final Iterable<EObject> newComponents, final Iterable<EObject> dirtyComponents, final Map<CDOID, EClass> detachedComponents, final Map<CDOID, CDORevisionDelta> revisionDeltas, final long timestamp) {
-		this.view = Preconditions.checkNotNull(view, "CDO view argument cannot be null.");
-		this.userId = Preconditions.checkNotNull(userId, "User ID argument cannot be null.");
-		this.newComponents = Sets.newHashSet(Iterables.filter(Preconditions.checkNotNull(newComponents, "New components argument cannot be null."), CDOObject.class));
-		this.dirtyComponents = Sets.newHashSet(Iterables.filter(Preconditions.checkNotNull(dirtyComponents, "Dirty components argument cannot be null."), CDOObject.class));
-		this.detachedComponents = Preconditions.checkNotNull(detachedComponents, "Detached components argument cannot be null.");
-		this.revisionDeltas = checkNotNull(revisionDeltas, "revisionDeltas");
+	private DefaultCommitChangeSet(final CDOView view, final String userId, final Iterable<EObject> newComponents, final Iterable<EObject> dirtyComponents, final Map<CDOID, EClass> detachedComponents, final Map<CDOID, CDORevisionDelta> revisionDeltas, final long timestamp) {
+		this.view = view;
+		this.userId = userId;
+		this.newComponents = Sets.newHashSet(Iterables.filter(newComponents, CDOObject.class));
+		this.dirtyComponents = Sets.newHashSet(Iterables.filter(dirtyComponents, CDOObject.class));
+		this.detachedComponents = detachedComponents;
+		this.revisionDeltas = revisionDeltas;
 		this.timestamp = timestamp;
 	}
 	
-	/**
-	 * Public constructor.
-	 * @param view 
-	 * @param newComponents the new components.
-	 * @param detachedComponents the dirty components.
-	 * @param dirtyComponents the detached components.
-	 * @param timestamp the timestamp. 
-	 */
-	public CDOCommitChangeSet(final CDOView view, final String userId, final EObject[] newComponents, final EObject[] dirtyComponents, final Map<CDOID, EClass> detachedComponents, final Map<CDOID, CDORevisionDelta> revisionDeltas, final long timestamp) {
+	public DefaultCommitChangeSet(final CDOView view, final String userId, final EObject[] newComponents, final EObject[] dirtyComponents, final Map<CDOID, EClass> detachedComponents, final Map<CDOID, CDORevisionDelta> revisionDeltas, final long timestamp) {
 		this(
 			Preconditions.checkNotNull(view, "CDO view argument cannot be null."),
 			Preconditions.checkNotNull(userId, "User ID argument cannot be null."),

@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.exceptions;
-
-import com.b2international.commons.exceptions.FormattedRuntimeException;
+package com.b2international.snowowl.core.repository.cp;
 
 /**
  * @since 5.0
  */
-public class SnowOwlException extends FormattedRuntimeException {
+public interface ChangeProcessor {
 
-	private static final long serialVersionUID = -1387898260521057274L;
+	void process(CommitChangeSet changeSet);
 	
-	public SnowOwlException(String template, Object...args) {
-		super(template, args);
-	}
+	void commit();
+	
+	void rollback();
 
-	public static SnowOwlException wrap(Throwable t) {
-		if (t instanceof SnowOwlException) {
-			return (SnowOwlException) t;
-		} else {
-			return new SnowOwlException(t.getMessage(), t);
-		}
-	}
+	boolean isDirty();
 
 }

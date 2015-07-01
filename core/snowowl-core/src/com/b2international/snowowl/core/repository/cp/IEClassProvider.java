@@ -13,35 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.core.repository.cp;
 
 import org.eclipse.emf.ecore.EClass;
 
-import com.b2international.snowowl.core.api.IBranchPath;
-
 /**
- * Interface for providing {@link EClass}.
+ * Interface for providing {@link EClass} based on branchPath and storageKey values.
  */
 public interface IEClassProvider {
 
 	/**
 	 * Returns with the {@link EClass} of an object identified by a unique storage key.
-	 * @param branchPath the branch path.
-	 * @param storageKey the unique storage key.
-	 * @return the {@link EClass}.
+	 * 
+	 * @param branchPath
+	 *            - the branch path
+	 * @param storageKey
+	 *            - the unique storage key
+	 * @return the {@link EClass}
 	 */
-	EClass getEClass(IBranchPath branchPath, final long storageKey);
-	
-	/**
-	 * Returns with the priority of the implementation. The less the more important. 
-	 * @return the priority.
-	 */
-	int getPriority();
-	
-	/**
-	 * Returns with the UUID of the repository where the current provider works on.  
-	 * @return the repositroy UUID.
-	 */
-	String getRepositoryUuid();
-	
+	EClass getEClass(String branchPath, final long storageKey);
+
 }

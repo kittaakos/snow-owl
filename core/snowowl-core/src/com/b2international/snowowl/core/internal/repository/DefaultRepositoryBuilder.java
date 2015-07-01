@@ -22,7 +22,9 @@ import java.util.Collection;
 import org.eclipse.emf.ecore.EPackage;
 
 import com.b2international.snowowl.core.repository.Repository;
+import com.b2international.snowowl.core.repository.Repository.Builder;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
 import com.b2international.snowowl.core.terminology.Component;
 
 /**
@@ -30,10 +32,11 @@ import com.b2international.snowowl.core.terminology.Component;
  */
 public final class DefaultRepositoryBuilder implements Repository.Builder {
 
-	private String name;
-	private Collection<Class<? extends Component>> components = newHashSet();
-	private Collection<EPackage> ePackages = newHashSet();
-	private RepositoryConfiguration configuration;
+	private final String name;
+	private final RepositoryConfiguration configuration;
+	private final Collection<Class<? extends Component>> components = newHashSet();
+	private final Collection<EPackage> ePackages = newHashSet();
+	private final Collection<ChangeProcessorFactory> changeProcessorFactories = newHashSet();
 
 	public DefaultRepositoryBuilder(String name) {
 		this.name = name;
@@ -49,6 +52,12 @@ public final class DefaultRepositoryBuilder implements Repository.Builder {
 	@Override
 	public DefaultRepositoryBuilder addEPackage(EPackage ePackage) {
 		this.ePackages.add(ePackage);
+		return this;
+	}
+	
+	@Override
+	public Builder addChangeProcessor(ChangeProcessorFactory factory) {
+		this.changeProcessorFactories.add(factory);
 		return this;
 	}
 	

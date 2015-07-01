@@ -28,7 +28,7 @@ import org.eclipse.emf.ecore.EClass;
  * Representation of a set of new, dirty and detached components as an outcome of a successful commit into the persistence layer. 
  *
  */
-public interface ICDOCommitChangeSet {
+public interface CommitChangeSet {
 
 	/**
 	 * @return the {@link CDOView} used for retrieving new and dirty components (can be used if these two collections are empty)
