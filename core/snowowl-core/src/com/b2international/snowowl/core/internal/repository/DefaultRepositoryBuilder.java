@@ -40,9 +40,9 @@ public final class DefaultRepositoryBuilder implements Repository.Builder {
 	private final Collection<ChangeProcessorFactory> changeProcessorFactories = newHashSet();
 	private IEClassProvider eClassProvider;
 
-	public DefaultRepositoryBuilder(String name) {
+	public DefaultRepositoryBuilder(String name, RepositoryConfiguration configuration) {
 		this.name = name;
-		this.configuration = new RepositoryConfiguration(); // TODO get this via constructor
+		this.configuration = configuration;
 	}
 	
 	@Override

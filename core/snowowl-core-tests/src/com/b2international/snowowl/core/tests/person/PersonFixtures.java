@@ -15,14 +15,29 @@
  */
 package com.b2international.snowowl.core.tests.person;
 
+import static org.mockito.Mockito.mock;
+
 import java.util.Collection;
 import java.util.Map;
+
+import person.PersonPackage;
+
+import com.b2international.snowowl.core.internal.repository.DefaultRepositoryBuilder;
+import com.b2international.snowowl.core.repository.Repository;
+import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 
 /**
  * @since 5.0
  */
 public class PersonFixtures {
 
+	public static final String LOC = "target/store";
+	
+	public static final String REPO_NAME = "person";
+	public static final String REPO_NAME_2 = "Person Store";
+	
 	public static final String PERSON_TYPE = "person";
 	public static final long PERSON_1_STORAGEKEY = 1L;
 	public static final String PERSON_1_KEY = "1";
@@ -62,6 +77,27 @@ public class PersonFixtures {
 			person.getAddresses().add(createAddress((String) address.get("country"), (String) address.get("city"), (Integer) address.get("zipCode"), (String) address.get("street")));
 		}
 		return person;
+	}
+	
+	public static Repository createPersonRepository() {
+		return createPersonRepository(REPO_NAME);
+	}
+
+	public static Repository createPersonRepository(final String name) {
+		return createPersonRepository(name, mock(ChangeProcessorFactory.class), mock(IEClassProvider.class));
+	}
+	
+	public static Repository createPersonRepository(final String name, ChangeProcessorFactory factory, IEClassProvider eClassProvider) {
+		final RepositoryConfiguration config = new RepositoryConfiguration();
+		// set location explicitly for tests
+		config.getDatabaseConfiguration().setLocation(LOC);
+		
+		return new DefaultRepositoryBuilder(name, config)
+			.addComponent(Person.class)
+			.addEPackage(PersonPackage.eINSTANCE)
+			.addChangeProcessor(factory)
+			.addEClassProvider(eClassProvider)
+			.build();
 	}
 	
 }
