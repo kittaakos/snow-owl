@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.repository.cp;
+package com.b2international.snowowl.core.internal.repository.cp;
 
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -53,6 +53,9 @@ import com.b2international.commons.status.Statuses;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.internal.CoreActivator;
 import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessor;
+import com.b2international.snowowl.core.repository.cp.CommitChangeSet;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;

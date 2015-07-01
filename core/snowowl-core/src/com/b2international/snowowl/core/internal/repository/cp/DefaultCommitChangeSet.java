@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.repository.cp;
+package com.b2international.snowowl.core.internal.repository.cp;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static java.util.Collections.unmodifiableMap;
@@ -32,6 +32,7 @@ import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 
+import com.b2international.snowowl.core.repository.cp.CommitChangeSet;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;

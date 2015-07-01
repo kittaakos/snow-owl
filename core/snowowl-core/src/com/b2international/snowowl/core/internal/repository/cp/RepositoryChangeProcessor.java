@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.repository.cp;
+package com.b2international.snowowl.core.internal.repository.cp;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
@@ -33,6 +33,9 @@ import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessor;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 
 /**
  * Delegates to a {@link RepositoryBranchChangeProcessor} instance, based on the affected branch.
@@ -50,7 +53,7 @@ public class RepositoryChangeProcessor implements WriteAccessHandler {
 	private final Collection<ChangeProcessorFactory> changeProcessorFactories;
 	private final ConcurrentMap<TransactionCommitContext, RepositoryBranchChangeProcessor> activeChangeManagers = new MapMaker().makeMap();
 	
-	RepositoryChangeProcessor(final String repositoryName, final IEClassProvider eClassProvider, final Collection<ChangeProcessorFactory> changeProcessorFactories) {
+	public RepositoryChangeProcessor(final String repositoryName, final IEClassProvider eClassProvider, final Collection<ChangeProcessorFactory> changeProcessorFactories) {
 		this.repositoryName = repositoryName;
 		this.eClassProvider = checkNotNull(eClassProvider, "eClassProvider");
 		this.changeProcessorFactories = changeProcessorFactories == null ? Collections.<ChangeProcessorFactory>emptySet() : changeProcessorFactories;
