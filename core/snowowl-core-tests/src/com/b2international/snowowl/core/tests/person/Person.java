@@ -75,5 +75,14 @@ public class Person extends Component {
 		}
 		this.addresses.add(address);
 	}
+
+	public static Person of(person.Person person) {
+		final Person p = new Person();
+		p.setFirstName(person.getFirstName());
+		p.setLastName(person.getLastName());
+		p.setId(person.getId());
+		p.setYob(person.getYob());
+		return p;
+	}
 	
 }

@@ -15,6 +15,11 @@
  */
 package com.b2international.snowowl.core.internal.repository;
 
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.LOC;
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.PASS;
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.REPO_NAME;
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.REPO_NAME_2;
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.USER;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.createPersonRepository;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,13 +50,6 @@ import com.b2international.snowowl.core.tests.person.Person;
  * @since 5.0
  */
 public class DefaultRepositoryTest {
-
-	private static final String USER = "user";
-	private static final char[] PASS = new char[]{'p', 'a', 's', 's'};
-	
-	private static final String REPO_NAME = "person";
-	private static final String REPO_NAME_2 = "Person Store";
-	private static final String LOC = "target/store";
 
 	private Collection<Class<? extends Component>> components = newHashSet();
 	private Collection<EPackage> ePackages = newHashSet();

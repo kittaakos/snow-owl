@@ -20,6 +20,7 @@ import static org.mockito.Mockito.mock;
 import java.util.Collection;
 import java.util.Map;
 
+import person.PersonFactory;
 import person.PersonPackage;
 
 import com.b2international.snowowl.core.internal.repository.DefaultRepositoryBuilder;
@@ -33,10 +34,14 @@ import com.b2international.snowowl.core.repository.cp.IEClassProvider;
  */
 public class PersonFixtures {
 
+	public static final String USER = "user";
+	public static final char[] PASS = new char[]{'p', 'a', 's', 's'};
+	
 	public static final String LOC = "target/store";
 	
 	public static final String REPO_NAME = "person";
 	public static final String REPO_NAME_2 = "Person Store";
+	public static final String PERSON_RESOURCE = "person-resource";
 	
 	public static final String PERSON_TYPE = "person";
 	public static final long PERSON_1_STORAGEKEY = 1L;
@@ -60,6 +65,19 @@ public class PersonFixtures {
 
 	public static Person createPerson1() {
 		return createPerson(PERSON_1_KEY, "Foo", "Bar", 2015);
+	}
+	
+	public static person.Person createEMFPerson1() {
+		return createEMFPerson(PERSON_1_KEY, "Foo", "Bar", 2015);
+	}
+	
+	public static person.Person createEMFPerson(String id, String firstName, String lastName, int yob) {
+		final person.Person p = PersonFactory.eINSTANCE.createPerson();
+		p.setId(id);
+		p.setFirstName(firstName);
+		p.setLastName(lastName);
+		p.setYob(yob);
+		return p;
 	}
 	
 	public static Person createPerson(String id, String firstName, String lastName, int yob) {

@@ -35,7 +35,16 @@ public interface RepositorySession {
 	 * 
 	 * @param branch
 	 * @return
+	 * @deprecated - remove this
 	 */
 	CDOTransaction openTransaction(CDOBranch branch);
+
+	/**
+	 * Opens a {@link CDOTransaction} on the given branch associated with this {@link RepositorySession}.
+	 * 
+	 * @param branchPath
+	 * @return
+	 */
+	CDOTransaction openTransaction(String branchPath);
 
 }

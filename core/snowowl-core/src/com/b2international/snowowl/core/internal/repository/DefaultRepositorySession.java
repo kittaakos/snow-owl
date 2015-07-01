@@ -43,5 +43,10 @@ public class DefaultRepositorySession implements RepositorySession {
 	public CDOTransaction openTransaction(CDOBranch branch) {
 		return session.openTransaction(branch);
 	}
+	
+	@Override
+	public CDOTransaction openTransaction(String branchPath) {
+		return session.openTransaction(session.getBranchManager().getBranch(branchPath));
+	}
 
 }
