@@ -69,9 +69,9 @@ import com.google.common.collect.Maps;
  * @see ObjectWriteAccessHandler
  */
 @SuppressWarnings("restriction")
-public class CDOServerChangeManager extends ObjectWriteAccessHandler {
+public class RepositoryChangeProcessor extends ObjectWriteAccessHandler {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CDOServerChangeManager.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(RepositoryChangeProcessor.class);
 	private static final String COMMIT_CONTEXT_INFO_TEMPLATE = "[User ID: {0}, Repository: {1}, Branch: {2}]";
 
 	private final ConcurrentMap<TransactionCommitContext, DelegateCDOServerChangeManager> activeChangeManagers;
@@ -79,7 +79,7 @@ public class CDOServerChangeManager extends ObjectWriteAccessHandler {
 	private final String repositoryName;
 
 	
-	public CDOServerChangeManager(final String repositoryUuid, final String repositoryName) {
+	public RepositoryChangeProcessor(final String repositoryUuid, final String repositoryName) {
 		super(false);
 		this.repositoryName = repositoryName;
 		this.factories = CDOChangeProcessorFactoryManager.INSTANCE.getFactories(checkNotNull(repositoryUuid, "Repository UUID argument cannot be null."));
