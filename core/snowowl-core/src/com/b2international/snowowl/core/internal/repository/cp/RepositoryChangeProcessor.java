@@ -64,8 +64,8 @@ public class RepositoryChangeProcessor implements WriteAccessHandler {
 	public void handleTransactionBeforeCommitting(ITransaction transaction, CommitContext commitContext, OMMonitor monitor) throws RuntimeException {
 		Async async = null;
 		try {
-			async = monitor.forkAsync();
 			monitor.begin();
+			async = monitor.forkAsync();
 			handleBeforeCommit((TransactionCommitContext) commitContext);
 		} catch (Throwable t) {
 			throw SnowOwlException.wrap(t);
