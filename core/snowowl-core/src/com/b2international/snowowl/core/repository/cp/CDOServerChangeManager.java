@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.datastore.server;
+package com.b2international.snowowl.core.repository.cp;
 
-import static com.b2international.snowowl.datastore.BranchPathUtils.createPath;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
@@ -48,10 +47,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.b2international.commons.CompareUtils;
-import com.b2international.snowowl.core.api.IBranchPath;
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
 import com.b2international.snowowl.datastore.CDOCommitChangeSet;
 import com.b2international.snowowl.datastore.ICDOCommitChangeSet;
+import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactory;
+import com.b2international.snowowl.datastore.server.CDOChangeProcessorFactoryManager;
+import com.b2international.snowowl.datastore.server.CDODelegatingCommitContext;
+import com.b2international.snowowl.datastore.server.DelegateCDOServerChangeManager;
+import com.b2international.snowowl.datastore.server.EClassProviderBroker;
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
