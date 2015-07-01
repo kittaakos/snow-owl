@@ -56,8 +56,8 @@ public class PersonFactoryImpl extends EFactoryImpl implements PersonFactory {
 	@Override
 	public EObject create(EClass eClass) {
 		switch (eClass.getClassifierID()) {
-			case PersonPackage.PERSON: return createPerson();
-			case PersonPackage.ADDRESS: return createAddress();
+			case PersonPackage.PERSON: return (EObject)createPerson();
+			case PersonPackage.ADDRESS: return (EObject)createAddress();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}

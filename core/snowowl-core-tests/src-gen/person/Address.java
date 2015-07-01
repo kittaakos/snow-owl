@@ -2,7 +2,7 @@
  */
 package person;
 
-import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.cdo.CDOObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -21,9 +21,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * @see person.PersonPackage#getAddress()
  * @model
+ * @extends CDOObject
  * @generated
  */
-public interface Address extends EObject {
+public interface Address extends CDOObject {
 	/**
 	 * Returns the value of the '<em><b>Country</b></em>' attribute.
 	 * <!-- begin-user-doc -->

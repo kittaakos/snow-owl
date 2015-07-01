@@ -2,9 +2,8 @@
  */
 package person;
 
+import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.common.util.EList;
-
-import org.eclipse.emf.ecore.EObject;
 
 /**
  * <!-- begin-user-doc -->
@@ -24,9 +23,10 @@ import org.eclipse.emf.ecore.EObject;
  *
  * @see person.PersonPackage#getPerson()
  * @model
+ * @extends CDOObject
  * @generated
  */
-public interface Person extends EObject {
+public interface Person extends CDOObject {
 	/**
 	 * Returns the value of the '<em><b>Id</b></em>' attribute.
 	 * <!-- begin-user-doc -->
