@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.Repository.Builder;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
 import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.terminology.Component;
 
 /**
@@ -37,6 +38,7 @@ public final class DefaultRepositoryBuilder implements Repository.Builder {
 	private final Collection<Class<? extends Component>> components = newHashSet();
 	private final Collection<EPackage> ePackages = newHashSet();
 	private final Collection<ChangeProcessorFactory> changeProcessorFactories = newHashSet();
+	private IEClassProvider eClassProvider;
 
 	public DefaultRepositoryBuilder(String name) {
 		this.name = name;
@@ -62,8 +64,19 @@ public final class DefaultRepositoryBuilder implements Repository.Builder {
 	}
 	
 	@Override
+	public Builder addEClassProvider(IEClassProvider eClassProvider) {
+		this.eClassProvider = eClassProvider;
+		return this;
+	}
+	
+	@Override
 	public Repository build() {
-		return new DefaultRepository(name, components, ePackages, configuration);
+		final InternalRepository repository = new DefaultRepository(name, components, ePackages, configuration);
+		repository.setEClassProvider(eClassProvider);
+		for (ChangeProcessorFactory factory : changeProcessorFactories) {
+			repository.addChangeProcessorFactory(factory);
+		}
+		return repository;
 	}
 	
 }

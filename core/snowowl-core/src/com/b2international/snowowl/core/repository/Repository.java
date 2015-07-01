@@ -21,6 +21,7 @@ import org.eclipse.net4j.util.lifecycle.ILifecycle;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.terminology.Component;
 
 /**
@@ -69,6 +70,8 @@ public interface Repository extends ILifecycle {
 		Builder addEPackage(EPackage ePackage);
 		
 		Builder addChangeProcessor(ChangeProcessorFactory factory);
+		
+		Builder addEClassProvider(IEClassProvider eClassProvider);
 		
 		Repository build();
 

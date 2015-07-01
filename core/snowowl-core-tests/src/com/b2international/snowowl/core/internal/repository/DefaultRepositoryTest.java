@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.internal.repository;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.util.Collection;
@@ -34,6 +35,8 @@ import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.person.Person;
 
@@ -134,14 +137,17 @@ public class DefaultRepositoryTest {
 	
 	// TODO test automatic session close (1 sec wait then check that the session has been closed)
 	
-	private DefaultRepository createPersonRepository() {
+	private Repository createPersonRepository() {
 		return createPersonRepository(REPO_NAME);
 	}
 
-	private DefaultRepository createPersonRepository(final String name) {
+	private Repository createPersonRepository(final String name) {
 		components.add(Person.class);
 		ePackages.add(PersonPackage.eINSTANCE);
-		return new DefaultRepository(name, components, ePackages, config);
+		final InternalRepository repository = new DefaultRepository(name, components, ePackages, config);
+		repository.setEClassProvider(mock(IEClassProvider.class));
+		repository.addChangeProcessorFactory(mock(ChangeProcessorFactory.class));
+		return repository;
 	}
 	
 }

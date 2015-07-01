@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.internal.repository;
 import org.eclipse.emf.cdo.server.IRepository;
 
 import com.b2international.snowowl.core.repository.Repository;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 
 /**
  * @since 5.0
@@ -26,7 +28,11 @@ public interface InternalRepository extends Repository {
 
 	// CDO stuff
 	IRepository getCdoRepository();
-
+	
+	void addChangeProcessorFactory(ChangeProcessorFactory factory);
+	
+	void setEClassProvider(IEClassProvider eClassProvider);
+	
 	// TODO move these to somewhere else
 	void addUser(String user, char[] token);
 	

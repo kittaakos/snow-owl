@@ -15,11 +15,11 @@
  */
 package com.b2international.snowowl.core.internal.repository.cp;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.concurrent.ConcurrentMap;
 
 import org.eclipse.emf.cdo.internal.server.TransactionCommitContext;
@@ -55,8 +55,9 @@ public class RepositoryChangeProcessor implements WriteAccessHandler {
 	
 	public RepositoryChangeProcessor(final String repositoryName, final IEClassProvider eClassProvider, final Collection<ChangeProcessorFactory> changeProcessorFactories) {
 		this.repositoryName = repositoryName;
-		this.eClassProvider = checkNotNull(eClassProvider, "eClassProvider");
-		this.changeProcessorFactories = changeProcessorFactories == null ? Collections.<ChangeProcessorFactory>emptySet() : changeProcessorFactories;
+		this.eClassProvider = checkNotNull(eClassProvider, "EClassProvider may not be null");
+		checkArgument(!changeProcessorFactories.isEmpty(), "At least one Change Processor Factory is required");
+		this.changeProcessorFactories = changeProcessorFactories;
 	}
 
 	@Override

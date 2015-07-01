@@ -56,9 +56,12 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.conflict.ICDOConflictProcessor;
 import com.b2international.snowowl.core.internal.branch.CDOBranchManagerImpl;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
+import com.b2international.snowowl.core.internal.repository.cp.RepositoryChangeProcessor;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.repository.RepositorySessions;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
+import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.core.terminology.Component;
 
@@ -80,6 +83,8 @@ public class DefaultRepository extends Lifecycle implements InternalRepository {
 	private org.eclipse.emf.cdo.spi.server.InternalRepository cdoRepository;
 	private BranchManager branching;
 	private RepositorySessions sessions;
+	private Collection<ChangeProcessorFactory> changeProcessorFactories = newHashSet();
+	private IEClassProvider eClassProvider;
 
 	// TODO create customized local RepositoryConfiguration and RepositoryInfo
 	/*package*/ DefaultRepository(String name, Collection<Class<? extends Component>> components, Collection<EPackage> ePackages, RepositoryConfiguration configuration) {
@@ -109,6 +114,16 @@ public class DefaultRepository extends Lifecycle implements InternalRepository {
 	@Override
 	public ICDOConflictProcessor getConflictProcessor() {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public void setEClassProvider(IEClassProvider eClassProvider) {
+		this.eClassProvider = eClassProvider;
+	}
+	
+	@Override
+	public void addChangeProcessorFactory(ChangeProcessorFactory factory) {
+		this.changeProcessorFactories.add(checkNotNull(factory, "factory"));
 	}
 
 	@Override
@@ -141,6 +156,9 @@ public class DefaultRepository extends Lifecycle implements InternalRepository {
 	@Override
 	protected void doActivate() throws Exception {
 		super.doActivate();
+		checkState(eClassProvider != null, "EClassProvider may not be null");
+		checkState(!changeProcessorFactories.isEmpty(), "At least one change processor factory is required");
+		
 		// TODO remove implicit container reference, minor issue
 		final IPluginContainer container = IPluginContainer.INSTANCE;
 		final Map<Object, Object> datasourceProperties = configuration.getDatasourceProperties(id());
@@ -148,7 +166,7 @@ public class DefaultRepository extends Lifecycle implements InternalRepository {
 		this.cdoRepository = createRepository(container, datasourceProperties);
 		this.cdoRepository.setInitialPackages(getEPackages());
 		// TODO add change processor
-//		repository.addHandler(changeManager);
+		this.cdoRepository.addHandler(new RepositoryChangeProcessor(name, eClassProvider, changeProcessorFactories));
 		CDOServerUtil.addRepository(container, this.cdoRepository);
 		
 		// TODO make this configurable if possible and needed
@@ -240,7 +258,6 @@ public class DefaultRepository extends Lifecycle implements InternalRepository {
 	
 	/*Collects dependencies for an EPackage*/
 	private static void collectDependencies(final EPackage ePackage, final Set<EPackage> dependencies) {
-		
 		final Resource eResource = ePackage.eResource();
 		final Collection<EObject> crossReferencedElements = EcoreUtil.ExternalCrossReferencer.find(eResource).keySet();
 		
