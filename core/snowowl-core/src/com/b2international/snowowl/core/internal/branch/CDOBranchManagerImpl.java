@@ -59,7 +59,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     CDOBranch getCDOBranch(Branch branch) {
-        checkArgument(!branch.isDeleted(), "Deleted branches cannot be ");
+        checkArgument(!branch.isDeleted(), "Branches cannot be used after deletion");
         final Integer branchId = ((InternalCDOBasedBranch) branch).cdoBranchId();
         if (branchId != null) {
             return loadCDOBranch(branchId);
