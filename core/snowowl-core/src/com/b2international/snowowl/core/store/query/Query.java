@@ -24,7 +24,7 @@ package com.b2international.snowowl.core.store.query;
  */
 public class Query {
 	
-	public interface EmptyBuilder {
+	public interface QueryBuilder {
 		AfterSelectBuilder select(Select select);
 	}
 	
@@ -42,7 +42,7 @@ public class Query {
 		AfterWhereBuilder sortBy(SortBy sortBy);
 	}
 	
-	private static final class BuilderImpl implements EmptyBuilder, AfterTypeBuilder, AfterSelectBuilder, AfterWhereBuilder {
+	private static final class BuilderImpl implements QueryBuilder, AfterTypeBuilder, AfterSelectBuilder, AfterWhereBuilder {
 		
 		private static final int DEFAULT_LIMIT = Integer.MAX_VALUE;
 		
@@ -166,7 +166,7 @@ public class Query {
 		return sb.toString();
 	}
 	
-	public static EmptyBuilder builder() {
+	public static QueryBuilder builder() {
 		return new BuilderImpl();
 	}
 }
