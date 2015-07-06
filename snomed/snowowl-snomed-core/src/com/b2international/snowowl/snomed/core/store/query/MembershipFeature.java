@@ -24,7 +24,21 @@ public enum MembershipFeature implements Feature {
 	TYPE(SnomedIndexConstants.TYPE),
 	REFERENCE_SET_ID(SnomedIndexConstants.REFERENCE_SET_ID),
 	REFERENCED_COMPONENT_ID(SnomedIndexConstants.REFERENCED_COMPONENT_ID),
-	ACCEPTABILITY_ID(SnomedIndexConstants.ACCEPTABILITY_ID);
+	TARGET_COMPONENT_ID(SnomedIndexConstants.TARGET_COMPONENT_ID),
+	VALUE_ID(SnomedIndexConstants.VALUE_ID),
+	DESCRIPTION_FORMAT(SnomedIndexConstants.DESCRIPTION_FORMAT),
+	DESCRIPTION_LENGTH(SnomedIndexConstants.DESCRIPTION_LENGTH),
+	ACCEPTABILITY_ID(SnomedIndexConstants.ACCEPTABILITY_ID),
+	MAP_TARGET(SnomedIndexConstants.MAP_TARGET),
+	QUERY(SnomedIndexConstants.QUERY),
+	SOURCE_EFFECTIVE_TIME(SnomedIndexConstants.SOURCE_EFFECTIVE_TIME),
+	TARGET_EFFECTIVE_TIME(SnomedIndexConstants.TARGET_EFFECTIVE_TIME),
+	MAP_GROUP(SnomedIndexConstants.MAP_GROUP),
+	MAP_PRIORITY(SnomedIndexConstants.MAP_PRIORITY),
+	MAP_RULE(SnomedIndexConstants.MAP_RULE),
+	MAP_ADVICE(SnomedIndexConstants.MAP_ADVICE),
+	CORRELATION_ID(SnomedIndexConstants.CORRELATION_ID),
+	MAP_CATEGORY_ID(SnomedIndexConstants.MAP_CATEGORY_ID);
 
 	private final String field;
 

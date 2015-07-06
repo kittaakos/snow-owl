@@ -66,8 +66,21 @@ public abstract class SnomedIndexConstants {
 	// membership fields
 	public static final String REFERENCE_SET_ID = "referenceSetId";
 	public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
+	public static final String TARGET_COMPONENT_ID = "targetComponentId";
 	public static final String ACCEPTABILITY_ID = "acceptabilityId";
-	// TODO: add rest of them
+	public static final String MAP_TARGET = "mapTarget";
+	public static final String QUERY = "query";
+	public static final String SOURCE_EFFECTIVE_TIME = "sourceEffectiveTime";
+	public static final String TARGET_EFFECTIVE_TIME = "targetEffectiveTime";
+	public static final String MAP_GROUP = "mapGroup";
+	public static final String MAP_PRIORITY = "mapPriority";
+	public static final String MAP_RULE = "mapRule";
+	public static final String MAP_ADVICE = "mapAdvice";
+	public static final String CORRELATION_ID = "correlationId";
+	public static final String MAP_CATEGORY_ID = "mapCategoryId";
+	public static final String VALUE_ID = "valueId";
+	public static final String DESCRIPTION_FORMAT = "descriptionFormat";
+	public static final String DESCRIPTION_LENGTH = "descriptionLength";
 	
 	// concrete domain
 	public static final String LABEL = "label";
@@ -80,6 +93,5 @@ public abstract class SnomedIndexConstants {
 
 	public static final String TYPE = "type";
 
-	
 	private SnomedIndexConstants() {}
 }
