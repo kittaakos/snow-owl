@@ -29,8 +29,10 @@ import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.collect.MapMaker;
+import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
+import com.b2international.snowowl.core.log.Loggers;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -40,6 +42,7 @@ import com.google.common.collect.Multimaps;
  */
 public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
 
+	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private static final int BULK_THRESHOLD = 10000;
 	
 	private final ConcurrentMap<Integer, BulkRequestBuilder> activeBulks = new MapMaker().makeMap();
@@ -104,6 +107,7 @@ public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
 						future.addListener(new ActionListener<BulkResponse>() {
 							@Override
 							public void onResponse(BulkResponse response) {
+								LOG.info("Processed bulk request of {} in {}", response.getItems().length, response.getTook());
 								pendingBulks.remove(bulkId, future);
 							}
 							

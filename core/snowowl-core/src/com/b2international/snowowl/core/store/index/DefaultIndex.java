@@ -126,7 +126,7 @@ public class DefaultIndex implements Index {
 		for (SortBuilder sort : query.sorts()) {
 			req.addSort(sort);
 		}
-		LOG.info("Executing query: {}", req);
+		LOG.trace("Executing query: {}", req);
 		final SearchResponse response = req.get();
 		if (response.getSuccessfulShards() <= 0) {
 			throw new FormattedRuntimeException("Failed to execute query '%s' on index '%s/%s': ", name(), type, response);

@@ -42,6 +42,8 @@ public class TransactionalIndexQueryBuilder extends IndexQueryBuilder {
 		super(index.index(), type);
 		this.branchManager = branchManager;
 		this.branchPath = branchPath;
+		sortDesc(IndexCommit.COMMIT_TIMESTAMP_FIELD);
+		sortAsc(IndexRevision.STORAGE_KEY);
 	}
 	
 	@Override

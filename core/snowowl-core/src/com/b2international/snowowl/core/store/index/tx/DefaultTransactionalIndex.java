@@ -23,10 +23,12 @@ import java.util.Map;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.search.SearchHits;
+import org.slf4j.Logger;
 
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexQueryBuilder;
@@ -40,6 +42,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @since 5.0
  */
 public class DefaultTransactionalIndex implements TransactionalIndex {
+	
+	private static final Logger LOG = Loggers.REPOSITORY.log();
 	
 	private BulkIndex index;
 	private ObjectMapper mapper;
@@ -62,11 +66,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	@Override
 	public Map<String, Object> loadRevision(String type, String branchPath, long storageKey) {
 		try {
-			final SearchHits hits = query(type, branchPath)
-					.where(termQuery(IndexRevision.STORAGE_KEY, storageKey))
-					.sortDesc(IndexCommit.COMMIT_TIMESTAMP_FIELD)
-					.sortAsc(IndexRevision.STORAGE_KEY)
-					.search();
+			final SearchHits hits = query(type, branchPath).where(termQuery(IndexRevision.STORAGE_KEY, storageKey)).search();
 			if (hits.totalHits() <= 0) {
 				// TODO add branchPath to exception message
 				throw new NotFoundException(type, String.valueOf(storageKey));
@@ -97,6 +97,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 		final Map<String, Object> commit = commitMapping.convert(new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage));
 		this.index.put(IndexCommit.COMMIT_TYPE, String.valueOf(commitId), commit);
 		this.index.flush(commitId);
+		LOG.info("Committed transaction '{}' on '{}' with message '{}'", commitId, branchPath, commitMessage);
 	}
 	
 	@Override
