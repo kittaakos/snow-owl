@@ -17,12 +17,12 @@ package com.b2international.snowowl.snomed.core.store.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
-import com.b2international.snowowl.core.exceptions.SnowOwlException;
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 import com.b2international.snowowl.core.store.index.Mapping;
 
 /**
@@ -150,14 +150,11 @@ public class Concept extends SnomedComponent {
 		checkArgument(values.length == 5, "RF2 concept row should have exactly five values");
 		final Concept concept = new Concept();
 		concept.setId(values[0]);
-		try {
-			concept.setEffectiveTime(new SimpleDateFormat("yyyyMMdd").parse(values[1]));
-		} catch (ParseException e) {
-			throw new SnowOwlException("Failed to parse effective time", e);
-		}
+		final Date et = EffectiveTimes.parse(values[1], DateFormats.SHORT);
+		concept.setEffectiveTime(et);
+		concept.setReleased(et == null ? false : true);
 		concept.setActive("1".equals(values[2]) ? true : false);
 		concept.setModuleId(values[3]);
-		concept.setReleased("Unpublished".equals(values[1]) ? false : true);
 		concept.setDefinitionStatusId(values[4]);
 		return concept;
 	}
