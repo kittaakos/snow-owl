@@ -15,39 +15,24 @@
  */
 package com.b2international.snowowl.snomed.core.store.query;
 
-import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.Predicate;
-import com.b2international.snowowl.core.store.query.Type;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.core.store.query.NestedType;
 
 /**
  * @since 5.0
  */
-public class DescriptionTermPredicate extends Predicate {
+public enum NestedSnomedComponentType implements NestedType {
+	DESCRIPTION("descriptions"), RELATIONSHIP("relationshipGroups.relationships"), MEMBERSHIP("memberships"), CONCRETE_DOMAIN("concreteDomains");
 
-	public static enum Operator {
-		ALL, EXACT, ANY, NONE
-	}
+	private final String path;
 
-	private String text;
-	private Operator operator;
-
-	public DescriptionTermPredicate(Type type, Feature feature) {
-		super(type, feature);
+	private NestedSnomedComponentType(String path) {
+		this.path = checkNotNull(path, "path");
 	}
 
-	void setText(String text) {
-		this.text = text;
+	public String getPath() {
+		return path;
 	}
-	
-	public String getText() {
-		return text;
-	}
-	
-	void setOperator(Operator operator) {
-		this.operator = operator;
-	}
-	
-	public Operator getOperator() {
-		return operator;
-	}
+
 }

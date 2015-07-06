@@ -15,39 +15,25 @@
  */
 package com.b2international.snowowl.snomed.core.store.query;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.Predicate;
-import com.b2international.snowowl.core.store.query.Type;
+import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
-/**
- * @since 5.0
- */
-public class DescriptionTermPredicate extends Predicate {
+public enum MembershipFeature implements Feature {
+	TYPE(SnomedIndexConstants.TYPE),
+	REFERENCE_SET_ID(SnomedIndexConstants.REFERENCE_SET_ID),
+	REFERENCED_COMPONENT_ID(SnomedIndexConstants.REFERENCED_COMPONENT_ID),
+	ACCEPTABILITY_ID(SnomedIndexConstants.ACCEPTABILITY_ID);
 
-	public static enum Operator {
-		ALL, EXACT, ANY, NONE
-	}
+	private final String field;
 
-	private String text;
-	private Operator operator;
-
-	public DescriptionTermPredicate(Type type, Feature feature) {
-		super(type, feature);
-	}
-
-	void setText(String text) {
-		this.text = text;
+	private MembershipFeature(String field) {
+		this.field = checkNotNull(field, "field");
 	}
 	
-	public String getText() {
-		return text;
-	}
-	
-	void setOperator(Operator operator) {
-		this.operator = operator;
-	}
-	
-	public Operator getOperator() {
-		return operator;
+	@Override
+	public String getField() {
+		return field;
 	}
 }

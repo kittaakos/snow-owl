@@ -15,18 +15,158 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import java.util.Collection;
+
 
 /**
- * @since 4.1
+ * Represents a terminology query.
+ * 
+ * @since 5.0
  */
-public interface Query {
+public class Query {
+	
+	public interface EmptyBuilder {
+		AfterSelectBuilder select(Select select);
+	}
+	
+	public interface AfterTypeBuilder {
+		AfterWhereBuilder where(Expression expression);
+	}
+	
+	public interface AfterSelectBuilder {
+		AfterTypeBuilder from(RootType type);
+	}
+	
+	public interface AfterWhereBuilder extends Buildable<Query> {
+		AfterWhereBuilder offset(int offset);
+		AfterWhereBuilder limit(int limit);
+		AfterWhereBuilder sortBy(SortBy sortBy);
+	}
+	
+	private static final class BuilderImpl implements EmptyBuilder, AfterTypeBuilder, AfterSelectBuilder, AfterWhereBuilder {
+		
+		private static final int DEFAULT_LIMIT = Integer.MAX_VALUE;
+		
+		private int offset = 0;
+		private int limit = DEFAULT_LIMIT;
+		private RootType type;
+		private Select select;
+		private Expression where;
+		private SortBy sortBy = SortBy.NONE;
 
-	/**
-	 * Returns all {@link Clause}s defined in this {@link Query}.
-	 * 
-	 * @return
-	 */
-	Collection<Clause> clauses();
+		public BuilderImpl offset(int offset) {
+			this.offset = offset;
+			return this;
+		}
+		
+		public BuilderImpl limit(int limit) {
+			this.limit = limit;
+			return this;
+		}
+		
+		public BuilderImpl select(Select select) {
+			this.select = select;
+			return this;
+		}
+		
+		public BuilderImpl where(Expression expression) {
+			this.where = expression;
+			return this;
+		}
+		
+		public BuilderImpl sortBy(SortBy sortBy) {
+			this.sortBy = sortBy;
+			return this;
+		}
+		
+		public BuilderImpl from(RootType type) {
+			this.type = type;
+			return this;
+		}
+		
+		public Query build() {
+			Query query = new Query();
+			query.setSelect(select);
+			query.setType(type);
+			query.setWhere(where);
+			query.setLimit(limit);
+			query.setOffset(offset);
+			query.setSortBy(sortBy);
+			return query;
+		}
+	}
 
+	private int offset;
+	private int limit;
+	private RootType type;
+	private Select select;
+	private Expression where;
+	private SortBy sortBy;
+	
+	Query() {}
+	
+	public int getOffset() {
+		return offset;
+	}
+
+	void setOffset(int offset) {
+		this.offset = offset;
+	}
+
+	public int getLimit() {
+		return limit;
+	}
+
+	void setLimit(int limit) {
+		this.limit = limit;
+	}
+
+	public Select getSelect() {
+		return select;
+	}
+
+	void setSelect(Select select) {
+		this.select = select;
+	}
+
+	public Expression getWhere() {
+		return where;
+	}
+
+	void setWhere(Expression where) {
+		this.where = where;
+	}
+
+	public SortBy getSortBy() {
+		return sortBy;
+	}
+
+	void setSortBy(SortBy sortBy) {
+		this.sortBy = sortBy;
+	}
+
+	public RootType getType() {
+		return type;
+	}
+	
+	void setType(RootType type) {
+		this.type = type;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT " + select + " FROM " + type + " WHERE " + where);
+		if (sortBy != SortBy.NONE) {
+			sb.append(" SORT BY " + sortBy);
+		}
+		sb.append(" LIMIT " + limit);
+		if (offset != 0) {
+			sb.append(" OFFSET " + offset);
+		}
+		return sb.toString();
+	}
+	
+	public static EmptyBuilder builder() {
+		return new BuilderImpl();
+	}
 }

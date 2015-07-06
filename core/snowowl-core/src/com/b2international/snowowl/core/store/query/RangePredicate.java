@@ -13,41 +13,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.store.query;
+package com.b2international.snowowl.core.store.query;
 
-import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.Predicate;
-import com.b2international.snowowl.core.store.query.Type;
+import com.google.common.base.Optional;
 
 /**
+ * Represents a predicate with a value range.
+ * 
  * @since 5.0
+ * @param <T> the value type
  */
-public class DescriptionTermPredicate extends Predicate {
+abstract public class RangePredicate<T> extends Predicate {
 
-	public static enum Operator {
-		ALL, EXACT, ANY, NONE
-	}
-
-	private String text;
-	private Operator operator;
-
-	public DescriptionTermPredicate(Type type, Feature feature) {
+	private T start;
+	private T end;
+	
+	public RangePredicate(Type type, Feature feature) {
 		super(type, feature);
 	}
 
-	void setText(String text) {
-		this.text = text;
+	public Optional<T> getStart() {
+		return Optional.fromNullable(start);
 	}
 	
-	public String getText() {
-		return text;
+	void setStart(T start) {
+		this.start = start;
 	}
 	
-	void setOperator(Operator operator) {
-		this.operator = operator;
+	public Optional<T> getEnd() {
+		return Optional.fromNullable(end);
 	}
 	
-	public Operator getOperator() {
-		return operator;
+	void setEnd(T end) {
+		this.end = end;
 	}
 }

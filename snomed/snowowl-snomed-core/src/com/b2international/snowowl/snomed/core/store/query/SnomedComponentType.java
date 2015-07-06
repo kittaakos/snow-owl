@@ -15,39 +15,24 @@
  */
 package com.b2international.snowowl.snomed.core.store.query;
 
-import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.Predicate;
-import com.b2international.snowowl.core.store.query.Type;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import com.b2international.snowowl.core.store.query.RootType;
+import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
 /**
  * @since 5.0
  */
-public class DescriptionTermPredicate extends Predicate {
+public enum SnomedComponentType implements RootType {
+	CONCEPT(SnomedIndexConstants.CONCEPT_OBJECT_TYPE);
+	
+	private final String name;
 
-	public static enum Operator {
-		ALL, EXACT, ANY, NONE
-	}
-
-	private String text;
-	private Operator operator;
-
-	public DescriptionTermPredicate(Type type, Feature feature) {
-		super(type, feature);
-	}
-
-	void setText(String text) {
-		this.text = text;
+	private SnomedComponentType(String name) {
+		this.name = checkNotNull(name, "name");
 	}
 	
-	public String getText() {
-		return text;
-	}
-	
-	void setOperator(Operator operator) {
-		this.operator = operator;
-	}
-	
-	public Operator getOperator() {
-		return operator;
+	public String getName() {
+		return this.name;
 	}
 }

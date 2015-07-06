@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.snomed.core.store.index;
 
+import com.b2international.snowowl.core.store.query.IndexConstants;
+
 /**
  * @since 5.0
  */
@@ -27,7 +29,7 @@ public abstract class SnomedIndexConstants {
 	public static final String CONCEPT_OBJECT_TYPE = "concept";
 	
 	// component field
-	public static final String ID = "id";
+	public static final String ID = IndexConstants.ID;
 	public static final String RELEASED = "released";
 	public static final String ACTIVE = "active";
 	public static final String EFFECTIVE_TIME = "effectiveTime";
@@ -64,6 +66,8 @@ public abstract class SnomedIndexConstants {
 	// membership fields
 	public static final String REFERENCE_SET_ID = "referenceSetId";
 	public static final String REFERENCED_COMPONENT_ID = "referencedComponentId";
+	public static final String ACCEPTABILITY_ID = "acceptabilityId";
+	// TODO: add rest of them
 	
 	// concrete domain
 	public static final String LABEL = "label";
@@ -73,6 +77,9 @@ public abstract class SnomedIndexConstants {
 	public static final String OPERATOR_ID = "operatorId";
 	public static final String UOM_ID = "uomId";
 	public static final String MEMBER_ID = "memberId";
+
+	public static final String TYPE = "type";
+
 	
 	private SnomedIndexConstants() {}
 }
