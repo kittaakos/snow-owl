@@ -22,9 +22,11 @@ import java.util.Deque;
 import org.elasticsearch.common.xcontent.ToXContent;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import com.b2international.snowowl.core.store.query.TextPredicate.Operator;
 import com.google.common.collect.Queues;
 
 public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
@@ -112,11 +114,40 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 			visit(predicate);
 		} else if (expression instanceof LongPredicate) {
 			visit((LongPredicate) expression);
+		} else if (expression instanceof TextPredicate) {
+			TextPredicate predicate = (TextPredicate) expression;
+			visit(predicate);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
 	}
 
+	private void visit(TextPredicate predicate) {
+		Feature feature = predicate.getFeature();
+		Operator operator = predicate.getOperator();
+		switch (operator) {
+		case ALL:
+			QueryBuilder queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.AND);
+			deque.push(new DequeItem(queryBuilder));
+			break;
+		case ANY:
+			queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.OR);
+			deque.push(new DequeItem(queryBuilder));
+			break;
+		case EXACT:
+			queryBuilder = QueryBuilders.matchQuery(feature.getField(), predicate.getText()).type(MatchQueryBuilder.Type.PHRASE);
+			deque.push(new DequeItem(queryBuilder));
+			break;
+		case NONE:
+			queryBuilder = QueryBuilders.boolQuery().mustNot(
+					QueryBuilders.matchQuery(feature.getField(), predicate.getText()).operator(MatchQueryBuilder.Operator.OR));
+			deque.push(new DequeItem(queryBuilder));
+			break;
+		default:
+			throw new IllegalArgumentException("Unexpected operator: " + operator);
+		}
+	}
+	
 	private void visit(StringSetPredicate predicate) {
 		Feature feature = predicate.getFeature();
 		FilterBuilder filter = FilterBuilders.termsFilter(feature.getField(), predicate.getArgument());

@@ -13,16 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.store.query;
+package com.b2international.snowowl.core.store.query;
 
-import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.Predicate;
-import com.b2international.snowowl.core.store.query.Type;
 
 /**
  * @since 5.0
  */
-public class DescriptionTermPredicate extends Predicate {
+public class TextPredicate extends Predicate {
 
 	public static enum Operator {
 		ALL, EXACT, ANY, NONE
@@ -31,7 +28,7 @@ public class DescriptionTermPredicate extends Predicate {
 	private String text;
 	private Operator operator;
 
-	public DescriptionTermPredicate(Type type, Feature feature) {
+	public TextPredicate(Type type, Feature feature) {
 		super(type, feature);
 	}
 
