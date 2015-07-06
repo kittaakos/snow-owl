@@ -20,7 +20,7 @@ import java.util.Date;
 
 import javax.annotation.Nullable;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 
 /**
  * Effective Times should be always in GMT time. Use this class when working with effective times in any ontology, this will ensure the proper parsing
@@ -100,7 +100,7 @@ public abstract class EffectiveTimes {
 	 * @param effectiveTime
 	 *            - the effectiveTime to parse, cannot be <code>null</code>
 	 * @return - the parsed date
-	 * @throws SnowowlRuntimeException
+	 * @throws SnowOwlException
 	 *             - if a {@link ParseException} is throw during execution
 	 */
 	public static Date parse(String effectiveTime) {
@@ -115,7 +115,7 @@ public abstract class EffectiveTimes {
 	 * @param datePattern
 	 *            - the pattern to use, cannot be <code>null</code>
 	 * @return - the parsed date, never <code>null</code>.
-	 * @throws SnowowlRuntimeException
+	 * @throws SnowOwlException
 	 *             - if a {@link ParseException} is throw during execution
 	 * @throws NullPointerException
 	 *             - if one of the arguments was <code>null</code>

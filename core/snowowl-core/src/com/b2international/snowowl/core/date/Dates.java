@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
-import com.b2international.snowowl.core.api.SnowowlRuntimeException;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 
 /**
  * Useful methods when working with {@link Date} instances, especially useful in formatting and parsing to/from {@link String} values.
@@ -131,7 +131,7 @@ public abstract class Dates {
 	 * @param date
 	 *            - the date string, cannot be <code>null</code>
 	 * @return - the parse date object, never <code>null</code>
-	 * @throws SnowowlRuntimeException
+	 * @throws SnowOwlException
 	 *             - if a {@link ParseException} is thrown during execution
 	 * @throws NullPointerException
 	 *             - if date is <code>null</code>
@@ -149,7 +149,7 @@ public abstract class Dates {
 	 * @param datePattern
 	 *            - the date pattern for the parsing, cannot be <code>null</code>
 	 * @return the parsed date object, never <code>null</code>
-	 * @throws SnowowlRuntimeException
+	 * @throws SnowOwlException
 	 *             - if a {@link ParseException} is thrown during execution
 	 * @throws NullPointerException
 	 *             - if one of the arguments was <code>null</code>
@@ -160,7 +160,7 @@ public abstract class Dates {
 		try {
 			return getDateFormatter(getGmtTimeZone()).parse(date, datePattern);
 		} catch (final ParseException e) {
-			throw new SnowowlRuntimeException("Error while parsing date '" + date + "' with pattern: '" + datePattern + "'.", e);
+			throw new SnowOwlException("Error while parsing date '%s' with pattern '%s''", date, datePattern, e);
 		}
 	}
 
