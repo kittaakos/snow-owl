@@ -26,10 +26,10 @@ public class ModuleDependencyTypeMembershipComparator extends MembershipComparat
 		int membershipComparison = super.compare(o1, o2);
 		if (membershipComparison != 0)
 			return membershipComparison;
-		int sourceEffectiveDateComparison = CompareUtils.nullSafeCompare(o1.getSourceEffectiveDate(), o2.getSourceEffectiveDate());
+		int sourceEffectiveDateComparison = CompareUtils.nullSafeCompare(o1.getSourceEffectiveTime(), o2.getSourceEffectiveTime());
 		if (sourceEffectiveDateComparison != 0)
 			return sourceEffectiveDateComparison;
-		int targetEffectiveDateComparison = CompareUtils.nullSafeCompare(o1.getTargetEffectiveDate(), o2.getTargetEffectiveDate());
+		int targetEffectiveDateComparison = CompareUtils.nullSafeCompare(o1.getTargetEffectiveTime(), o2.getTargetEffectiveTime());
 		if (targetEffectiveDateComparison != 0)
 			return targetEffectiveDateComparison;
 		return 0;

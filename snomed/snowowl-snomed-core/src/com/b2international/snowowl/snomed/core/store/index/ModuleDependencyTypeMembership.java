@@ -23,27 +23,27 @@ import java.util.Date;
  * @since 5.0
  */
 public class ModuleDependencyTypeMembership extends Membership {
-	private Date sourceEffectiveDate;
-	private Date targetEffectiveDate;
+	private Date sourceEffectiveTime;
+	private Date targetEffectiveTime;
 
 	public ModuleDependencyTypeMembership() {
 		super(ReferenceSetType.MODULE_DEPENDENCY);
 	}
 
-	public Date getSourceEffectiveDate() {
-		return sourceEffectiveDate;
+	public Date getSourceEffectiveTime() {
+		return sourceEffectiveTime;
 	}
 
-	void setSourceEffectiveDate(Date sourceEffectiveDate) {
-		this.sourceEffectiveDate = sourceEffectiveDate;
+	void setSourceEffectiveTime(Date sourceEffectiveTime) {
+		this.sourceEffectiveTime = sourceEffectiveTime;
 	}
 
-	public Date getTargetEffectiveDate() {
-		return targetEffectiveDate;
+	public Date getTargetEffectiveTime() {
+		return targetEffectiveTime;
 	}
 
-	void setTargetEffectiveDate(Date targetEffectiveDate) {
-		this.targetEffectiveDate = targetEffectiveDate;
+	void setTargetEffectiveTime(Date targetEffectiveTime) {
+		this.targetEffectiveTime = targetEffectiveTime;
 	}
 
 }

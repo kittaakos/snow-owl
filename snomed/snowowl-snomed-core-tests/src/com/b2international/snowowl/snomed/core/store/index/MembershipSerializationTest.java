@@ -198,8 +198,8 @@ public class MembershipSerializationTest {
 		membership.setReferencedComponentId("33333333");
 		membership.setReferenceSetId("44444444");
 		membership.setReleased(true);
-		membership.setSourceEffectiveDate(new Date(1435245348));
-		membership.setTargetEffectiveDate(new Date(1435255348));
+		membership.setSourceEffectiveTime(new Date(1435245348));
+		membership.setTargetEffectiveTime(new Date(1435255348));
 		StringWriter writer = new StringWriter();
 		mapper.writeValue(writer, membership);
 		// deserialize
