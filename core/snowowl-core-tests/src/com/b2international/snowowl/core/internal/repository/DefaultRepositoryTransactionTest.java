@@ -40,7 +40,7 @@ import person.PersonPackage;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.cp.IEClassProvider;
-import com.b2international.snowowl.core.store.index.DefaultIndex;
+import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
@@ -83,7 +83,7 @@ public class DefaultRepositoryTransactionTest {
 		((InternalRepository)repository).addUser(USER, PASS);
 		
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, repository.branching());
+		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, repository.branching());
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();

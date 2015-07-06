@@ -17,7 +17,9 @@ package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.action.admin.cluster.tasks.PendingClusterTasksRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -41,11 +43,17 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	private AdminClient admin;
 	private String index;
 	private Mappings mappings;
+	private Map<String, Object> settings;
 
-	public DefaultIndexAdmin(AdminClient admin, String index, Mappings mappings) {
+	protected DefaultIndexAdmin(AdminClient admin, String index, Mappings mappings) {
+		this(admin, index, mappings, null);
+	}
+	
+	protected DefaultIndexAdmin(AdminClient admin, String index, Mappings mappings, Map<String, Object> settings) {
 		this.admin = checkNotNull(admin, "admin");
 		this.index = checkNotNull(index, "index");
 		this.mappings = checkNotNull(mappings, "mappings");
+		this.settings = settings == null ? Collections.<String, Object>emptyMap() : settings;
 	}
 	
 	@Override
@@ -57,6 +65,7 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	public void create() {
 		if (!exists()) {
 			final CreateIndexRequestBuilder create = this.admin.indices().prepareCreate(index);
+			create.setSettings(settings);
 			for (MappingStrategy<?> mapping : mappings.getMappings()) {
 				final String mappingJson = mapping.getMapping();
 				if (!Strings.isNullOrEmpty(mappingJson)) {
@@ -94,6 +103,11 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	@Override
 	public Mappings mappings() {
 		return mappings;
+	}
+	
+	@Override
+	public Map<String, Object> settings() {
+		return settings;
 	}
 	
 	@Override

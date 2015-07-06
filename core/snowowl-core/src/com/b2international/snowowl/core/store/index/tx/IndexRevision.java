@@ -15,83 +15,24 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
-import java.util.Objects;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Maps;
 
 /**
  * @since 5.0
  */
-final class IndexRevision {
+public interface IndexRevision {
 
-	static final String STORAGE_KEY = "storageKey";
-	static final String DELETED_FIELD = "deleted";
+	String STORAGE_KEY = "storageKey";
+	String DELETED_FIELD = "deleted";
 	
-	private Map<String, Object> data;
-	private long storageKey;
-	private int commitId;
-	private long commitTimestamp;
-	private boolean deleted = false;
+	long getStorageKey();
 	
-	@JsonCreator
-	IndexRevision(@JsonProperty("commitId") int commitId, @JsonProperty("commitTimestamp") long commitTimestamp, @JsonProperty("storageKey") long storageKey, @JsonProperty("deleted") boolean deleted) {
-		this(commitId, commitTimestamp, storageKey, deleted, Maps.<String, Object>newHashMap());
-	}
+	long getCommitTimestamp();
 	
-	IndexRevision(int commitId, long commitTimestamp, long storageKey, boolean deleted, Map<String, Object> data) {
-		this.commitId = commitId;
-		this.commitTimestamp = commitTimestamp;
-		this.storageKey = storageKey;
-		this.deleted = deleted;
-		this.data = checkNotNull(data, "data");
-	}
+	int getCommitId();
 	
-	@JsonAnySetter
-	void setData(String key, Object value) {
-		this.data.put(key, value);
-	}
+	Map<String, Object> getData();
 
-	@JsonAnyGetter
-	public Map<String, Object> getData() {
-		return data;
-	}
-	
-	public int getCommitId() {
-		return commitId;
-	}
-	
-	public long getCommitTimestamp() {
-		return commitTimestamp;
-	}
-	
-	public boolean isDeleted() {
-		return deleted;
-	}
-	
-	public long getStorageKey() {
-		return storageKey;
-	}
-
-	@Override
-	public int hashCode() {
-		return Objects.hash(commitId, commitTimestamp, data, deleted);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) return true;
-		if (obj == null) return false;
-		if (getClass() != obj.getClass())
-			return false;
-		IndexRevision other = (IndexRevision) obj;
-		return Objects.equals(commitId, other.commitId) && Objects.equals(commitTimestamp, other.commitTimestamp) && Objects.equals(deleted, other.deleted) && Objects.equals(data, other.data);
-	}
+	boolean isDeleted();
 	
 }

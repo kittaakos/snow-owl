@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Test the serialization of {@link IndexRevision} objects.
+ * Test the serialization of {@link DefaultIndexRevision} objects.
  * 
  * @since 5.0
  */
@@ -45,19 +45,19 @@ public class IndexRevisionTest {
 	
 	@Test(expected = NullPointerException.class)
 	public void createRevisionWithNullDataShouldThrowException() throws Exception {
-		new IndexRevision(0, 0L, 1L, false, null);
+		new DefaultIndexRevision(0, 0L, 1L, false, null);
 	}
 	
 	@Test
 	public void testSerializationOfIndexRevision() throws Exception {
 		final Map<String, Object> data = newHashMap();
 		data.put("prop", "value");
-		final IndexRevision rev = new IndexRevision(0, 0L, 1L, false, data);
+		final IndexRevision rev = new DefaultIndexRevision(0, 0L, 1L, false, data);
 		
 		final String json = mapper.writeValueAsString(rev);
 		assertEquals("{\"commitId\":0,\"commitTimestamp\":0,\"storageKey\":1,\"deleted\":false,\"prop\":\"value\"}", json);
 		
-		final IndexRevision revDeserialized = mapper.readValue(json, IndexRevision.class);
+		final IndexRevision revDeserialized = mapper.readValue(json, DefaultIndexRevision.class);
 		assertEquals(rev, revDeserialized);
 	}
 	

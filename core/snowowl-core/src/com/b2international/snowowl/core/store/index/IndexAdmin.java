@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import java.util.Map;
+
 import org.elasticsearch.client.AdminClient;
 
 /**
@@ -53,6 +55,13 @@ public interface IndexAdmin {
 	 * @return
 	 */
 	Mappings mappings();
+
+	/**
+	 * Returns the settings of this index.
+	 * 
+	 * @return
+	 */
+	Map<String, Object> settings();
 
 	/**
 	 * Returns the index name this {@link IndexAdmin} is responsible for.

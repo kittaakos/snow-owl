@@ -22,6 +22,7 @@ import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHits;
@@ -44,13 +45,17 @@ public class DefaultIndex implements Index {
 	private DefaultIndexAdmin admin;
 
 	public DefaultIndex(Client client, String index, Mappings mappings) {
+		this(client, index, mappings, null);
+	}
+	
+	public DefaultIndex(Client client, String index, Mappings mappings, Map<String, Object> settings) {
 		this.client = client;
 		this.index = index;
-		this.admin = new DefaultIndexAdmin(this.client.admin(), index, mappings);
+		this.admin = new DefaultIndexAdmin(this.client.admin(), index, mappings, settings);
 	}
 	
 	@Override
-	public Map<String, Object> get(String type, String id) {
+	public final Map<String, Object> get(String type, String id) {
 		final GetResponse getResponse = this.client.prepareGet(index, type, id).setFetchSource(true).get();
 		if (getResponse.isExists()) {
 			return getResponse.getSource();
@@ -60,35 +65,30 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public void put(String type, String id, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj).setRefresh(true);
-		// TODO indexing strategy, IMMEDIATE, BULK, BULK_SIZED
-		// determines the refresh flag state as well, in IMMEDIATE the refresh should always be set
-		req.get();
+	public final void put(String type, String id, Map<String, Object> obj) {
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj);
+		doIndex(req);
 	}
-	
+
 	@Override
-	public void putWithParent(String type, String parentKey, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type).setParent(parentKey).setSource(obj).setRefresh(true);
-		// TODO indexing strategy
-		req.get();
+	public final void putWithParent(String type, String parentKey, Map<String, Object> obj) {
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type).setParent(parentKey).setSource(obj);
+		doIndex(req);
 	}
-	
+
 	@Override
-	public boolean remove(String type, String id) {
-		// TODO not found exception conversion
-		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id).setRefresh(true);
-		// TODO indexing strategy
-		return req.get().isFound();
+	public final boolean remove(String type, String id) {
+		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id);
+		return doDelete(req);
 	}
-	
+
 	@Override
-	public SearchHits search(String type, QueryBuilder query) {
+	public final SearchHits search(String type, QueryBuilder query) {
 		return search(type, query, 0, Integer.MAX_VALUE);
 	}
 	
 	@Override
-	public SearchHits search(String type, QueryBuilder query, int offset, int limit) {
+	public final SearchHits search(String type, QueryBuilder query, int offset, int limit) {
 		return query(type)
 					.where(query)
 					.page(offset, limit)
@@ -101,22 +101,22 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public <T> MappingStrategy<T> mapping(Class<T> type) {
+	public final <T> MappingStrategy<T> mapping(Class<T> type) {
 		return admin().mappings().getMapping(type);
 	}
 
 	@Override
-	public IndexAdmin admin() {
+	public final IndexAdmin admin() {
 		return admin;
 	}
 	
 	@Override
-	public IndexQueryBuilder query(String type) {
+	public final IndexQueryBuilder query(String type) {
 		return new IndexQueryBuilder(this, type);
 	}
 	
 	@Override
-	public SearchHits search(IndexQueryBuilder query) {
+	public final SearchHits search(IndexQueryBuilder query) {
 		final String type = query.type();
 		final SearchRequestBuilder req = this.client.prepareSearch(index)
 				.setTypes(type)
@@ -132,6 +132,22 @@ public class DefaultIndex implements Index {
 			throw new FormattedRuntimeException("Failed to execute query '%s' on index '%s/%s': ", name(), type, response);
 		}
 		return response.getHits();
+	}
+	
+	protected final Client client() {
+		return client;
+	}
+	
+	protected void doIndex(IndexRequestBuilder req) {
+		req.setRefresh(true).get();
+	}
+	
+	protected boolean doDelete(DeleteRequestBuilder req) {
+		return req.setRefresh(true).get().isFound();
+	}
+	
+	protected void doUpdate(UpdateRequestBuilder req) {
+		req.setRefresh(true).get();
 	}
 	
 }

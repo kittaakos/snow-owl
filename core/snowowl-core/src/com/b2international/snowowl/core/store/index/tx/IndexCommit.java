@@ -48,7 +48,7 @@ class IndexCommit {
 		this.commitMessage = commitMessage;
 	}
 	
-	public int getTransactionId() {
+	public int getCommitId() {
 		return commitId;
 	}
 	

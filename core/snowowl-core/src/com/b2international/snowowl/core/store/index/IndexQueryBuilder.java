@@ -33,7 +33,7 @@ import org.elasticsearch.search.sort.SortOrder;
  * 
  * @since 5.0
  */
-public final class IndexQueryBuilder {
+public class IndexQueryBuilder {
 
 	private String type;
 	private QueryBuilder where;
@@ -43,32 +43,32 @@ public final class IndexQueryBuilder {
 	private int offset = 0;
 	private int limit = Integer.MAX_VALUE; // TODO is it okay to use max val here by default??? should we configure this???
 	
-	/*package*/ IndexQueryBuilder(Index index, String type) {
+	protected IndexQueryBuilder(Index index, String type) {
 		this.index = checkNotNull(index, "index");
 		this.type = checkNotNull(type, "Type may not be null");
 	}
 	
-	public IndexQueryBuilder where(QueryBuilder where) {
+	public final IndexQueryBuilder where(QueryBuilder where) {
 		this.where = where;
 		return this;
 	}
 	
-	public IndexQueryBuilder filter(FilterBuilder filter) {
+	public final IndexQueryBuilder filter(FilterBuilder filter) {
 		this.filter = filter;
 		return this;
 	}
 	
-	public IndexQueryBuilder sortAsc(String field) {
+	public final IndexQueryBuilder sortAsc(String field) {
 		this.sorts.add(SortBuilders.fieldSort(field).order(SortOrder.ASC));
 		return this;
 	}
 	
-	public IndexQueryBuilder sortDesc(String field) {
+	public final IndexQueryBuilder sortDesc(String field) {
 		this.sorts.add(SortBuilders.fieldSort(field).order(SortOrder.DESC));
 		return this;
 	}
 	
-	public IndexQueryBuilder page(int offset, int limit) {
+	public final IndexQueryBuilder page(int offset, int limit) {
 		this.offset = offset;
 		this.limit = limit;
 		return this;
@@ -78,7 +78,7 @@ public final class IndexQueryBuilder {
 		return index.search(this);
 	}
 	
-	/*package*/ QueryBuilder toIndexQuery() {
+	protected QueryBuilder toIndexQuery() {
 		if (filter != null) {
 			return QueryBuilders.filteredQuery(where, filter);
 		} else {

@@ -18,6 +18,8 @@ package com.b2international.snowowl.core.store.index.tx;
 import java.util.Map;
 
 import com.b2international.snowowl.core.store.index.Administrable;
+import com.b2international.snowowl.core.store.index.BulkIndex;
+import com.b2international.snowowl.core.store.index.IndexQueryBuilder;
 import com.b2international.snowowl.core.store.index.MappingProvider;
 
 /**
@@ -25,6 +27,9 @@ import com.b2international.snowowl.core.store.index.MappingProvider;
  */
 public interface TransactionalIndex extends Administrable<TransactionalIndexAdmin>, MappingProvider {
 
+	// TODO Move this to internal package
+	BulkIndex index();
+	
 	/**
 	 * Loads the latest revision (Map of String, Object value pairs) from the index with the given type and storageKey as identifier.
 	 * 
@@ -91,5 +96,7 @@ public interface TransactionalIndex extends Administrable<TransactionalIndexAdmi
 	 * @return
 	 */
 	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
+
+	IndexQueryBuilder query(String type, String branchPath);
 
 }

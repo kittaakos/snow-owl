@@ -31,7 +31,7 @@ import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.store.index.DefaultIndex;
+import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.ESRule;
@@ -72,7 +72,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
+		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
 		final TransactionalIndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();

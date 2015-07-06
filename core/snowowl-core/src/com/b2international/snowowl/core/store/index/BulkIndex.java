@@ -13,19 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store.index.tx;
-
-import com.b2international.snowowl.core.store.index.DefaultIndexAdmin;
-import com.b2international.snowowl.core.store.index.IndexAdmin;
-import com.b2international.snowowl.core.store.index.Mappings;
+package com.b2international.snowowl.core.store.index;
 
 /**
- * @since 5.0 
+ * @since 5.0
  */
-public class DefaultTransactionalIndexAdmin extends DefaultIndexAdmin implements TransactionalIndexAdmin {
+public interface BulkIndex extends Index {
 
-	protected DefaultTransactionalIndexAdmin(IndexAdmin admin) {
-		super(admin.client(), admin.name(), Mappings.of(admin.mappings(), IndexCommit.class), admin.settings());
-	}
+	/**
+	 * Creates an internally managed bulk indexer item with the given bulkId.
+	 * 
+	 * @param bulkId
+	 */
+	void create(int bulkId);
+
+	/**
+	 * Flushes/Sends any pending bulk indexer to the underlying {@link Index} with the given bulkId and waits for all the response.
+	 */
+	void flush(int bulkId);
 
 }
