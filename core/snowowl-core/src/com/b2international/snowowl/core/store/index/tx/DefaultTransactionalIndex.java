@@ -15,25 +15,25 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.elasticsearch.index.query.QueryBuilders.termQuery;
-
-import java.util.Map;
 
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.search.SearchHits;
 import org.slf4j.Logger;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
 import com.b2international.snowowl.core.store.index.Index;
-import com.b2international.snowowl.core.store.index.IndexQueryBuilder;
+import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.MappingStrategy;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.b2international.snowowl.core.store.query.Expressions;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
+import com.b2international.snowowl.core.store.query.req.BranchAwareSearchExecutor;
+import com.google.common.collect.Iterables;
 
 /**
  * Adds transaction support to an existing {@link Index} using a combination of components with revision properties and commit groups, the index can
@@ -46,56 +46,43 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 	
 	private BulkIndex index;
-	private ObjectMapper mapper;
 
 	private BranchManager branchManager;
-	private TransactionalIndexAdmin admin;
 
-	public DefaultTransactionalIndex(BulkIndex index, ObjectMapper mapper, BranchManager branchManager) {
+	public DefaultTransactionalIndex(BulkIndex index, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
-		this.mapper = checkNotNull(mapper, "mapper");
+		this.index.admin().mappings().addMapping(IndexCommit.class);
 		this.branchManager = checkNotNull(branchManager, "branchManager");
-		this.admin = new DefaultTransactionalIndexAdmin(index.admin());
 	}
 
 	@Override
-	public BulkIndex index() {
-		return index;
-	}
-	
-	@Override
-	public Map<String, Object> loadRevision(String type, String branchPath, long storageKey) {
+	public <T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey) {
 		try {
-			final SearchHits hits = query(type, branchPath).where(termQuery(IndexRevision.STORAGE_KEY, storageKey)).search();
-			if (hits.totalHits() <= 0) {
+			final Iterable<T> revisions = query()
+					.on(branchPath)
+					.selectAll()
+					.where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey))
+					.limit(1)
+					.search(type);
+			if (Iterables.isEmpty(revisions)) {
 				// TODO add branchPath to exception message
-				throw new NotFoundException(type, String.valueOf(storageKey));
+				throw new NotFoundException(getType(type), String.valueOf(storageKey));
 			}
-			return this.mapper.convertValue(hits.hits()[0].getSource(), DefaultIndexRevision.class).getData();
+			return Iterables.getFirst(revisions, null);
 		} catch (ElasticsearchException e) {
 			throw new FormattedRuntimeException("Failed to retrieve '%s' from branch '%s' in index %s/%s", storageKey, branchPath, index.name(), type, e);
 		}
 	}
-
-	@Override
-	public void addRevision(int commitId, long commitTimestamp, long storageKey, String branchPath, String type, Map<String, Object> data) {
-		checkArgument(storageKey > 0, "StorageKey should be greater than zero");
-		final Map<String, Object> revData = this.mapper.convertValue(new DefaultIndexRevision(commitId, commitTimestamp, storageKey, false, data), Map.class);
-		this.index.putWithParent(type, String.valueOf(commitId), revData);
-	}
 	
 	@Override
-	public void remove(int commitId, long commitTimestamp, long storageKey, String branchPath, String type) {
-		final Map<String, Object> revData = loadRevision(type, branchPath, storageKey);
-		final Map<String, Object> revision = this.mapper.convertValue(new DefaultIndexRevision(commitId, commitTimestamp, storageKey, true, revData), Map.class);
-		this.index.putWithParent(type, String.valueOf(commitId), revision);
+	public void addRevision(String branchPath, Revision revision) {
+		this.index.putWithParent(String.valueOf(revision.getCommitId()), revision);
 	}
 	
 	@Override
 	public void commit(int commitId, long commitTimestamp, String branchPath, String commitMessage) {
-		final MappingStrategy<IndexCommit> commitMapping = mapping(IndexCommit.class);
-		final Map<String, Object> commit = commitMapping.convert(new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage));
-		this.index.put(IndexCommit.COMMIT_TYPE, String.valueOf(commitId), commit);
+		final IndexCommit commit = new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage);
+		this.index.put(String.valueOf(commitId), commit);
 		this.index.flush(commitId);
 		LOG.info("Committed transaction '{}' on '{}' with message '{}'", commitId, branchPath, commitMessage);
 	}
@@ -103,12 +90,12 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	@Override
 	public IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath) {
 		this.index.create(commitId);
-		return new DefaultIndexTransaction(this, commitId, commitTimestamp, branchPath, mapper);
+		return new DefaultIndexTransaction(this, commitId, commitTimestamp, branchPath);
 	}
 	
 	@Override
-	public TransactionalIndexAdmin admin() {
-		return admin;
+	public IndexAdmin admin() {
+		return index.admin();
 	}
 	
 	@Override
@@ -117,8 +104,19 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 	
 	@Override
-	public IndexQueryBuilder query(String type, String branchPath) {
-		return new TransactionalIndexQueryBuilder(this, branchManager, type, branchPath);
+	public TransactionalQueryBuilder query() {
+		return new DefaultTransactionalQueryBuilder(this);
+	}
+	
+	@Override
+	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+		final SearchContextBuilder context = ClassUtils.checkAndCast(query, SearchContextBuilder.class);
+		context.executeWith(new BranchAwareSearchExecutor(branchManager));
+		return this.index.search(context, type);
+	}
+	
+	private <T> String getType(Class<T> type) {
+		return mapping(type).getType();
 	}
 	
 }

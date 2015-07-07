@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import com.b2international.snowowl.core.terminology.Component;
 
 /**
  * Transaction working on top of a {@link TransactionalIndex}.
@@ -24,10 +23,9 @@ import com.b2international.snowowl.core.terminology.Component;
  */
 public interface IndexTransaction {
 	
-	void add(long storageKey, Component object);
+	void add(long storageKey, Revision object);
 	
-	// TODO do we need the type???
-	void delete(long storageKey, String type);
+	<T extends Revision> void delete(long storageKey, Class<T> type);
 	
 	void commit(String commitMessage);
 	

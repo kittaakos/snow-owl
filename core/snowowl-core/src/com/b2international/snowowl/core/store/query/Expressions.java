@@ -13,28 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.terminology;
-
-import com.b2international.snowowl.core.store.Id;
-import com.b2international.snowowl.core.store.index.tx.Revision;
+package com.b2international.snowowl.core.store.query;
 
 /**
  * @since 5.0
  */
-public abstract class Component extends Revision {
+public class Expressions {
 
-	@Id
-	private String id;
-	
-	protected Component() {
+	public static Expression prefixMatch(final String field, final String prefix) {
+		return new PrefixPredicate(AnyType.INSTANCE, field(field), prefix);
 	}
 	
-	public String getId() {
-		return id;
+	public static Feature field(final String field) {
+		return new Feature() {
+			@Override
+			public String getField() {
+				return field;
+			}
+		};
+	}
+
+	public static Expression exactMatch(String field, String value) {
+		return new StringPredicate(AnyType.INSTANCE, field(field), value);
 	}
 	
-	public void setId(String id) {
-		this.id = id;
+	public static Expression exactMatch(String field, Long value) {
+		return new LongPredicate(AnyType.INSTANCE, field(field), value);
 	}
-	
+
 }

@@ -17,15 +17,32 @@ package com.b2international.snowowl.core.store.index;
 
 import java.util.Map;
 
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.SearchHits;
+import com.b2international.snowowl.core.store.Searchable;
 
 /**
  * Generic interface for an elasticsearch index.
  * 
  * @since 5.0
  */
-public interface Index extends MappingProvider {
+public interface Index extends MappingProvider, Searchable, Administrable<IndexAdmin> {
+
+	/**
+	 * Returns the name of the index.
+	 * 
+	 * @return
+	 */
+	String name();
+
+	/**
+	 * Fetch an object by type and key from the index.
+	 * 
+	 * @param type
+	 *            - the object's type to retrieve
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @return the object
+	 */
+	<T> T get(Class<T> type, String key);
 
 	/**
 	 * Fetch an object by type and key from the index.
@@ -46,10 +63,12 @@ public interface Index extends MappingProvider {
 	 *            - the object's type
 	 * @param parentKey
 	 *            - the document id of the parent document
-	 * @param obj
-	 *            - the {@link Map} representation of the object
+	 * @param object
+	 *            - the object to store
 	 */
-	void putWithParent(String type, String parentKey, Map<String, Object> obj);
+	void putWithParent(String type, String parentKey, Object object);
+
+	<T> void putWithParent(String parentKey, T object);
 
 	/**
 	 * Store/Put an object represented by the given {@link Map} of String, Object pairs in this index under the given type, identified with the given
@@ -59,81 +78,33 @@ public interface Index extends MappingProvider {
 	 *            - the object's type
 	 * @param key
 	 *            - the unique identifier of the object
-	 * @param obj
-	 *            - the {@link Map} representation of the object
+	 * @param object
+	 *            - the object to store
 	 */
-	void put(String type, String key, Map<String, Object> obj);
+	void put(String type, String key, Object object);
+
+	<T> void put(String key, T object);
 
 	/**
 	 * Remove a document from the index from the given types with the given id.
 	 * 
 	 * @param type
 	 *            - the object's type
-	 * @param id
+	 * @param key
 	 *            - the unique identifier of the object
 	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
 	 */
-	boolean remove(String type, String id);
+	boolean remove(String type, String key);
 
 	/**
-	 * Execute the given query among all stored documents with the given type.
+	 * Remove a document from the index from the given types with the given id.
 	 * 
 	 * @param type
-	 *            - the type to restrict the execution of the query
-	 * @param query
-	 *            - the query to execute and return hits for
-	 * @return - the search hits
+	 *            - the object's type
+	 * @param key
+	 *            - the unique identifier of the object
+	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
 	 */
-	SearchHits search(String type, QueryBuilder query);
-
-	/**
-	 * Execute the given query among all stored documents with the given type. The size of the search hits will be restricted to the given limit
-	 * starting from the given offset.
-	 * 
-	 * @param type
-	 *            - the type to restrict execution of the query
-	 * @param query
-	 *            - the query to execute and return hits for
-	 * @param offset
-	 *            - the offset to use
-	 * @param limit
-	 *            - the result set limit to use
-	 * @return - the search hits
-	 */
-	SearchHits search(String type, QueryBuilder query, int offset, int limit);
-
-	/**
-	 * Returns the name of the index.
-	 * 
-	 * @return
-	 */
-	String name();
-
-	/**
-	 * Returns the administrator interface for this index.
-	 * 
-	 * @return
-	 */
-	IndexAdmin admin();
-
-	/**
-	 * Returns a query builder scoped to the given type.
-	 * 
-	 * @param type
-	 *            - the type to restrict the execution of the query
-	 * @return
-	 */
-	IndexQueryBuilder query(String type);
-
-	/**
-	 * Execute the given query among all stored documents with the given type.
-	 * 
-	 * @param type
-	 *            - the type to restrict execution of the query
-	 * @param indexQueryBuilder
-	 *            - the builder defining all aspects of your query
-	 * @return - the search hits
-	 */
-	SearchHits search(IndexQueryBuilder indexQueryBuilder);
+	<T> boolean remove(Class<T> type, String key);
 
 }

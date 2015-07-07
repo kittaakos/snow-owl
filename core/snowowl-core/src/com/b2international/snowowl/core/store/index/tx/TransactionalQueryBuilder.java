@@ -15,17 +15,20 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import com.b2international.snowowl.core.store.index.DefaultIndexAdmin;
-import com.b2international.snowowl.core.store.index.IndexAdmin;
-import com.b2international.snowowl.core.store.index.Mappings;
+import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 
 /**
- * @since 5.0 
+ * @since 5.0
  */
-public class DefaultTransactionalIndexAdmin extends DefaultIndexAdmin implements TransactionalIndexAdmin {
+public interface TransactionalQueryBuilder extends QueryBuilder {
 
-	protected DefaultTransactionalIndexAdmin(IndexAdmin admin) {
-		super(admin.client(), admin.name(), Mappings.of(admin.mappings(), IndexCommit.class), admin.settings());
-	}
-
+	/**
+	 * Specifies the branch to restrict the query when executed. By default the branchPath is set to {@link Branch#MAIN_PATH}.
+	 * 
+	 * @param branchPath - the branch to search on
+	 * @return
+	 */
+	TransactionalQueryBuilder on(String branchPath);
+	
 }

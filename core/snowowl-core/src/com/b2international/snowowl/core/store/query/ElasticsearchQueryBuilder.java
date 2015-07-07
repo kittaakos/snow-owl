@@ -110,6 +110,8 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 		} else if (expression instanceof StringSetPredicate) {
 			StringSetPredicate predicate = (StringSetPredicate) expression;
 			visit(predicate);
+		} else if (expression instanceof LongPredicate) {
+			visit((LongPredicate) expression);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -129,6 +131,12 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 	}
 	
 	private void visit(StringPredicate predicate) {
+		Feature feature = predicate.getFeature();
+		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(LongPredicate predicate) {
 		Feature feature = predicate.getFeature();
 		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
 		deque.push(new DequeItem(filter));

@@ -17,14 +17,12 @@ package com.b2international.snowowl.core.store;
 
 import java.util.Collection;
 
-import com.b2international.snowowl.core.store.query.Query;
-
 /**
  * @since 4.1
  * @param <T>
  *            - the type of the objects to store
  */
-public interface Store<T> {
+public interface Store<T> extends Searchable {
 
 	/**
 	 * Puts the value into this store.
@@ -74,10 +72,6 @@ public interface Store<T> {
 	 * Clears the store by completely removing all currently persisted values.
 	 */
 	void clear();
-
-	Collection<T> search(Query query);
-
-	Collection<T> search(Query query, int offset, int limit);
 
 	/**
 	 * Returns the name of the store.

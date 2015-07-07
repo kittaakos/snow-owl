@@ -39,14 +39,10 @@ public class ElasticsearchCountRequestBuilder {
 		checkNotNull(query, "query");
 		Select select = query.getSelect();
 		checkArgument(select instanceof Select.Count, "This builder only handles count queries.");
-		RootType selectType = query.getType();
 		Expression where = query.getWhere();
 		
 		QueryBuilder elasticsearchQuery = queryBuilder.build(where);
 		CountRequest countRequest = new CountRequest().indices(indexName).source(new QuerySourceBuilder().setQuery(elasticsearchQuery));
-		if (!AnyType.INSTANCE.equals(selectType)) {
-			countRequest.types(selectType.getName());
-		}
 		
 		return countRequest;
 	}

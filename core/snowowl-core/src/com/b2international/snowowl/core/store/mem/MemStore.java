@@ -15,18 +15,13 @@
  */
 package com.b2international.snowowl.core.store.mem;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.store.BaseStore;
 import com.b2international.snowowl.core.store.query.Query;
-import com.b2international.snowowl.core.store.query.Where;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.FluentIterable;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -71,25 +66,35 @@ public class MemStore<T> extends BaseStore<T> {
 	}
 	
 	@Override
-	public Collection<T> search(Query query) {
-		return search(query, 0, Integer.MAX_VALUE);
+	public QueryBuilder query() {
+		return Query.builder(this);
 	}
-	
+
 	@Override
-	public Collection<T> search(Query query, int offset, int limit) {
-		checkArgument(query != null, "Query may not be null");
-		checkArgument(offset >= 0, "Offset must be zero or positive");
-		checkArgument(limit >= 1, "Limit should be at least one");
-		return FluentIterable.from(values()).skip(offset).limit(limit).filter(Predicates.and(toPredicates(query))).toSet();
+	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+		throw new UnsupportedOperationException();
 	}
 	
-	private Iterable<Predicate<T>> toPredicates(Query query) {
-		return FluentIterable.from(query.clauses()).filter(Where.class).transform(new Function<Where, Predicate<T>>() {
-			@Override
-			public Predicate<T> apply(final Where where) {
-				return where.toPredicate();
-			}
-		}).toSet();
-	}
+//	@Override
+//	public Collection<T> search(Query query) {
+//		return search(query, 0, Integer.MAX_VALUE);
+//	}
+//	
+//	@Override
+//	public Collection<T> search(Query query, int offset, int limit) {
+//		checkArgument(query != null, "Query may not be null");
+//		checkArgument(offset >= 0, "Offset must be zero or positive");
+//		checkArgument(limit >= 1, "Limit should be at least one");
+//		return FluentIterable.from(values()).skip(offset).limit(limit).filter(Predicates.and(toPredicates(query))).toSet();
+//	}
+//	
+//	private Iterable<Predicate<T>> toPredicates(Query query) {
+//		return FluentIterable.from(query.clauses()).filter(Where.class).transform(new Function<Where, Predicate<T>>() {
+//			@Override
+//			public Predicate<T> apply(final Where where) {
+//				return where.toPredicate();
+//			}
+//		}).toSet();
+//	}
 	
 }

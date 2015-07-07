@@ -96,8 +96,9 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	}
 
 	@Override
-	public void clear(String type) {
-		this.admin.indices().prepareDeleteMapping(index).setType(type).get();
+	public <T> void clear(Class<T> type) {
+		final String typeName = mappings().getMapping(type).getType();
+		this.admin.indices().prepareDeleteMapping(index).setType(typeName).get();
 	}
 	
 	@Override

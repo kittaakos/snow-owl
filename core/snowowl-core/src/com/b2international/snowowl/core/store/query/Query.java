@@ -15,95 +15,59 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-
+import com.b2international.snowowl.core.store.Searchable;
+import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
- * Represents a terminology query.
+ * Represents a generic query on any kind of storage and model.
  * 
  * @since 5.0
  */
 public class Query {
-	
+
 	public interface QueryBuilder {
 		AfterSelectBuilder select(Select select);
+		
+		AfterSelectBuilder selectAll();
 	}
-	
-	public interface AfterTypeBuilder {
+
+	public interface AfterSelectBuilder {
 		AfterWhereBuilder where(Expression expression);
 	}
-	
-	public interface AfterSelectBuilder {
-		AfterTypeBuilder from(RootType type);
-	}
-	
-	public interface AfterWhereBuilder extends Buildable<Query> {
-		AfterWhereBuilder offset(int offset);
-		AfterWhereBuilder limit(int limit);
-		AfterWhereBuilder sortBy(SortBy sortBy);
-	}
-	
-	private static final class BuilderImpl implements QueryBuilder, AfterTypeBuilder, AfterSelectBuilder, AfterWhereBuilder {
-		
-		private static final int DEFAULT_LIMIT = Integer.MAX_VALUE;
-		
-		private int offset = 0;
-		private int limit = DEFAULT_LIMIT;
-		private RootType type;
-		private Select select;
-		private Expression where;
-		private SortBy sortBy = SortBy.NONE;
 
-		public BuilderImpl offset(int offset) {
-			this.offset = offset;
-			return this;
-		}
+	public interface AfterWhereBuilder extends Buildable<Query> {
 		
-		public BuilderImpl limit(int limit) {
-			this.limit = limit;
-			return this;
-		}
+		AfterWhereBuilder offset(int offset);
+
+		AfterWhereBuilder limit(int limit);
+
+		AfterWhereBuilder sortBy(SortBy sortBy);
+
+		<T> Iterable<T> search(Class<T> type);
 		
-		public BuilderImpl select(Select select) {
-			this.select = select;
-			return this;
-		}
+	}
+	
+	/**
+	 * TODO non-API interface move to internal package
+	 * @since 5.0
+	 */
+	public interface SearchContextBuilder extends AfterWhereBuilder {
 		
-		public BuilderImpl where(Expression expression) {
-			this.where = expression;
-			return this;
-		}
+		SearchContextBuilder executeWith(SearchExecutor executor);
 		
-		public BuilderImpl sortBy(SortBy sortBy) {
-			this.sortBy = sortBy;
-			return this;
-		}
+		SearchExecutor executor();
 		
-		public BuilderImpl from(RootType type) {
-			this.type = type;
-			return this;
-		}
-		
-		public Query build() {
-			Query query = new Query();
-			query.setSelect(select);
-			query.setType(type);
-			query.setWhere(where);
-			query.setLimit(limit);
-			query.setOffset(offset);
-			query.setSortBy(sortBy);
-			return query;
-		}
 	}
 
 	private int offset;
 	private int limit;
-	private RootType type;
 	private Select select;
 	private Expression where;
-	private SortBy sortBy;
-	
-	Query() {}
-	
+	private SortBy sortBy = SortBy.NONE;
+
+	protected Query() {
+	}
+
 	public int getOffset() {
 		return offset;
 	}
@@ -144,19 +108,11 @@ public class Query {
 		this.sortBy = sortBy;
 	}
 
-	public RootType getType() {
-		return type;
-	}
-	
-	void setType(RootType type) {
-		this.type = type;
-	}
-	
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT " + select + " FROM " + type + " WHERE " + where);
-		if (sortBy != SortBy.NONE) {
+		sb.append("SELECT " + select + " WHERE " + where);
+		if (SortBy.NONE != sortBy) {
 			sb.append(" SORT BY " + sortBy);
 		}
 		sb.append(" LIMIT " + limit);
@@ -165,8 +121,8 @@ public class Query {
 		}
 		return sb.toString();
 	}
-	
-	public static QueryBuilder builder() {
-		return new BuilderImpl();
+
+	public static QueryBuilder builder(Searchable searchable) {
+		return new DefaultQueryBuilder(searchable);
 	}
 }

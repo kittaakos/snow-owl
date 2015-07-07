@@ -47,7 +47,7 @@ public interface IndexAdmin {
 	 * @param type
 	 *            - the type to remove completely from the index
 	 */
-	void clear(String type);
+	<T> void clear(Class<T> type);
 
 	/**
 	 * Returns all defined mappings.

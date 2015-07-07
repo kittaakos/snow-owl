@@ -13,28 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.terminology;
+package com.b2international.snowowl.core.store.query.req;
 
-import com.b2international.snowowl.core.store.Id;
-import com.b2international.snowowl.core.store.index.tx.Revision;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
+ * TODO non-API interface move to internal package
  * @since 5.0
  */
-public abstract class Component extends Revision {
+public interface SearchExecutor {
 
-	@Id
-	private String id;
-	
-	protected Component() {
-	}
-	
-	public String getId() {
-		return id;
-	}
-	
-	public void setId(String id) {
-		this.id = id;
-	}
+	<T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, ObjectMapper mapper, Class<T> resultType);
 	
 }

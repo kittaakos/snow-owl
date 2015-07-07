@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
@@ -45,15 +46,19 @@ public class Mappings {
 		this.mappings = mappings;
 	}
 	
-	private void addMapping(Class<?> type) {
+	public void addMapping(Class<?> type) {
 		// TODO provider of mapping strategy???
 		final MappingStrategy<?> strategy = new DefaultMappingStrategy<>(mapper, type);
 		mappings.put(type, strategy);
 	}
+
+	public ObjectMapper mapper() {
+		return mapper;
+	}
 	
 	@SuppressWarnings("unchecked")
 	public <T> MappingStrategy<T> getMapping(Class<T> type) {
-		return (MappingStrategy<T>) mappings.get(type);
+		return (MappingStrategy<T>) checkNotNull(mappings.get(type), "Mapping may not be null for %s", type) ;
 	}
 	
 	public Collection<MappingStrategy<?>> getMappings() {
@@ -77,5 +82,5 @@ public class Mappings {
 		}
 		return newMappings;
 	}
-	
+
 }

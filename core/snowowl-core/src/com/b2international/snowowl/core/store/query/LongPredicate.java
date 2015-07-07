@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store.index.tx;
-
-import java.util.Map;
+package com.b2international.snowowl.core.store.query;
 
 /**
  * @since 5.0
  */
-public interface IndexRevision {
+public class LongPredicate extends SingleArgumentPredicate<Long> {
 
-	String STORAGE_KEY = "storageKey";
-	String DELETED_FIELD = "deleted";
-	
-	long getStorageKey();
-	
-	long getCommitTimestamp();
-	
-	int getCommitId();
-	
-	Map<String, Object> getData();
+	public LongPredicate(Type type, Feature feature, Long argument) {
+		super(type, feature, argument);
+	}
 
-	boolean isDeleted();
-	
 }

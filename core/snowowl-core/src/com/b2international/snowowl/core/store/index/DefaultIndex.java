@@ -15,22 +15,24 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.SearchHits;
-import org.elasticsearch.search.sort.SortBuilder;
-import org.slf4j.Logger;
 
-import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.core.store.query.Query;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
+import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
+import com.b2international.snowowl.core.store.query.req.DefaultSearchExecutor;
+import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
  * General purpose index service implementation on top of Elasticsearch library.
@@ -39,7 +41,6 @@ import com.b2international.snowowl.core.log.Loggers;
  */
 public class DefaultIndex implements Index {
 
-	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private Client client;
 	private String index;
 	private DefaultIndexAdmin admin;
@@ -49,14 +50,20 @@ public class DefaultIndex implements Index {
 	}
 	
 	public DefaultIndex(Client client, String index, Mappings mappings, Map<String, Object> settings) {
-		this.client = client;
+		this.client = checkNotNull(client, "client");
 		this.index = index;
 		this.admin = new DefaultIndexAdmin(this.client.admin(), index, mappings, settings);
 	}
 	
 	@Override
-	public final Map<String, Object> get(String type, String id) {
-		final GetResponse getResponse = this.client.prepareGet(index, type, id).setFetchSource(true).get();
+	public final <T> T get(Class<T> type, String key) {
+		final MappingStrategy<T> mapping = mapping(type);
+		return mapping.convert(get(mapping.getType(), key));
+	}
+	
+	@Override
+	public Map<String, Object> get(String type, String key) {
+		final GetResponse getResponse = this.client.prepareGet(index, type, key).setFetchSource(true).get();
 		if (getResponse.isExists()) {
 			return getResponse.getSource();
 		} else {
@@ -65,36 +72,49 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public final void put(String type, String id, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type, id).setSource(obj);
+	public final <T> void put(String key, T object) {
+		put(getType(object.getClass()), key, object);
+	}
+	
+	@Override
+	public void put(String type, String key, Object object) {
+		final Map<String, Object> map = toMap(object);
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type, key).setSource(map);
+		doIndex(req);		
+	}
+
+	@SuppressWarnings("unchecked")
+	private Map<String, Object> toMap(Object object) {
+		return admin().mappings().mapper().convertValue(object, Map.class);
+	}
+
+	@Override
+	public final <T> void putWithParent(String parentKey, T object) {
+		putWithParent(getType(object.getClass()), parentKey, object);
+	}
+	
+	@Override
+	public void putWithParent(String type, String parentKey, Object object) {
+		final Map<String, Object> map = toMap(object);
+		final IndexRequestBuilder req = this.client.prepareIndex(index, type).setParent(parentKey).setSource(map);
 		doIndex(req);
 	}
 
 	@Override
-	public final void putWithParent(String type, String parentKey, Map<String, Object> obj) {
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type).setParent(parentKey).setSource(obj);
-		doIndex(req);
+	public final <T> boolean remove(Class<T> type, String key) {
+		return remove(getType(type), key);
 	}
-
+	
 	@Override
-	public final boolean remove(String type, String id) {
-		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, id);
+	public boolean remove(String type, String key) {
+		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, key);
 		return doDelete(req);
 	}
 
-	@Override
-	public final SearchHits search(String type, QueryBuilder query) {
-		return search(type, query, 0, Integer.MAX_VALUE);
+	private <T> String getType(Class<T> type) {
+		return mapping(type).getType();
 	}
-	
-	@Override
-	public final SearchHits search(String type, QueryBuilder query, int offset, int limit) {
-		return query(type)
-					.where(query)
-					.page(offset, limit)
-					.search();
-	}
-	
+
 	@Override
 	public final String name() {
 		return index;
@@ -111,27 +131,21 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public final IndexQueryBuilder query(String type) {
-		return new IndexQueryBuilder(this, type);
+	public final QueryBuilder query() {
+		return Query.builder(this);
 	}
 	
 	@Override
-	public final SearchHits search(IndexQueryBuilder query) {
-		final String type = query.type();
-		final SearchRequestBuilder req = this.client.prepareSearch(index)
-				.setTypes(type)
-				.setQuery(query.toIndexQuery())
-				.setFrom(query.offset())
-				.setSize(query.limit());
-		for (SortBuilder sort : query.sorts()) {
-			req.addSort(sort);
+	public final <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+		final SearchContextBuilder context = ClassUtils.checkAndCast(query, SearchContextBuilder.class);
+		final MappingStrategy<T> mapping = mapping(type);
+		final String typeName = mapping.getType();
+		final SearchRequestBuilder req = this.client.prepareSearch(index).setTypes(typeName);
+		SearchExecutor executor = context.executor();
+		if (executor == null) {
+			executor = new DefaultSearchExecutor();
 		}
-		LOG.trace("Executing query: {}", req);
-		final SearchResponse response = req.get();
-		if (response.getSuccessfulShards() <= 0) {
-			throw new FormattedRuntimeException("Failed to execute query '%s' on index '%s/%s': ", name(), type, response);
-		}
-		return response.getHits();
+		return executor.execute(req, query, admin().mappings().mapper(), type);
 	}
 	
 	protected final Client client() {

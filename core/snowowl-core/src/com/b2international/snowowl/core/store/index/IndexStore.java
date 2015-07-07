@@ -19,19 +19,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
-import java.util.List;
-
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchHits;
 
 import com.b2international.snowowl.core.store.BaseStore;
-import com.b2international.snowowl.core.store.query.Clause;
-import com.b2international.snowowl.core.store.query.EqualsWhere;
-import com.b2international.snowowl.core.store.query.PrefixWhere;
-import com.b2international.snowowl.core.store.query.Where;
+import com.b2international.snowowl.core.store.query.MatchAll;
+import com.b2international.snowowl.core.store.query.Query;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
+import com.b2international.snowowl.core.store.query.Select;
 
 /**
  * @since 4.1
@@ -39,91 +33,52 @@ import com.b2international.snowowl.core.store.query.Where;
 public class IndexStore<T> extends BaseStore<T> {
 
 	private Index index;
-	private MappingStrategy<T> mapping;
 
 	public IndexStore(Index index, Class<T> type) {
 		super(type);
 		this.index = checkNotNull(index, "index");
-		this.mapping = index.mapping(getTypeClass());
 	}
 	
 	@Override
 	protected void doPut(String key, T value) {
-		this.index.put(getType(), key, mapping.convert(value));
-	}
-
-	private String getType() {
-		return this.mapping.getType();
+		this.index.put(key, value);
 	}
 
 	@Override
 	public T get(String key) {
-		return mapping.convert(index.get(getType(), key));
+		return index.get(getTypeClass(), key);
 	}
 
 	@Override
 	public T remove(String key) {
 		final T t = get(key);
-		index.remove(getType(), key);
+		index.remove(getTypeClass(), key);
 		return t;
 	}
 
 	@Override
 	public Collection<T> values() {
-		return searchIndex(QueryBuilders.matchAllQuery());
+		return newArrayList(query().select(Select.all()).where(new MatchAll()).search(getTypeClass()));
 	}
 	
-	@Override
-	public Collection<T> search(com.b2international.snowowl.core.store.query.Query query) {
-		return search(query, 0, Integer.MAX_VALUE);
-	}
-	
-	@Override
-	public Collection<T> search(com.b2international.snowowl.core.store.query.Query query, int offset, int limit) {
-		return searchIndex(convert(query), offset, limit);
-	}
-
 	@Override
 	public void clear() {
-		index.admin().clear(getType());
+		index.admin().clear(getTypeClass());
 	}
 	
 	@Override
 	public String getName() {
-		return String.format("Index[%s/%s]", index.name(), getType());
+		return String.format("IndexStore[%s/%s]", index.name(), index.mapping(getTypeClass()).getType());
 	}
 	
-	private List<T> searchIndex(final QueryBuilder query) {
-		return searchIndex(query, Integer.MAX_VALUE);
+	@Override
+	public QueryBuilder query() {
+		return Query.builder(this);
 	}
 
-	private List<T> searchIndex(final QueryBuilder query, final int limit) {
-		return searchIndex(query, 0, limit);
-	}
-	
-	private List<T> searchIndex(final QueryBuilder query, final int offset, final int limit) {
-		final SearchHits hits = index.search(getType(), query, offset, limit);
-		final List<T> result = newArrayList();
-		for (SearchHit hit : hits.getHits()) {
-			result.add(mapping.convert(hit.getSource()));
-		}
-		return result;
-	}
-	
-	private QueryBuilder convert(com.b2international.snowowl.core.store.query.Query query) {
-		final BoolQueryBuilder result = QueryBuilders.boolQuery();
-		for (Clause clause : query.clauses()) {
-			if (clause instanceof Where) {
-				final String property = ((Where) clause).property();
-				final String value = ((Where) clause).value();
-				if (clause instanceof EqualsWhere) {
-					result.must(QueryBuilders.termQuery(property, value));
-				} else if (clause instanceof PrefixWhere) {
-					result.must(QueryBuilders.prefixQuery(property, value));
-				}
-			}
-		}
-		return result;
+	@Override
+	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+		return index.search(query, type);
 	}
 	
 }

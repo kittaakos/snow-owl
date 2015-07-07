@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.internal.branch;
 
+import static com.google.common.collect.Lists.newArrayList;
+
 import java.util.Collection;
 
 import com.b2international.snowowl.core.Metadata;
@@ -25,7 +27,7 @@ import com.b2international.snowowl.core.exceptions.AlreadyExistsException;
 import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.Store;
-import com.b2international.snowowl.core.store.query.QueryBuilder;
+import com.b2international.snowowl.core.store.query.Expressions;
 
 /**
  * @since 4.1
@@ -137,7 +139,11 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = branchStore.search(QueryBuilder.newQuery().prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR).build());
+		final Collection<InternalBranch> values = newArrayList(branchStore
+				.query()
+				.selectAll()
+				.where(Expressions.prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR))
+				.search(InternalBranch.class));
 		initialize(values);
 		return values;
 	}

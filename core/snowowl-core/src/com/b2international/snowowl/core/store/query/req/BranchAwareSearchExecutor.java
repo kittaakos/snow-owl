@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store.index.tx;
+package com.b2international.snowowl.core.store.query.req;
 
 import static org.elasticsearch.index.query.FilterBuilders.andFilter;
 import static org.elasticsearch.index.query.FilterBuilders.hasParentFilter;
@@ -26,29 +26,29 @@ import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.store.index.IndexQueryBuilder;
+import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalQueryBuilder;
+import com.b2international.snowowl.core.store.index.tx.IndexCommit;
+import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
 
 /**
  * @since 5.0
  */
-public class TransactionalIndexQueryBuilder extends IndexQueryBuilder {
+public class BranchAwareSearchExecutor extends DefaultSearchExecutor {
 
-	private String branchPath;
 	private BranchManager branchManager;
 
-	protected TransactionalIndexQueryBuilder(TransactionalIndex index, BranchManager branchManager, String type, String branchPath) {
-		super(index.index(), type);
+	public BranchAwareSearchExecutor(BranchManager branchManager) {
 		this.branchManager = branchManager;
-		this.branchPath = branchPath;
-		sortDesc(IndexCommit.COMMIT_TIMESTAMP_FIELD);
-		sortAsc(IndexRevision.STORAGE_KEY);
 	}
-	
+
 	@Override
-	protected QueryBuilder toIndexQuery() {
-		return QueryBuilders.filteredQuery(super.toIndexQuery(), branchFilter(branchPath));
+	protected QueryBuilder getQuery(DefaultQueryBuilder builder) {
+		final DefaultTransactionalQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultTransactionalQueryBuilder.class);
+		final FilterBuilder branchFilter = branchFilter(qb.getBranchPath());
+		return QueryBuilders.filteredQuery(super.getQuery(qb), branchFilter);
 	}
 	
 	private FilterBuilder branchFilter(String branchPath) {
@@ -96,5 +96,5 @@ public class TransactionalIndexQueryBuilder extends IndexQueryBuilder {
 		final long baseTimestamp = branchManager.getBranch(branchPath).baseTimestamp();
 		return rangeFilter(IndexCommit.COMMIT_TIMESTAMP_FIELD).gte(baseTimestamp).lte(headTimestamp);
 	}
-
+	
 }

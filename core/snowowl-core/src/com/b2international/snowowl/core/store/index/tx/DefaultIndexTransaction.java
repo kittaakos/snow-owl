@@ -17,12 +17,6 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Map;
-
-import com.b2international.snowowl.core.store.index.Mapping;
-import com.b2international.snowowl.core.terminology.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 /**
  * @since 5.0
  */
@@ -31,34 +25,33 @@ class DefaultIndexTransaction implements IndexTransaction {
 	private TransactionalIndex index;
 	private int commitId;
 	private long commitTimestamp;
-	private ObjectMapper mapper;
 	private String branchPath;
 
-	public DefaultIndexTransaction(TransactionalIndex index, int commitId, long commitTimestamp, String branchPath, ObjectMapper mapper) {
+	public DefaultIndexTransaction(TransactionalIndex index, int commitId, long commitTimestamp, String branchPath) {
 		this.commitId = commitId;
 		this.commitTimestamp = commitTimestamp;
 		this.branchPath = checkNotNull(branchPath, "branchPath");
 		this.index = checkNotNull(index, "index");
-		this.mapper = checkNotNull(mapper, "mapper");
 	}
 	
 	@Override
-	public void add(long storageKey, Component object) {
-		index.addRevision(commitId, commitTimestamp, storageKey, branchPath, getType(object), mapper.convertValue(object, Map.class));
+	public void add(long storageKey, Revision revision) {
+		revision.setCommitId(commitId);
+		revision.setCommitTimestamp(commitTimestamp);
+		revision.setStorageKey(storageKey);
+		index.addRevision(branchPath, revision);
 	}
 	
 	@Override
-	public void delete(long storageKey, String type) {
-		index.remove(commitId, commitTimestamp, storageKey, branchPath, type);
+	public <T extends Revision> void delete(long storageKey, Class<T> type) {
+		final T revision = index.loadRevision(type, branchPath, storageKey);
+		revision.setDeleted(true);
+		index.addRevision(branchPath, revision);
 	}
 	
 	@Override
 	public void commit(String commitMessage) {
 		this.index.commit(commitId, commitTimestamp, branchPath, commitMessage);
-	}
-	
-	private String getType(Component object) {
-		return object.getClass().getAnnotation(Mapping.class).type();
 	}
 	
 }

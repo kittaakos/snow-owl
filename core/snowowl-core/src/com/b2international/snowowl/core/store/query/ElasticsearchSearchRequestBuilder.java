@@ -47,15 +47,11 @@ public class ElasticsearchSearchRequestBuilder {
 		checkNotNull(query, "query");
 		Select select = query.getSelect();
 		checkArgument(!(select instanceof Select.Count), "Count queries are not handled by this builder.");
-		RootType selectType = query.getType();
 		Expression where = query.getWhere();
 		QueryBuilder elasticsearchQuery = queryBuilder.build(where);
 
 		SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder().query(elasticsearchQuery);
 		SearchRequest searchRequest = new SearchRequest().source(searchSourceBuilder).indices(indexName);
-		if (!AnyType.INSTANCE.equals(selectType)) {
-			searchRequest.types(selectType.getName());
-		}
 		
 		List<String> sourceIncludePatterns = Lists.newArrayList();
 		List<String> fields = Lists.newArrayList();

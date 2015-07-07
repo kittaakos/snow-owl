@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.core.store.index.tx;
-
-import com.b2international.snowowl.core.store.index.IndexAdmin;
+package com.b2international.snowowl.core.store.query;
 
 /**
  * @since 5.0
  */
-public interface TransactionalIndexAdmin extends IndexAdmin {
+public class PrefixPredicate extends SingleArgumentPredicate<String> {
 
-	// add getCommits etc...
-	
+	public PrefixPredicate(Type type, Feature feature, String argument) {
+		super(type, feature, argument);
+	}
+
 }

@@ -17,13 +17,14 @@ package com.b2international.snowowl.snomed.core.store.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.store.query.RootType;
+import com.b2international.snowowl.core.store.query.Type;
 import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
 /**
  * @since 5.0
  */
-public enum SnomedComponentType implements RootType {
+public enum SnomedComponentType implements Type {
+	
 	CONCEPT(SnomedIndexConstants.CONCEPT_OBJECT_TYPE);
 	
 	private final String name;

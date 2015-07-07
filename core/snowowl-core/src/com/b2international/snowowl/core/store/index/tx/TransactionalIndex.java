@@ -15,67 +15,41 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import java.util.Map;
-
+import com.b2international.snowowl.core.store.Searchable;
 import com.b2international.snowowl.core.store.index.Administrable;
-import com.b2international.snowowl.core.store.index.BulkIndex;
-import com.b2international.snowowl.core.store.index.IndexQueryBuilder;
+import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.MappingProvider;
 
 /**
  * @since 5.0
  */
-public interface TransactionalIndex extends Administrable<TransactionalIndexAdmin>, MappingProvider {
+public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingProvider, Searchable {
 
-	// TODO Move this to internal package
-	BulkIndex index();
-	
+	@Override
+	TransactionalQueryBuilder query();
+
 	/**
-	 * Loads the latest revision (Map of String, Object value pairs) from the index with the given type and storageKey as identifier.
+	 * Adds a revision to the transactional index.
+	 * 
+	 * @param branchPath
+	 *            - the branch to use when adding the revision
+	 * @param revision
+	 *            - the revision
+	 */
+	void addRevision(String branchPath, Revision revision);
+
+	/**
+	 * Loads the latest revision of an object from the index with the given type and storageKey as identifier.
 	 * 
 	 * @param type
-	 *            - the type of the data object held by the returned revision
+	 *            - the type of the object
 	 * @param branchPath
-	 *            - the branchPath to restrict the loading of revisions
+	 *            - the branchPath to restrict the loading of the revision
 	 * @param storageKey
 	 *            - the storage identifier of the revision
-	 * @return the loaded data object, holding all values of the revision
+	 * @return the loaded revision object
 	 */
-	Map<String, Object> loadRevision(String type, String branchPath, long storageKey);
-
-	// TODO Map<String, Object> loadRevision(String type, String branchPath, long timestamp, String key);
-
-	/**
-	 * Adds a revision of a given type to the index using the given commitId and commitTimestamp as revision properties.
-	 * 
-	 * @param commitId
-	 *            - commit group this revision belongs to
-	 * @param commitTimestamp
-	 *            - the commit group's timestamp
-	 * @param storageKey
-	 *            - the storage identifier of the data object/revision
-	 * @param branchPath
-	 *            - the branchPath to use when adding the revision
-	 * @param type
-	 *            - the type of the data object
-	 * @param data
-	 *            - the data object itself
-	 */
-	void addRevision(int commitId, long commitTimestamp, long storageKey, String branchPath, String type, Map<String, Object> data);
-
-	/**
-	 * Marks the latest revision of the object identified by the given key as deleted and reindexes it.
-	 * 
-	 * @param commitId
-	 *            - commit group id this revision belongs to
-	 * @param commitTimestamp
-	 *            - the commit group's timestamp
-	 * @param branchPath
-	 *            - the branch to use when adding the deleted revision
-	 * @param type
-	 *            - the type of the data object
-	 */
-	void remove(int commitId, long commitTimestamp, long storageKey, String branchPath, String type);
+	<T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey);
 
 	/**
 	 * Indexes a commit group as parent for all previously added revision (with the given commitId) available for search.
@@ -96,7 +70,5 @@ public interface TransactionalIndex extends Administrable<TransactionalIndexAdmi
 	 * @return
 	 */
 	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
-
-	IndexQueryBuilder query(String type, String branchPath);
 
 }
