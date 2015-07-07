@@ -18,7 +18,7 @@ package com.b2international.snowowl.core.tests.person;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Objects;
 
 import com.b2international.snowowl.core.store.index.Mapping;
 import com.b2international.snowowl.core.terminology.Component;
@@ -32,7 +32,7 @@ public class Person extends Component {
 	private String firstName;
 	private String lastName;
 	private int yob;
-	private Collection<Address> addresses;
+	private Collection<Address> addresses = newArrayList();
 
 	public String getFirstName() {
 		return firstName;
@@ -47,14 +47,7 @@ public class Person extends Component {
 	}
 	
 	public Collection<Address> getAddresses() {
-		if (addresses == null) {
-			return Collections.emptySet();
-		}
 		return addresses;
-	}
-	
-	public void setAddresses(Collection<Address> addresses) {
-		this.addresses = addresses == null ? Collections.<Address>emptySet() : addresses;
 	}
 	
 	public void setFirstName(String firstName) {
@@ -70,10 +63,22 @@ public class Person extends Component {
 	}
 
 	public void addAddress(Address address) {
-		if (addresses == null) {
-			addresses = newArrayList();
-		}
 		this.addresses.add(address);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getId(), firstName, lastName, yob, getAddresses());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) return true;
+		if (obj == null) return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Person other = (Person) obj;
+		return Objects.equals(getId(), other.getId()) && Objects.equals(firstName, other.firstName) && Objects.equals(lastName, other.lastName) && Objects.equals(yob, other.yob) && Objects.equals(getAddresses(), other.getAddresses()); 
 	}
 
 	public static Person of(person.Person person) {

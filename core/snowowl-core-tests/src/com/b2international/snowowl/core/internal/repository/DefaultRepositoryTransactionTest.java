@@ -41,10 +41,10 @@ import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
+import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
-import com.b2international.snowowl.core.store.index.tx.TransactionalIndexAdmin;
 import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonChangeProcessorFactory;
@@ -83,8 +83,8 @@ public class DefaultRepositoryTransactionTest {
 		((InternalRepository)repository).addUser(USER, PASS);
 		
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, repository.branching());
-		final TransactionalIndexAdmin admin = this.index.admin();
+		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), repository.branching());
+		final IndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();
 		factory.setIndex(index);

@@ -43,7 +43,6 @@ public class PersonFixtures {
 	public static final String REPO_NAME_2 = "Person Store";
 	public static final String PERSON_RESOURCE = "person-resource";
 	
-	public static final String PERSON_TYPE = "person";
 	public static final long PERSON_1_STORAGEKEY = 1L;
 	public static final String PERSON_1_KEY = "1";
 	

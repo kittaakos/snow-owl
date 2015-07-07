@@ -15,11 +15,9 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,8 +30,8 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
+import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
-import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonFixtures;
@@ -61,6 +59,12 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private Branch main;
 
 	private BranchManager manager = new MockBranchManager();
+
+	private Person person1_2015;
+
+	private Person person1_YobChanged;
+
+	private Person person1_FirstNameChanged;
 	
 	@Before
 	public void givenTransactionalIndex() {
@@ -72,27 +76,31 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), mapper, manager);
-		final TransactionalIndexAdmin admin = this.index.admin();
+		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), manager);
+		final IndexAdmin admin = this.index.admin();
 		admin.delete();
 		admin.create();
+		this.person1_2015 = createPerson1();
+		this.person1_YobChanged = createPerson1();
+		this.person1_YobChanged.setYob(1997);
+		this.person1_FirstNameChanged = createPerson1();
+		this.person1_FirstNameChanged.setFirstName("MAIN");
 	}
 
 	@Test(expected = NotFoundException.class)
 	public void loadingMissingRevision_ShouldThrowNotFoundException() throws Exception {
-		this.index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		this.index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 	}
 	
 	@Test
 	public void whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex() throws Exception {
 		final IndexTransaction tx = openTransaction(main);
-		final Person p1 = createPerson1();
-		tx.add(PERSON_1_STORAGEKEY, p1);
+		tx.add(PERSON_1_STORAGEKEY, person1_2015);
 		tx.commit(COMMIT_MESSAGE);
 		
-		final Map<String, Object> p = (Map<String, Object>) index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
-		assertNotNull(p);
-		assertThat(p).isNotEmpty();
+		final Person rev = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		assertEquals(PERSON_1_STORAGEKEY, rev.getStorageKey());
+		assertEquals(person1_2015, rev);
 	}
 	
 	@Test
@@ -100,29 +108,19 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
 		
 		final IndexTransaction tx2 = openTransaction(main);
-		final Person person = createPerson1();
-		person.setYob(1997);
-		tx2.add(PERSON_1_STORAGEKEY, person);
+		tx2.add(PERSON_1_STORAGEKEY, person1_YobChanged);
 		tx2.commit(COMMIT_MESSAGE);
 		
-		final Map<String, Object> personRev = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
-		assertThat(personRev)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 1997)
-			.containsEntry("firstName", "Foo")
-			.containsEntry("lastName", "Bar");
+		final Person rev = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		assertEquals(person1_YobChanged, rev);
 	}
 	
 	@Test
 	public void whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
 		final Branch branchA = createBranch(Branch.MAIN_PATH, "a");
-		final Map<String, Object> personRev = index.loadRevision(PERSON_TYPE, branchA.path(), PERSON_1_STORAGEKEY);
-		assertThat(personRev)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 2015)
-			.containsEntry("firstName", "Foo")
-			.containsEntry("lastName", "Bar");
+		final Person rev = index.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
+		assertEquals(person1_2015, rev);
 	}
 
 	@Test
@@ -134,25 +132,15 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		
 		// make commit on branch
 		final IndexTransaction tx = openTransaction(branchA);
-		final Person person = createPerson1();
-		person.setYob(1997);
-		tx.add(PERSON_1_STORAGEKEY, person);
+		tx.add(PERSON_1_STORAGEKEY, person1_YobChanged);
 		tx.commit(COMMIT_MESSAGE);
 		// verify that MAIN version still has yob 2015
-		final Map<String, Object> personMain = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
-		assertThat(personMain)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 2015)
-			.containsEntry("firstName", "Foo")
-			.containsEntry("lastName", "Bar");
+		final Person personMain = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		assertEquals(person1_2015, personMain);
 		
 		// verify that Branch A has new version with yob 1997
-		final Map<String, Object> personBranch = index.loadRevision(PERSON_TYPE, branchA.path(), PERSON_1_STORAGEKEY);
-		assertThat(personBranch)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 1997)
-			.containsEntry("firstName", "Foo")
-			.containsEntry("lastName", "Bar");
+		final Person personBranch = index.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
+		assertEquals(person1_YobChanged, personBranch);
 	}
 	
 	@Test
@@ -162,26 +150,16 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		
 		// execute commit on MAIN
 		final IndexTransaction tx = openTransaction(main);
-		final Person p1 = createPerson1();
-		p1.setFirstName("MAIN");
-		tx.add(PERSON_1_STORAGEKEY, p1);
+		tx.add(PERSON_1_STORAGEKEY, person1_FirstNameChanged);
 		tx.commit(COMMIT_MESSAGE);
 		
 		// verify that MAIN version still has yob 2015, but firstName 'MAIN'
-		final Map<String, Object> personMain = index.loadRevision(PERSON_TYPE, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
-		assertThat(personMain)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 2015)
-			.containsEntry("firstName", "MAIN")
-			.containsEntry("lastName", "Bar");
+		final Person personMain = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		assertEquals(person1_FirstNameChanged, personMain);
 		
 		// verify that Branch A has new version with yob 1997
-		final Map<String, Object> personBranch = index.loadRevision(PERSON_TYPE, manager.getBranch("MAIN/a").path(), PERSON_1_STORAGEKEY);
-		assertThat(personBranch)
-			.containsEntry("id", PERSON_1_KEY)
-			.containsEntry("yob", 1997)
-			.containsEntry("firstName", "Foo")
-			.containsEntry("lastName", "Bar");
+		final Person personBranch = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		assertEquals(person1_YobChanged, personBranch);
 	}
 	
 	@Test
@@ -190,20 +168,18 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		
 		// make a change on MAIN, but leave branch unchanged
 		final IndexTransaction tx = openTransaction(main);
-		final Person p1 = createPerson1();
-		p1.setFirstName("MAIN");
-		tx.add(PERSON_1_STORAGEKEY, p1);
+		tx.add(PERSON_1_STORAGEKEY, person1_FirstNameChanged);
 		tx.commit(COMMIT_MESSAGE);
 
 		// verify that person has Foo before rebase
-		final Map<String, Object> personBeforeRebase = index.loadRevision(PERSON_TYPE, "MAIN/a", PERSON_1_STORAGEKEY);
-		assertThat(personBeforeRebase).containsEntry("firstName", "Foo");
+		final Person personBeforeRebase = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		assertEquals(person1_2015, personBeforeRebase);
 		
 		// rebase branch should move baseTimestamp forward
 		manager.getBranch("MAIN/a").rebase("Rebased branch A");
 		// verify that person has MAIN after rebase
-		final Map<String, Object> personAfterRebase = index.loadRevision(PERSON_TYPE, "MAIN/a", PERSON_1_STORAGEKEY);
-		assertThat(personAfterRebase).containsEntry("firstName", "MAIN");
+		final Person personAfterRebase = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		assertEquals(person1_FirstNameChanged, personAfterRebase);
 	}
 	
 //	@Test
@@ -251,9 +227,10 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		final long commitTimestamp = timestampProvider.incrementAndGet();
 		final IndexTransaction original = index.transaction(commitId, commitTimestamp, branch.path());
 		return new IndexTransaction() {
+
 			@Override
-			public void delete(long storageKey, String type) {
-				original.delete(storageKey, type);					
+			public <T extends Revision> void delete(long storageKey, Class<T> type) {
+				original.delete(storageKey, type);				
 			}
 			
 			@Override
@@ -262,11 +239,12 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 				// make commit available in the branch as timestamp
 				when(branch.headTimestamp()).thenReturn(commitTimestamp);
 			}
-			
+
 			@Override
-			public void add(long storageKey, Component object) {
+			public void add(long storageKey, Revision object) {
 				original.add(storageKey, object);
 			}
+			
 		};
 	}
 	

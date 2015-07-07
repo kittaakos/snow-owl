@@ -23,7 +23,8 @@ import com.b2international.snowowl.core.store.Types.Data;
 import com.b2international.snowowl.core.store.Types.TypeWithIdInterfaceSubclass;
 import com.b2international.snowowl.core.store.Types.TypeWithIdMethod;
 import com.b2international.snowowl.core.store.Types.TypeWithoutIdAnnotation;
-import com.b2international.snowowl.core.store.query.Query;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 
 /**
  * @since 5.0
@@ -46,11 +47,11 @@ public class BaseStoreInitTest {
 			public void clear() {}
 
 			@Override
-			public Collection<TypeWithoutIdAnnotation> search(Query query) { return null; }
-
+			public QueryBuilder query() { return null; }
+			
 			@Override
-			public Collection<TypeWithoutIdAnnotation> search(Query query, int offset, int limit) { return null; }
-
+			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			
 			@Override
 			public String getName() { return null; }
 
@@ -75,11 +76,11 @@ public class BaseStoreInitTest {
 			public void clear() {}
 
 			@Override
-			public Collection<Data> search(Query query) { return null; }
-
+			public QueryBuilder query() { return null; }
+			
 			@Override
-			public Collection<Data> search(Query query, int offset, int limit) { return null; }
-
+			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			
 			@Override
 			public String getName() { return null; }
 
@@ -104,11 +105,11 @@ public class BaseStoreInitTest {
 			public void clear() {}
 
 			@Override
-			public Collection<TypeWithIdMethod> search(Query query) { return null; }
+			public QueryBuilder query() { return null; }
 
 			@Override
-			public Collection<TypeWithIdMethod> search(Query query, int offset, int limit) { return null; }
-
+			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			
 			@Override
 			public String getName() { return null; }
 
@@ -133,10 +134,10 @@ public class BaseStoreInitTest {
 			public void clear() {}
 
 			@Override
-			public Collection<TypeWithIdInterfaceSubclass> search(Query query) { return null; }
+			public QueryBuilder query() { return null; }
 
 			@Override
-			public Collection<TypeWithIdInterfaceSubclass> search(Query query, int offset, int limit) { return null; }
+			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
 
 			@Override
 			public String getName() { return null; }
