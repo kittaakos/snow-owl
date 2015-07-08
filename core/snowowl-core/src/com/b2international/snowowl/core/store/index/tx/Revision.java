@@ -21,8 +21,8 @@ package com.b2international.snowowl.core.store.index.tx;
  */
 public abstract class Revision {
 
-	static final String STORAGE_KEY = "storageKey";
-	static final String DELETED_FIELD = "deleted";
+	public static final String STORAGE_KEY = "storageKey";
+	public static final String DELETED = "deleted";
 	
 	private long storageKey;
 	private int commitId;
