@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.BranchAwareSearchExecutor;
+import com.b2international.snowowl.core.store.query.req.RevisionGroupingSearchResponseProcessor;
 import com.google.common.collect.Iterables;
 
 /**
@@ -111,7 +112,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	@Override
 	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
 		final SearchContextBuilder context = ClassUtils.checkAndCast(query, SearchContextBuilder.class);
-		context.executeWith(new BranchAwareSearchExecutor(branchManager));
+		context.executeWith(new BranchAwareSearchExecutor(new RevisionGroupingSearchResponseProcessor(admin().mappings().mapper()), branchManager));
 		return this.index.search(context, type);
 	}
 	
