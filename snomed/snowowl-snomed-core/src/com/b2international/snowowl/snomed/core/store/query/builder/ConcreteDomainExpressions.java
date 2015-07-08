@@ -19,14 +19,11 @@ import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
 import com.b2international.snowowl.core.store.query.Expression;
-import com.b2international.snowowl.core.store.query.Feature;
-import com.b2international.snowowl.core.store.query.NestedPath;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
 import com.b2international.snowowl.core.store.query.StringPredicate;
 import com.b2international.snowowl.snomed.core.store.query.ConcreteDomainFeature;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipConcreteDomainFeature;
-import com.b2international.snowowl.snomed.core.store.query.RelationshipNestedPath;
 import com.google.common.base.Optional;
 
 /**
@@ -53,15 +50,6 @@ abstract public class ConcreteDomainExpressions {
 	private static class ConcreteDomainExpressionBuilderImpl implements ConcreteDomainExpressionBuilder {
 		
 		private Optional<Expression> previous = Optional.absent();
-		private final Optional<NestedPath> path;
-		
-		public ConcreteDomainExpressionBuilderImpl() {
-			this.path = Optional.absent();
-		}
-		
-		public ConcreteDomainExpressionBuilderImpl(NestedPath path) {
-			this.path = Optional.fromNullable(path);
-		}
 		
 		public ConcreteDomainBinaryOperatorBuilder and(ConcreteDomainBinaryOperatorBuilder expressionBuilder) {
 			Expression previousExpression = previous.get();
@@ -77,85 +65,85 @@ abstract public class ConcreteDomainExpressions {
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.MODULE_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.MODULE_ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(ensureNestedness(ConcreteDomainFeature.ACTIVE), argument));
+			previous = Optional.<Expression>of(new BooleanPredicate(ConcreteDomainFeature.ACTIVE, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(ensureNestedness(ConcreteDomainFeature.RELEASED), argument));
+			previous = Optional.<Expression>of(new BooleanPredicate(ConcreteDomainFeature.RELEASED, argument));
 			return this;
 		}
 		
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder type(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.TYPE), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.TYPE, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder label(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.LABEL), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.LABEL, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder valueString(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.VALUE_STRING), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.VALUE_STRING, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder valueBoolean(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.VALUE_BOOLEAN), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.VALUE_BOOLEAN, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder valueDecimal(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.VALUE_DECIMAL), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.VALUE_DECIMAL, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder characteristicTypeId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.CHARACTERISTIC_TYPE_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.CHARACTERISTIC_TYPE_ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder operatorId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.OPERATOR_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.OPERATOR_ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder uomId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.UOM_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.UOM_ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder referenceSetId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.REFERENCE_SET_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.REFERENCE_SET_ID, argument));
 			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder memberId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ensureNestedness(ConcreteDomainFeature.MEMBER_ID), argument));
+			previous = Optional.<Expression>of(new StringPredicate(ConcreteDomainFeature.MEMBER_ID, argument));
 			return this;
 		}
 
@@ -172,84 +160,137 @@ abstract public class ConcreteDomainExpressions {
 			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
 			return this;
 		}
+	}
+	
+	public interface RelationshipConcreteDomainPredicateBuilder extends ComponentPredicateBuilder<RelationshipConcreteDomainBinaryOperatorBuilder>, Buildable<Expression> {
+		RelationshipConcreteDomainBinaryOperatorBuilder type(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder label(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder valueString(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder valueBoolean(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder valueDecimal(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder characteristicTypeId(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder operatorId(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder uomId(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder referenceSetId(String argument);
+		RelationshipConcreteDomainBinaryOperatorBuilder memberId(String argument);
+	}
+	
+	public interface RelationshipConcreteDomainBinaryOperatorBuilder extends ComponentBinaryOperatorBuilder<RelationshipConcreteDomainBinaryOperatorBuilder>, Buildable<Expression> {}
+	
+	public interface RelationshipConcreteDomainExpressionBuilder extends RelationshipConcreteDomainPredicateBuilder, RelationshipConcreteDomainBinaryOperatorBuilder {}
+	
+	private static class RelationshipConcreteDomainExpressionBuilderImpl implements RelationshipConcreteDomainExpressionBuilder {
 		
-		private Feature ensureNestedness(ConcreteDomainFeature feature) {
-			if (isNested()) {
-				switch (feature) {
-				case ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.ID;
-					}
-				case MODULE_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.MODULE_ID;
-					}
-				case RELEASED:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.RELEASED;
-					}
-				case EFFECTIVE_TIME:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.EFFECTIVE_TIME;
-					}
-				case ACTIVE:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.ACTIVE;
-					}
-				case REFERENCE_SET_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.REFERENCE_SET_ID;
-					}
-				case TYPE:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.TYPE;
-					}
-				case CHARACTERISTIC_TYPE_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.CHARACTERISTIC_TYPE_ID;
-					}
-				case LABEL:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.LABEL;
-					}
-				case MEMBER_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.MEMBER_ID;
-					}
-				case OPERATOR_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.OPERATOR_ID;
-					}
-				case UOM_ID:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.UOM_ID;
-					}
-				case VALUE_BOOLEAN:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.VALUE_BOOLEAN;
-					}
-				case VALUE_DECIMAL:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.VALUE_DECIMAL;
-					}
-				case VALUE_STRING:
-					if (isNestedInRelationship()) {
-						return RelationshipConcreteDomainFeature.VALUE_STRING;
-					}
-				default:
-					throw new IllegalArgumentException("Unexpected feature: " + feature);
-				}
-			} else {
-				return feature;
-			}
-		}
-
-		private boolean isNested() {
-			return path.isPresent();
+		private Optional<Expression> previous = Optional.absent();
+		
+		public RelationshipConcreteDomainBinaryOperatorBuilder and(RelationshipConcreteDomainBinaryOperatorBuilder expressionBuilder) {
+			Expression previousExpression = previous.get();
+			And and = new And(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(and);
+			return this;
 		}
 		
-		private boolean isNestedInRelationship() {
-			return path.isPresent() ? RelationshipNestedPath.CONCRETE_DOMAINS.equals(path.get()) : false;
+		@Override
+		public Expression build() {
+			return previous.get();
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder id(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder moduleId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.MODULE_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder active(boolean argument) {
+			previous = Optional.<Expression>of(new BooleanPredicate(RelationshipConcreteDomainFeature.ACTIVE, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder released(boolean argument) {
+			previous = Optional.<Expression>of(new BooleanPredicate(RelationshipConcreteDomainFeature.RELEASED, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder type(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.TYPE, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder label(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.LABEL, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder valueString(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.VALUE_STRING, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder valueBoolean(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.VALUE_BOOLEAN, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder valueDecimal(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.VALUE_DECIMAL, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder characteristicTypeId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.CHARACTERISTIC_TYPE_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder operatorId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.OPERATOR_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder uomId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.UOM_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder referenceSetId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.REFERENCE_SET_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder memberId(String argument) {
+			previous = Optional.<Expression>of(new StringPredicate(RelationshipConcreteDomainFeature.MEMBER_ID, argument));
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder or(RelationshipConcreteDomainBinaryOperatorBuilder expressionBuilder) {
+			Expression previousExpression = previous.get();
+			Or or = new Or(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(or);
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder not(RelationshipConcreteDomainBinaryOperatorBuilder expressionBuilder) {
+			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			return this;
 		}
 	}
 	
@@ -257,7 +298,7 @@ abstract public class ConcreteDomainExpressions {
 		return new ConcreteDomainExpressionBuilderImpl();
 	}
 	
-	public static ConcreteDomainPredicateBuilder relationshipConcreteDomain() {
-		return new ConcreteDomainExpressionBuilderImpl(RelationshipNestedPath.CONCRETE_DOMAINS);
+	public static RelationshipConcreteDomainPredicateBuilder relationshipConcreteDomain() {
+		return new RelationshipConcreteDomainExpressionBuilderImpl();
 	}
 }

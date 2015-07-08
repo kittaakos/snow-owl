@@ -26,8 +26,8 @@ import com.b2international.snowowl.core.store.query.StringPredicate;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipFeature;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipNestedPath;
 import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeature;
-import com.b2international.snowowl.snomed.core.store.query.builder.ConcreteDomainExpressions.ConcreteDomainBinaryOperatorBuilder;
-import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.MembershipBinaryOperatorBuilder;
+import com.b2international.snowowl.snomed.core.store.query.builder.ConcreteDomainExpressions.RelationshipConcreteDomainBinaryOperatorBuilder;
+import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.RelationshipMembershipBinaryOperatorBuilder;
 import com.google.common.base.Optional;
 
 /**
@@ -43,8 +43,8 @@ abstract public class RelationshipExpressions {
 		RelationshipBinaryOperatorBuilder destinationAncestorId(String argument); 
 		RelationshipBinaryOperatorBuilder modifierId(String argument);
 		RelationshipBinaryOperatorBuilder characteristicTypeId(String argument);
-		RelationshipBinaryOperatorBuilder hasMembership(MembershipBinaryOperatorBuilder expressionBuilder);
-		RelationshipBinaryOperatorBuilder hasConcreteDomain(ConcreteDomainBinaryOperatorBuilder expressionBuilder);
+		RelationshipBinaryOperatorBuilder hasMembership(RelationshipMembershipBinaryOperatorBuilder expressionBuilder);
+		RelationshipBinaryOperatorBuilder hasConcreteDomain(RelationshipConcreteDomainBinaryOperatorBuilder expressionBuilder);
 	}
 	
 	public interface RelationshipBinaryOperatorBuilder extends ComponentBinaryOperatorBuilder<RelationshipBinaryOperatorBuilder>, Buildable<Expression> {}
@@ -128,13 +128,13 @@ abstract public class RelationshipExpressions {
 		}
 
 		@Override
-		public RelationshipBinaryOperatorBuilder hasMembership(MembershipBinaryOperatorBuilder expressionBuilder) {
+		public RelationshipBinaryOperatorBuilder hasMembership(RelationshipMembershipBinaryOperatorBuilder expressionBuilder) {
 			previous = Optional.<Expression>of(new Same(RelationshipNestedPath.MEMBERSHIPS, expressionBuilder.build()));
 			return this;
 		}
 
 		@Override
-		public RelationshipBinaryOperatorBuilder hasConcreteDomain(ConcreteDomainBinaryOperatorBuilder expressionBuilder) {
+		public RelationshipBinaryOperatorBuilder hasConcreteDomain(RelationshipConcreteDomainBinaryOperatorBuilder expressionBuilder) {
 			previous = Optional.<Expression>of(new Same(RelationshipNestedPath.CONCRETE_DOMAINS, expressionBuilder.build()));
 			return this;
 		}

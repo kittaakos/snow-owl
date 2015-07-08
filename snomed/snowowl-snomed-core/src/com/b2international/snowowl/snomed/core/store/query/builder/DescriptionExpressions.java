@@ -29,7 +29,7 @@ import com.b2international.snowowl.core.store.query.TextPredicate;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionFeature;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionNestedPath;
 import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeature;
-import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.MembershipBinaryOperatorBuilder;
+import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.DescriptionMembershipBinaryOperatorBuilder;
 import com.google.common.base.Optional;
 
 /**
@@ -44,7 +44,7 @@ abstract public class DescriptionExpressions {
 		DescriptionBinaryOperatorBuilder term(String argument, TextPredicate.Operator operator);
 		DescriptionBinaryOperatorBuilder preferredIn(String argument);
 		DescriptionBinaryOperatorBuilder acceptableIn(String argument);
-		DescriptionBinaryOperatorBuilder hasMembership(MembershipBinaryOperatorBuilder expressionBuilder);
+		DescriptionBinaryOperatorBuilder hasMembership(DescriptionMembershipBinaryOperatorBuilder expressionBuilder);
 	}
 	
 	public interface DescriptionBinaryOperatorBuilder extends ComponentBinaryOperatorBuilder<DescriptionBinaryOperatorBuilder>, Buildable<Expression> {}
@@ -122,7 +122,7 @@ abstract public class DescriptionExpressions {
 		}
 
 		@Override
-		public DescriptionBinaryOperatorBuilder hasMembership(MembershipBinaryOperatorBuilder expressionBuilder) {
+		public DescriptionBinaryOperatorBuilder hasMembership(DescriptionMembershipBinaryOperatorBuilder expressionBuilder) {
 			previous = Optional.<Expression>of(new Same(DescriptionNestedPath.MEMBERSHIPS, expressionBuilder.build()));
 			return this;
 		}
