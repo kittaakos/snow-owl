@@ -43,7 +43,7 @@ public class PersonFixtures {
 	public static final String REPO_NAME_2 = "Person Store";
 	public static final String PERSON_RESOURCE = "person-resource";
 	
-	public static final long PERSON_1_STORAGEKEY = 1L;
+	public static final long PERSON_1_STORAGEKEY = Integer.MAX_VALUE + 1L;
 	public static final String PERSON_1_KEY = "1";
 	
 	public static Person createRandomPerson(int id) {
