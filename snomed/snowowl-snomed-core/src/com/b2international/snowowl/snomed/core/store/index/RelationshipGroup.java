@@ -43,4 +43,10 @@ public class RelationshipGroup {
 		this.relationships = relationships;
 	}
 
+	public static RelationshipGroup of(Integer groupId) {
+		final RelationshipGroup group = new RelationshipGroup();
+		group.setGroup(groupId);
+		return group;
+	}
+
 }

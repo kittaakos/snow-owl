@@ -16,7 +16,11 @@
 package com.b2international.snowowl.snomed.core.store.index;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 
 /**
  * Represents a description.
@@ -68,6 +72,21 @@ public class Description extends SnomedComponent {
 
 	void setMemberships(List<Membership> memberships) {
 		this.memberships = memberships;
+	}
+
+	public static Description of(String[] values) {
+		final Description description = new Description();
+		description.setId(values[0]);
+		final Date et = EffectiveTimes.parse(values[1], DateFormats.SHORT);
+		description.setEffectiveTime(et);
+		description.setReleased(et != null);
+		description.setActive("1".equals(values[2]));
+		description.setModuleId(values[3]);
+		description.setLanguageCode(values[5]);
+		description.setTypeId(values[6]);
+		description.setTerm(values[7]);
+		description.setCaseSensitivityId(values[8]);
+		return description;
 	}
 
 }

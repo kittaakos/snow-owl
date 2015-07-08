@@ -16,7 +16,11 @@
 package com.b2international.snowowl.snomed.core.store.index;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+
+import com.b2international.snowowl.core.date.DateFormats;
+import com.b2international.snowowl.core.date.EffectiveTimes;
 
 /**
  * Represents a relationship.
@@ -113,6 +117,22 @@ public class Relationship extends SnomedComponent {
 
 	void setConcreteDomains(List<ConcreteDomain> concreteDomains) {
 		this.concreteDomains = concreteDomains;
+	}
+
+	public static Relationship of(String[] values) {
+		final Relationship relationship = new Relationship();
+		relationship.setId(values[0]);
+		final Date et = EffectiveTimes.parse(values[1], DateFormats.SHORT);
+		relationship.setEffectiveTime(et);
+		relationship.setReleased(et != null);
+		relationship.setActive("1".equals(values[2]));
+		relationship.setModuleId(values[3]);
+		relationship.setDestinationId(values[5]);
+		relationship.setGroup(Integer.parseInt(values[6]));
+		relationship.setTypeId(values[7]);
+		relationship.setCharacteristicTypeId(values[8]);
+		relationship.setModifierId(values[9]);
+		return relationship;
 	}
 
 }

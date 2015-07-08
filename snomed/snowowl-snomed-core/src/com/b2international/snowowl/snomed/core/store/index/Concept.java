@@ -152,8 +152,8 @@ public class Concept extends SnomedComponent {
 		concept.setId(values[0]);
 		final Date et = EffectiveTimes.parse(values[1], DateFormats.SHORT);
 		concept.setEffectiveTime(et);
-		concept.setReleased(et == null ? false : true);
-		concept.setActive("1".equals(values[2]) ? true : false);
+		concept.setReleased(et != null);
+		concept.setActive("1".equals(values[2]));
 		concept.setModuleId(values[3]);
 		concept.setDefinitionStatusId(values[4]);
 		return concept;
