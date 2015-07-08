@@ -8,4 +8,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Require-Bundle: snowowl-core;bundle-version="5.0.0"
 Export-Package: com.b2international.snowowl.snomed.core.store.index,
- com.b2international.snowowl.snomed.core.store.query
+ com.b2international.snowowl.snomed.core.store.query,
+ com.b2international.snowowl.snomed.core.store.query.builder
