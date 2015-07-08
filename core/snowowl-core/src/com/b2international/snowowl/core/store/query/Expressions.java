@@ -21,7 +21,7 @@ package com.b2international.snowowl.core.store.query;
 public class Expressions {
 
 	public static Expression prefixMatch(final String field, final String prefix) {
-		return new PrefixPredicate(AnyType.INSTANCE, field(field), prefix);
+		return new PrefixPredicate(field(field), prefix);
 	}
 	
 	public static Feature field(final String field) {
@@ -34,11 +34,11 @@ public class Expressions {
 	}
 
 	public static Expression exactMatch(String field, String value) {
-		return new StringPredicate(AnyType.INSTANCE, field(field), value);
+		return new StringPredicate(field(field), value);
 	}
 	
 	public static Expression exactMatch(String field, Long value) {
-		return new LongPredicate(AnyType.INSTANCE, field(field), value);
+		return new LongPredicate(field(field), value);
 	}
 
 }

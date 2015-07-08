@@ -20,8 +20,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class LongPredicate extends SingleArgumentPredicate<Long> {
 
-	public LongPredicate(Type type, Feature feature, Long argument) {
-		super(type, feature, argument);
+	public LongPredicate(Feature feature, Long argument) {
+		super(feature, argument);
 	}
 
 }

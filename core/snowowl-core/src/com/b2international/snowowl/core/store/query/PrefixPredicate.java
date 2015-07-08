@@ -20,8 +20,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class PrefixPredicate extends SingleArgumentPredicate<String> {
 
-	public PrefixPredicate(Type type, Feature feature, String argument) {
-		super(type, feature, argument);
+	public PrefixPredicate(Feature feature, String argument) {
+		super(feature, argument);
 	}
 
 }
