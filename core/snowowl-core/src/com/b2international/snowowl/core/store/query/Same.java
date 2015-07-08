@@ -39,7 +39,7 @@ public class Same extends UnaryOperator {
 	
 	@Override
 	public String toString() {
-		return "SAME " + getRight().toString();
+		return "SAME " + path + " [" + getRight().toString() + "]";
 	}
 
 }
