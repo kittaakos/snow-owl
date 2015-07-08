@@ -24,28 +24,36 @@ import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 /**
  * @since 5.0
  */
-public enum DescriptionFeature implements NestedFeature {
-	TYPE_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TYPE_ID),
-	LANGUAGE_CODE(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.LANGUAGE_CODE),
-	CASE_SENSITIVITY_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.CASE_SENSITIVITY_ID),
-	TERM(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TERM);
+public enum RelationshipConcreteDomainFeature implements NestedFeature {
+	ID(SnomedIndexConstants.ID),
+	RELEASED(SnomedIndexConstants.RELEASED),
+	ACTIVE(SnomedIndexConstants.ACTIVE), 
+	EFFECTIVE_TIME(SnomedIndexConstants.EFFECTIVE_TIME),
+	MODULE_ID(SnomedIndexConstants.MODULE_ID),
+	TYPE(SnomedIndexConstants.TYPE),
+	LABEL(SnomedIndexConstants.LABEL),
+	VALUE_STRING(SnomedIndexConstants.VALUE_STRING),
+	VALUE_BOOLEAN(SnomedIndexConstants.VALUE_BOOLEAN),
+	VALUE_DECIMAL(SnomedIndexConstants.VALUE_DECIMAL),
+	CHARACTERISTIC_TYPE_ID(SnomedIndexConstants.CHARACTERISTIC_TYPE_ID),
+	OPERATOR_ID(SnomedIndexConstants.OPERATOR_ID),
+	UOM_ID(SnomedIndexConstants.UOM_ID),
+	REFERENCE_SET_ID(SnomedIndexConstants.REFERENCE_SET_ID),
+	MEMBER_ID(SnomedIndexConstants.MEMBER_ID);
 	
 	private final String field;
-	private final NestedPath path;
 
-	private DescriptionFeature(NestedPath path, String field) {
-		this.path = checkNotNull(path, "path");
+	private RelationshipConcreteDomainFeature(String field) {
 		this.field = checkNotNull(field, "field");
 	}
 	
 	@Override
 	public String getField() {
-		return path.getPath() + "." + field;
+		return getPath().getPath() + "." + field;
 	}
 
 	@Override
 	public NestedPath getPath() {
-		return path;
+		return RelationshipNestedPath.CONCRETE_DOMAINS;
 	}
-	
 }

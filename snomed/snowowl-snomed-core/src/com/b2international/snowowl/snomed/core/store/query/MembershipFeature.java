@@ -17,10 +17,19 @@ package com.b2international.snowowl.snomed.core.store.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.store.query.Feature;
+import com.b2international.snowowl.core.store.query.NestedFeature;
+import com.b2international.snowowl.core.store.query.NestedPath;
 import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
-public enum MembershipFeature implements Feature {
+/**
+ * @since 5.0
+ */
+public enum MembershipFeature implements NestedFeature {
+	ID(SnomedIndexConstants.ID),
+	RELEASED(SnomedIndexConstants.RELEASED),
+	ACTIVE(SnomedIndexConstants.ACTIVE), 
+	EFFECTIVE_TIME(SnomedIndexConstants.EFFECTIVE_TIME),
+	MODULE_ID(SnomedIndexConstants.MODULE_ID),
 	TYPE(SnomedIndexConstants.TYPE),
 	REFERENCE_SET_ID(SnomedIndexConstants.REFERENCE_SET_ID),
 	REFERENCED_COMPONENT_ID(SnomedIndexConstants.REFERENCED_COMPONENT_ID),
@@ -48,6 +57,11 @@ public enum MembershipFeature implements Feature {
 	
 	@Override
 	public String getField() {
-		return field;
+		return getPath().getPath() + "." + field;
+	}
+	
+	@Override
+	public NestedPath getPath() {
+		return ConceptNestedPath.MEMBERSHIPS;
 	}
 }

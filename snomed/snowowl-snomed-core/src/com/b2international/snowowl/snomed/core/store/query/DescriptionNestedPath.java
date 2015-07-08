@@ -15,37 +15,24 @@
  */
 package com.b2international.snowowl.snomed.core.store.query;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.b2international.snowowl.core.store.query.NestedFeature;
 import com.b2international.snowowl.core.store.query.NestedPath;
 import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
 /**
  * @since 5.0
  */
-public enum DescriptionFeature implements NestedFeature {
-	TYPE_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TYPE_ID),
-	LANGUAGE_CODE(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.LANGUAGE_CODE),
-	CASE_SENSITIVITY_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.CASE_SENSITIVITY_ID),
-	TERM(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TERM);
-	
-	private final String field;
-	private final NestedPath path;
+public enum DescriptionNestedPath implements NestedPath {
+	MEMBERSHIPS(SnomedIndexConstants.DESCRIPTIONS + "." + SnomedIndexConstants.MEMBERSHIPS);
 
-	private DescriptionFeature(NestedPath path, String field) {
-		this.path = checkNotNull(path, "path");
-		this.field = checkNotNull(field, "field");
+	private final String path;
+	
+	private DescriptionNestedPath(String path) {
+		this.path = path;
 	}
 	
 	@Override
-	public String getField() {
-		return path.getPath() + "." + field;
-	}
-
-	@Override
-	public NestedPath getPath() {
+	public String getPath() {
 		return path;
 	}
-	
+
 }

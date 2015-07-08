@@ -17,10 +17,14 @@ package com.b2international.snowowl.snomed.core.store.query;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.b2international.snowowl.core.store.query.Feature;
+import com.b2international.snowowl.core.store.query.NestedFeature;
+import com.b2international.snowowl.core.store.query.NestedPath;
 import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 
-public enum RelationshipFeature implements Feature {
+/**
+ * @since 5.0
+ */
+public enum RelationshipFeature implements NestedFeature {
 	GROUP(SnomedIndexConstants.GROUP),
 	UNION_GROUP(SnomedIndexConstants.UNION_GROUP),
 	TYPE_ID(SnomedIndexConstants.TYPE_ID),
@@ -38,6 +42,11 @@ public enum RelationshipFeature implements Feature {
 	
 	@Override
 	public String getField() {
-		return field;
+		return getPath().getPath() + "." + field;
+	}
+
+	@Override
+	public NestedPath getPath() {
+		return ConceptNestedPath.RELATIONSHIPS;
 	}
 }

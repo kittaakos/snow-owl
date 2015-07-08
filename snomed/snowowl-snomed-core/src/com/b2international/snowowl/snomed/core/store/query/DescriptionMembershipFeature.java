@@ -24,26 +24,34 @@ import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
 /**
  * @since 5.0
  */
-public enum ConcreteDomainFeature implements NestedFeature {
+public enum DescriptionMembershipFeature implements NestedFeature {
 	ID(SnomedIndexConstants.ID),
 	RELEASED(SnomedIndexConstants.RELEASED),
 	ACTIVE(SnomedIndexConstants.ACTIVE), 
 	EFFECTIVE_TIME(SnomedIndexConstants.EFFECTIVE_TIME),
 	MODULE_ID(SnomedIndexConstants.MODULE_ID),
 	TYPE(SnomedIndexConstants.TYPE),
-	LABEL(SnomedIndexConstants.LABEL),
-	VALUE_STRING(SnomedIndexConstants.VALUE_STRING),
-	VALUE_BOOLEAN(SnomedIndexConstants.VALUE_BOOLEAN),
-	VALUE_DECIMAL(SnomedIndexConstants.VALUE_DECIMAL),
-	CHARACTERISTIC_TYPE_ID(SnomedIndexConstants.CHARACTERISTIC_TYPE_ID),
-	OPERATOR_ID(SnomedIndexConstants.OPERATOR_ID),
-	UOM_ID(SnomedIndexConstants.UOM_ID),
 	REFERENCE_SET_ID(SnomedIndexConstants.REFERENCE_SET_ID),
-	MEMBER_ID(SnomedIndexConstants.MEMBER_ID);
-	
+	REFERENCED_COMPONENT_ID(SnomedIndexConstants.REFERENCED_COMPONENT_ID),
+	TARGET_COMPONENT_ID(SnomedIndexConstants.TARGET_COMPONENT_ID),
+	VALUE_ID(SnomedIndexConstants.VALUE_ID),
+	DESCRIPTION_FORMAT(SnomedIndexConstants.DESCRIPTION_FORMAT),
+	DESCRIPTION_LENGTH(SnomedIndexConstants.DESCRIPTION_LENGTH),
+	ACCEPTABILITY_ID(SnomedIndexConstants.ACCEPTABILITY_ID),
+	MAP_TARGET(SnomedIndexConstants.MAP_TARGET),
+	QUERY(SnomedIndexConstants.QUERY),
+	SOURCE_EFFECTIVE_TIME(SnomedIndexConstants.SOURCE_EFFECTIVE_TIME),
+	TARGET_EFFECTIVE_TIME(SnomedIndexConstants.TARGET_EFFECTIVE_TIME),
+	MAP_GROUP(SnomedIndexConstants.MAP_GROUP),
+	MAP_PRIORITY(SnomedIndexConstants.MAP_PRIORITY),
+	MAP_RULE(SnomedIndexConstants.MAP_RULE),
+	MAP_ADVICE(SnomedIndexConstants.MAP_ADVICE),
+	CORRELATION_ID(SnomedIndexConstants.CORRELATION_ID),
+	MAP_CATEGORY_ID(SnomedIndexConstants.MAP_CATEGORY_ID);
+
 	private final String field;
 
-	private ConcreteDomainFeature(String field) {
+	private DescriptionMembershipFeature(String field) {
 		this.field = checkNotNull(field, "field");
 	}
 	
@@ -51,9 +59,9 @@ public enum ConcreteDomainFeature implements NestedFeature {
 	public String getField() {
 		return getPath().getPath() + "." + field;
 	}
-
+	
 	@Override
 	public NestedPath getPath() {
-		return ConceptNestedPath.CONCRETE_DOMAINS;
+		return DescriptionNestedPath.MEMBERSHIPS;
 	}
 }

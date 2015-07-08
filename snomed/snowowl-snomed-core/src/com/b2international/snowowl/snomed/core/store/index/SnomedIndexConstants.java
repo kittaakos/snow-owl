@@ -47,6 +47,7 @@ public abstract class SnomedIndexConstants {
 	public static final String MEMBERSHIPS = "memberships";
 	public static final String DESCRIPTIONS = "descriptions";
 	public static final String RELATIONSHIP_GROUPS = "relationshipGroups";
+	public static final String RELATIONSHIPS = "relationships";
 	
 	// description fields
 	public static final String TYPE_ID = "typeId";
