@@ -27,4 +27,8 @@ public class Not extends UnaryOperator {
 		super(right);
 	}
 
+	@Override
+	public String toString() {
+		return "NOT " + getRight();
+	}
 }
