@@ -15,14 +15,11 @@
  */
 package com.b2international.snowowl.core.store.query.req;
 
-import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
-
-import java.util.Collection;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 
@@ -35,7 +32,6 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.SortBy;
 import com.b2international.snowowl.core.store.query.SortBy.MultiSortBy;
 import com.b2international.snowowl.core.store.query.SortBy.SortByField;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * TODO move to internal package
@@ -47,8 +43,14 @@ public class DefaultSearchExecutor implements SearchExecutor {
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private final ElasticsearchQueryBuilder elasticQueryBuilder = new ElasticsearchQueryBuilder();
 
+	private SearchResponseProcessor processor;
+	
+	public DefaultSearchExecutor(SearchResponseProcessor processor) {
+		this.processor = checkNotNull(processor, "processor");
+	}
+	
 	@Override
-	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, ObjectMapper mapper, Class<T> resultType) {
+	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType) {
 		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
 		req.setQuery(getQuery(qb)).setFrom(qb.getOffset()).setSize(qb.getLimit());
 		final SortBy sortBy = qb.getSortBy();
@@ -67,14 +69,9 @@ public class DefaultSearchExecutor implements SearchExecutor {
 		if (response.getSuccessfulShards() <= 0) {
 			throw new FormattedRuntimeException("Failed to execute query '%s': ", req, response);
 		}
-		// TODO add response processing template method for aggregations etc...
-		final Collection<T> result = newArrayListWithExpectedSize(response.getHits().getHits().length);
-		for (SearchHit hit : response.getHits()) {
-			result.add(mapper.convertValue(hit.getSource(), resultType));
-		}
-		return result;
+		return processor.process(response, resultType);
 	}
-
+	
 	protected QueryBuilder getQuery(final DefaultQueryBuilder qb) {
 		return elasticQueryBuilder.build(qb.getWhere());
 	}

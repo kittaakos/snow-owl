@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchExecutor;
+import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
@@ -143,9 +144,9 @@ public class DefaultIndex implements Index {
 		final SearchRequestBuilder req = this.client.prepareSearch(index).setTypes(typeName);
 		SearchExecutor executor = context.executor();
 		if (executor == null) {
-			executor = new DefaultSearchExecutor();
+			executor = new DefaultSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()));
 		}
-		return executor.execute(req, query, admin().mappings().mapper(), type);
+		return executor.execute(req, query, type);
 	}
 	
 	protected final Client client() {

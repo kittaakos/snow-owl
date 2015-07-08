@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.core.store.query.req;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.elasticsearch.index.query.FilterBuilders.andFilter;
 import static org.elasticsearch.index.query.FilterBuilders.hasParentFilter;
 import static org.elasticsearch.index.query.FilterBuilders.orFilter;
@@ -40,8 +41,9 @@ public class BranchAwareSearchExecutor extends DefaultSearchExecutor {
 
 	private BranchManager branchManager;
 
-	public BranchAwareSearchExecutor(BranchManager branchManager) {
-		this.branchManager = branchManager;
+	public BranchAwareSearchExecutor(SearchResponseProcessor processor, BranchManager branchManager) {
+		super(processor);
+		this.branchManager = checkNotNull(branchManager, "BranchManager may not be null");
 	}
 
 	@Override

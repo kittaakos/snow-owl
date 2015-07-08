@@ -15,16 +15,14 @@
  */
 package com.b2international.snowowl.core.store.query.req;
 
-import org.elasticsearch.action.search.SearchRequestBuilder;
-
-import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import org.elasticsearch.action.search.SearchResponse;
 
 /**
  * TODO non-API interface move to internal package
  * @since 5.0
  */
-public interface SearchExecutor {
+public interface SearchResponseProcessor {
 
-	<T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType);
+	<T> Iterable<T> process(SearchResponse response, Class<T> resultType);
 	
 }
