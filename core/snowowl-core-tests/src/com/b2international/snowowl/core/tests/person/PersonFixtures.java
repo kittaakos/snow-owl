@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.tests.person;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.Map;
@@ -26,6 +27,7 @@ import person.PersonPackage;
 import com.b2international.snowowl.core.internal.repository.DefaultRepositoryBuilder;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.config.RepositoryConfiguration;
+import com.b2international.snowowl.core.repository.cp.ChangeProcessor;
 import com.b2international.snowowl.core.repository.cp.ChangeProcessorFactory;
 import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 
@@ -36,8 +38,6 @@ public class PersonFixtures {
 
 	public static final String USER = "user";
 	public static final char[] PASS = new char[]{'p', 'a', 's', 's'};
-	
-	public static final String LOC = "target/store";
 	
 	public static final String REPO_NAME = "person";
 	public static final String REPO_NAME_2 = "Person Store";
@@ -96,18 +96,21 @@ public class PersonFixtures {
 		return person;
 	}
 	
-	public static Repository createPersonRepository() {
-		return createPersonRepository(REPO_NAME);
+	public static Repository createPersonRepository(String location) {
+		return createPersonRepository(location, REPO_NAME);
 	}
 
-	public static Repository createPersonRepository(final String name) {
-		return createPersonRepository(name, mock(ChangeProcessorFactory.class), mock(IEClassProvider.class));
+	public static Repository createPersonRepository(final String location, final String name) {
+		final ChangeProcessor processor = mock(ChangeProcessor.class);
+		final ChangeProcessorFactory factory = mock(ChangeProcessorFactory.class);
+		when(factory.create()).thenReturn(processor);
+		return createPersonRepository(location, name, factory, mock(IEClassProvider.class));
 	}
 	
-	public static Repository createPersonRepository(final String name, ChangeProcessorFactory factory, IEClassProvider eClassProvider) {
+	public static Repository createPersonRepository(final String location, final String name, ChangeProcessorFactory factory, IEClassProvider eClassProvider) {
 		final RepositoryConfiguration config = new RepositoryConfiguration();
 		// set location explicitly for tests
-		config.getDatabaseConfiguration().setLocation(LOC);
+		config.getDatabaseConfiguration().setLocation(location);
 		
 		return new DefaultRepositoryBuilder(name, config)
 			.addComponent(Person.class)

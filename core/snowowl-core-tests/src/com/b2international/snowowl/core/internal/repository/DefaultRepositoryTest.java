@@ -15,12 +15,10 @@
  */
 package com.b2international.snowowl.core.internal.repository;
 
-import static com.b2international.snowowl.core.tests.person.PersonFixtures.LOC;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.PASS;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.REPO_NAME;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.REPO_NAME_2;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.USER;
-import static com.b2international.snowowl.core.tests.person.PersonFixtures.createPersonRepository;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -31,7 +29,10 @@ import java.util.Collection;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.db.IDBAdapter;
 import org.eclipse.net4j.db.h2.H2Adapter;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
+import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import person.PersonPackage;
@@ -40,7 +41,9 @@ import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.terminology.Component;
+import com.b2international.snowowl.core.tests.TemporaryDirectory;
 import com.b2international.snowowl.core.tests.person.Person;
+import com.b2international.snowowl.core.tests.person.PersonFixtures;
 
 
 
@@ -54,8 +57,14 @@ public class DefaultRepositoryTest {
 	private Collection<Class<? extends Component>> components = newHashSet();
 	private Collection<EPackage> ePackages = newHashSet();
 	
+	private Repository repository;
+	
+	@Rule
+	public TemporaryDirectory dir = new TemporaryDirectory(getClass().getSimpleName().toLowerCase());
+	
 	@Before
-	public void givenRepositoryConfiguration() {
+	public void givenRepositoryConfiguration() throws Exception {
+		
 		// manually set up h2 adapter instance
 		IDBAdapter.REGISTRY.put("h2", new H2Adapter());
 	}
@@ -80,20 +89,20 @@ public class DefaultRepositoryTest {
 	
 	@Test
 	public void createValidRepository() throws Exception {
-		final Repository repository = createPersonRepository();
+		repository = createPersonRepository();
 		assertThat(repository.name()).isEqualTo(REPO_NAME);
 	}
 
 	@Test
 	public void createAndActivateRepository_ShouldCreateAllRequiredStores() throws Exception {
 		createPersonRepository().activate();
-		assertThat(new File(LOC, REPO_NAME+".h2.db")).exists();
+		assertThat(new File(dir.getTmpDir(), REPO_NAME+".h2.db")).exists();
 	}
 	
 	@Test
 	public void createAndActivateRepository_ShouldConvertRepositoryNameToFilePathWithoutSpaces() throws Exception {
-		createPersonRepository(REPO_NAME_2).activate();
-		assertThat(new File(LOC, REPO_NAME_2.replaceAll(" ", "_").toLowerCase()+".h2.db")).exists();
+		PersonFixtures.createPersonRepository(dir.getTmpDir().getPath(), REPO_NAME_2).activate();
+		assertThat(new File(dir.getTmpDir(), REPO_NAME_2.replaceAll(" ", "_").toLowerCase()+".h2.db")).exists();
 	}
 	
 	@Test(expected = IllegalStateException.class)
@@ -125,6 +134,17 @@ public class DefaultRepositoryTest {
 		((InternalRepository)repository).addUser(USER, PASS);
 		final RepositorySession session = repository.sessions().open(USER, PASS);
 		assertThat(repository.sessions().getSessions()).contains(session);
+	}
+	
+	@After
+	public void after() {
+		if (LifecycleUtil.isActive(repository)) {
+			LifecycleUtil.deactivate(repository);
+		}
+	}
+	
+	private Repository createPersonRepository() {
+		return PersonFixtures.createPersonRepository(dir.getTmpDir().getPath());
 	}
 	
 }

@@ -44,6 +44,10 @@ public class PersonChangeProcessorFactory implements ChangeProcessor, ChangeProc
 
 	@Override
 	public void process(CommitChangeSet changeSet) {
+		// FIXME remove this hack and ensure that index is always set, via ctor preferrably
+		if (index == null) {
+			return;
+		}
 		final long commitTimestamp = changeSet.getTimestamp();
 		final String branchPath = changeSet.getView().getBranch().getPathName();
 		tx = index.transaction(changeSet.getView().getViewID(), commitTimestamp, branchPath);
@@ -56,7 +60,9 @@ public class PersonChangeProcessorFactory implements ChangeProcessor, ChangeProc
 
 	@Override
 	public void commit() {
-		tx.commit("TODO");
+		if (tx != null) {
+			tx.commit("TODO");
+		}
 	}
 
 	@Override

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.internal.repository;
 
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.PASS;
+import static com.b2international.snowowl.core.tests.person.PersonFixtures.PERSON_1_KEY;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.PERSON_RESOURCE;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.REPO_NAME;
 import static com.b2international.snowowl.core.tests.person.PersonFixtures.USER;
@@ -45,13 +46,16 @@ import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
+import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.tests.ESRule;
+import com.b2international.snowowl.core.tests.TemporaryDirectory;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonChangeProcessorFactory;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Iterables;
 
 /**
  * @since 5.0
@@ -63,6 +67,9 @@ public class DefaultRepositoryTransactionTest {
 	
 	private Repository repository;
 	private TransactionalIndex index;
+	
+	@Rule
+	public TemporaryDirectory dir = new TemporaryDirectory(getClass().getSimpleName().toLowerCase());
 	
 	@Before
 	public void givenInfrastructure() {
@@ -77,10 +84,9 @@ public class DefaultRepositoryTransactionTest {
 		final IEClassProvider eClassProvider = mock(IEClassProvider.class);
 		when(eClassProvider.getEClass(anyString(), anyLong())).thenReturn(PersonPackage.Literals.PERSON);
 		PersonChangeProcessorFactory factory = new PersonChangeProcessorFactory();
-		repository = createPersonRepository(REPO_NAME, factory, eClassProvider);
+		repository = createPersonRepository(dir.getTmpDir().getPath(), REPO_NAME, factory, eClassProvider);
+		// activate repository
 		repository.activate();
-		// user is logged in
-		((InternalRepository)repository).addUser(USER, PASS);
 		
 		// create transactional index
 		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), repository.branching());
@@ -88,6 +94,8 @@ public class DefaultRepositoryTransactionTest {
 		admin.delete();
 		admin.create();
 		factory.setIndex(index);
+		// user is logged in
+		((InternalRepository)repository).addUser(USER, PASS);
 	}
 	
 	@Test
@@ -101,7 +109,9 @@ public class DefaultRepositoryTransactionTest {
 		transaction.setCommitComment("Added Foo Bar person");
 		assertNotNull(transaction.commit());
 		
-//		index.loadRevision(PERSON_TYPE, "MAIN", PERSON);
+		final Iterable<Person> persons = index.query().on("MAIN").selectAll().where(Expressions.exactMatch("id", PERSON_1_KEY)).search(Person.class);
+		final Person person = Iterables.getFirst(persons, null);
+		assertNotNull(person);
 	}
 	
 }

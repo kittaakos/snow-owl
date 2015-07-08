@@ -33,7 +33,8 @@ public class RevisionGroupingSearchResponseProcessor implements SearchResponsePr
 		final Collection<Long> deletedStorageKeys = newHashSet();
 		for (SearchHit hit : response.getHits()) {
 			final Map<String, Object> source = hit.getSource();
-			final Long storageKey = (Long) source.get(Revision.STORAGE_KEY);
+			final Number storageKeyAsNumber = (Number) source.get(Revision.STORAGE_KEY);
+			final long storageKey = storageKeyAsNumber.longValue();
 			if (!latestRevisions.containsKey(storageKey) && !deletedStorageKeys.contains(storageKey)) {
 				// if the revision is a deleted one then add it to the deleted ones, so older revisions will be completely skipped
 				final boolean deleted = (boolean) source.get(Revision.DELETED);
