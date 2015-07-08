@@ -30,13 +30,12 @@ import com.b2international.snowowl.snomed.core.store.query.DescriptionFeature;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionNestedPath;
 import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeature;
 import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.DescriptionMembershipBinaryOperatorBuilder;
-import com.google.common.base.Optional;
 
 /**
  * @since 5.0
  */
 abstract public class DescriptionExpressions {
-	public interface DescriptionPredicateBuilder extends ComponentPredicateBuilder<DescriptionBinaryOperatorBuilder>, Buildable<Expression> {
+	public interface DescriptionPredicateBuilder extends ComponentPredicateBuilder<DescriptionBinaryOperatorBuilder> {
 		DescriptionBinaryOperatorBuilder id(String argument);
 		DescriptionBinaryOperatorBuilder moduleId(String argument);
 		DescriptionBinaryOperatorBuilder typeId(String argument);
@@ -55,59 +54,57 @@ abstract public class DescriptionExpressions {
 		private static final String ACCEPTABLE_ID = "900000000000549004";
 		private static final String PREFERRED_ID = "900000000000548007";
 		
-		private Optional<Expression> previous = Optional.absent();
+		private Expression previous;
 		
 		public DescriptionBinaryOperatorBuilder and(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And and = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(and);
+			previous = new And(previous, expressionBuilder.build());
 			return this;
 		}
 		
 		@Override
 		public Expression build() {
-			return previous.get();
+			return previous;
 		}
 		
 		@Override
 		public DescriptionBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(SnomedComponentFeature.ID, argument));
+			previous = new StringPredicate(SnomedComponentFeature.ID, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(SnomedComponentFeature.MODULE_ID, argument));
+			previous = new StringPredicate(SnomedComponentFeature.MODULE_ID, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument));
+			previous = new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(SnomedComponentFeature.RELEASED, argument));
+			previous = new BooleanPredicate(SnomedComponentFeature.RELEASED, argument);
 			return this;
 		}
 		
 		@Override
 		public DescriptionBinaryOperatorBuilder typeId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionFeature.TYPE_ID, argument));
+			previous = new StringPredicate(DescriptionFeature.TYPE_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public DescriptionBinaryOperatorBuilder caseSensitivityId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionFeature.CASE_SENSITIVITY_ID, argument));
+			previous = new StringPredicate(DescriptionFeature.CASE_SENSITIVITY_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public DescriptionBinaryOperatorBuilder term(String argument, TextPredicate.Operator operator) {
-			previous = Optional.<Expression>of(new TextPredicate(DescriptionFeature.TERM, argument, operator));
+			previous = new TextPredicate(DescriptionFeature.TERM, argument, operator);
 			return this;
 		}
 
@@ -123,21 +120,19 @@ abstract public class DescriptionExpressions {
 
 		@Override
 		public DescriptionBinaryOperatorBuilder hasMembership(DescriptionMembershipBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Same(DescriptionNestedPath.MEMBERSHIPS, expressionBuilder.build()));
+			previous = new Same(DescriptionNestedPath.MEMBERSHIPS, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder or(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
+			previous = new Or(previous, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder not(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			previous = new Not(expressionBuilder.build());
 			return this;
 		}
 		

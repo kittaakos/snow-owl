@@ -29,13 +29,12 @@ import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeatur
 import com.b2international.snowowl.snomed.core.store.query.builder.ConcreteDomainExpressions.ConcreteDomainBinaryOperatorBuilder;
 import com.b2international.snowowl.snomed.core.store.query.builder.DescriptionExpressions.DescriptionBinaryOperatorBuilder;
 import com.b2international.snowowl.snomed.core.store.query.builder.RelationshipExpressions.RelationshipBinaryOperatorBuilder;
-import com.google.common.base.Optional;
 
 /**
  * @since 5.0
  */
 abstract public class ConceptExpressions {
-	public interface ConceptPredicateBuilder extends ComponentPredicateBuilder<ConceptBinaryOperatorBuilder>, Buildable<Expression> {
+	public interface ConceptPredicateBuilder extends ComponentPredicateBuilder<ConceptBinaryOperatorBuilder> {
 		ConceptBinaryOperatorBuilder definitionStatusId(String argument);
 		ConceptBinaryOperatorBuilder hasDescription(DescriptionBinaryOperatorBuilder expressionBuilder);
 		ConceptBinaryOperatorBuilder hasRelationship(RelationshipBinaryOperatorBuilder expressionBuilder);
@@ -50,93 +49,89 @@ abstract public class ConceptExpressions {
 	public interface ConceptExpressionBuilder extends ConceptPredicateBuilder, ConceptBinaryOperatorBuilder {}
 	
 	private static class ConceptExpressionBuilderImpl implements ConceptExpressionBuilder {
-		private Optional<Expression> previous = Optional.absent();
+		private Expression previous;
 		
 		@Override
 		public ConceptBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(SnomedComponentFeature.ID, argument));
+			previous = new StringPredicate(SnomedComponentFeature.ID, argument);
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(SnomedComponentFeature.MODULE_ID, argument));
+			previous = new StringPredicate(SnomedComponentFeature.MODULE_ID, argument);
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument));
+			previous = new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument);
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(SnomedComponentFeature.RELEASED, argument));
+			previous = new BooleanPredicate(SnomedComponentFeature.RELEASED, argument);
 			return this;
 		}
 
 		public ConceptBinaryOperatorBuilder and(ConceptBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And and = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(and);
+			previous = new And(previous, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder or(ConceptBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
+			previous = new Or(previous, expressionBuilder.build());
 			return this;
 		}
 
 
 		@Override
 		public Expression build() {
-			return previous.get();
+			return previous;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder not(ConceptBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			previous = new Not(expressionBuilder.build());
 			return this;
 		}
 		
 		@Override
 		public ConceptBinaryOperatorBuilder definitionStatusId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ConceptFeature.DEFINITION_STATUS_ID, argument));
+			previous = new StringPredicate(ConceptFeature.DEFINITION_STATUS_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public ConceptBinaryOperatorBuilder parent(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ConceptFeature.PARENTS, argument));
+			previous = new StringPredicate(ConceptFeature.PARENTS, argument);
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder ancestor(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(ConceptFeature.ANCESTORS, argument));
+			previous = new StringPredicate(ConceptFeature.ANCESTORS, argument);
 			return this;
 		}
 		
 		@Override
 		public ConceptBinaryOperatorBuilder hasDescription(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Same(ConceptNestedPath.DESCRIPTIONS, expressionBuilder.build()));
+			previous = new Same(ConceptNestedPath.DESCRIPTIONS, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public ConceptBinaryOperatorBuilder hasRelationship(RelationshipBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Same(ConceptNestedPath.RELATIONSHIPS, expressionBuilder.build()));
+			previous = new Same(ConceptNestedPath.RELATIONSHIPS, expressionBuilder.build());
 			return this;
 		}
 		
 		
 		@Override
 		public ConceptBinaryOperatorBuilder hasConcreteDomain(ConcreteDomainBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Same(ConceptNestedPath.CONCRETE_DOMAINS, expressionBuilder.build()));
+			previous = new Same(ConceptNestedPath.CONCRETE_DOMAINS, expressionBuilder.build());
 			return this;
 		}
 		

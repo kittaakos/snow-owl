@@ -25,13 +25,12 @@ import com.b2international.snowowl.core.store.query.StringPredicate;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionMembershipFeature;
 import com.b2international.snowowl.snomed.core.store.query.MembershipFeature;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipMembershipFeature;
-import com.google.common.base.Optional;
 
 /**
  * @since 5.0
  */
 abstract public class MembershipExpressions {
-	public interface MembershipPredicateBuilder extends ComponentPredicateBuilder<MembershipBinaryOperatorBuilder>, Buildable<Expression> {
+	public interface MembershipPredicateBuilder extends ComponentPredicateBuilder<MembershipBinaryOperatorBuilder> {
 		MembershipBinaryOperatorBuilder type(String argument);
 		MembershipBinaryOperatorBuilder acceptabilityId(String argument);
 		MembershipBinaryOperatorBuilder referenceSetId(String argument);
@@ -43,80 +42,76 @@ abstract public class MembershipExpressions {
 	public interface MembershipExpressionBuilder extends MembershipPredicateBuilder, MembershipBinaryOperatorBuilder {}
 	
 	private static final class MembershipExpressionBuilderImpl implements MembershipExpressionBuilder {
-		private Optional<Expression> previous = Optional.absent();
+		private Expression previous;
 		
 		@Override
 		public MembershipBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.ID, argument));
+			previous = new StringPredicate(MembershipFeature.ID, argument);
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.MODULE_ID, argument));
+			previous = new StringPredicate(MembershipFeature.MODULE_ID, argument);
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(MembershipFeature.ACTIVE, argument));
+			previous = new BooleanPredicate(MembershipFeature.ACTIVE, argument);
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(MembershipFeature.RELEASED, argument));
+			previous = new BooleanPredicate(MembershipFeature.RELEASED, argument);
 			return this;
 		}
 		
 		@Override
 		public MembershipBinaryOperatorBuilder type(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.TYPE, argument));
+			previous = new StringPredicate(MembershipFeature.TYPE, argument);
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder referenceSetId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.REFERENCE_SET_ID, argument));
+			previous = new StringPredicate(MembershipFeature.REFERENCE_SET_ID, argument);
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder referencedComponentId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.REFERENCED_COMPONENT_ID, argument));
+			previous = new StringPredicate(MembershipFeature.REFERENCED_COMPONENT_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public MembershipBinaryOperatorBuilder acceptabilityId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(MembershipFeature.ACCEPTABILITY_ID, argument));
+			previous = new StringPredicate(MembershipFeature.ACCEPTABILITY_ID, argument);
 			return this;
 		}
 
 		@Override
 		public Expression build() {
-			return previous.get();
+			return previous;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder and(MembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And and = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(and);
+			previous = new And(previous, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder or(MembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
+			previous = new Or(previous, expressionBuilder.build());
 			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder not(MembershipBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			previous = new Not(expressionBuilder.build());
 			return this;
 		}
 		
@@ -134,80 +129,76 @@ abstract public class MembershipExpressions {
 	public interface DescriptionMembershipExpressionBuilder extends DescriptionMembershipPredicateBuilder, DescriptionMembershipBinaryOperatorBuilder {}
 
 	private static final class DescriptionMembershipExpressionBuilderImpl implements DescriptionMembershipExpressionBuilder {
-		private Optional<Expression> previous = Optional.absent();
+		private Expression previous;
 		
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.ID, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.ID, argument);
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.MODULE_ID, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.MODULE_ID, argument);
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(DescriptionMembershipFeature.ACTIVE, argument));
+			previous = new BooleanPredicate(DescriptionMembershipFeature.ACTIVE, argument);
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(DescriptionMembershipFeature.RELEASED, argument));
+			previous = new BooleanPredicate(DescriptionMembershipFeature.RELEASED, argument);
 			return this;
 		}
 		
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder type(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.TYPE, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.TYPE, argument);
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder referenceSetId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.REFERENCE_SET_ID, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.REFERENCE_SET_ID, argument);
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder referencedComponentId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.REFERENCED_COMPONENT_ID, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.REFERENCED_COMPONENT_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder acceptabilityId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(DescriptionMembershipFeature.ACCEPTABILITY_ID, argument));
+			previous = new StringPredicate(DescriptionMembershipFeature.ACCEPTABILITY_ID, argument);
 			return this;
 		}
 	
 		@Override
 		public Expression build() {
-			return previous.get();
+			return previous;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder and(DescriptionMembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And and = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(and);
+			previous = new And(previous, expressionBuilder.build());
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder or(DescriptionMembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
+			previous = new Or(previous, expressionBuilder.build());
 			return this;
 		}
 	
 		@Override
 		public DescriptionMembershipBinaryOperatorBuilder not(DescriptionMembershipBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			previous = new Not(expressionBuilder.build());
 			return this;
 		}
 		
@@ -225,80 +216,76 @@ abstract public class MembershipExpressions {
 	public interface RelationshipMembershipExpressionBuilder extends RelationshipMembershipPredicateBuilder, RelationshipMembershipBinaryOperatorBuilder {}
 	
 	private static final class RelationshipMembershipExpressionBuilderImpl implements RelationshipMembershipExpressionBuilder {
-		private Optional<Expression> previous = Optional.absent();
+		private Expression previous;
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder id(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.ID, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.ID, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder moduleId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.MODULE_ID, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.MODULE_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder active(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(RelationshipMembershipFeature.ACTIVE, argument));
+			previous = new BooleanPredicate(RelationshipMembershipFeature.ACTIVE, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder released(boolean argument) {
-			previous = Optional.<Expression>of(new BooleanPredicate(RelationshipMembershipFeature.RELEASED, argument));
+			previous = new BooleanPredicate(RelationshipMembershipFeature.RELEASED, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder type(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.TYPE, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.TYPE, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder referenceSetId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.REFERENCE_SET_ID, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.REFERENCE_SET_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder referencedComponentId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.REFERENCED_COMPONENT_ID, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.REFERENCED_COMPONENT_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder acceptabilityId(String argument) {
-			previous = Optional.<Expression>of(new StringPredicate(RelationshipMembershipFeature.ACCEPTABILITY_ID, argument));
+			previous = new StringPredicate(RelationshipMembershipFeature.ACCEPTABILITY_ID, argument);
 			return this;
 		}
 		
 		@Override
 		public Expression build() {
-			return previous.get();
+			return previous;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder and(RelationshipMembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			And and = new And(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(and);
+			previous = new And(previous, expressionBuilder.build());
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder or(RelationshipMembershipBinaryOperatorBuilder expressionBuilder) {
-			Expression previousExpression = previous.get();
-			Or or = new Or(previousExpression, expressionBuilder.build());
-			previous = Optional.<Expression>of(or);
+			previous = new Or(previous, expressionBuilder.build());
 			return this;
 		}
 		
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder not(RelationshipMembershipBinaryOperatorBuilder expressionBuilder) {
-			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			previous = new Not(expressionBuilder.build());
 			return this;
 		}
 		
