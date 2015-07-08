@@ -22,8 +22,8 @@ import java.util.Set;
  */
 public class StringSetPredicate extends SingleArgumentPredicate<Set<String>> {
 
-	public StringSetPredicate(Type type, Feature feature, Set<String> argument) {
-		super(type, feature, argument);
+	public StringSetPredicate(Feature feature, Set<String> argument) {
+		super(feature, argument);
 	}
 
 }

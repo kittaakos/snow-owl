@@ -21,8 +21,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class StringPredicate extends SingleArgumentPredicate<String> {
 
-	public StringPredicate(Type type, Feature feature, String argument) {
-		super(type, feature, argument);
+	public StringPredicate(Feature feature, String argument) {
+		super(feature, argument);
 	}
 
 }

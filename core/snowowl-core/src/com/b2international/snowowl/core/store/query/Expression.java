@@ -20,5 +20,4 @@ package com.b2international.snowowl.core.store.query;
  * @since 5.0
  */
 public interface Expression {
-	Type getType();
 }

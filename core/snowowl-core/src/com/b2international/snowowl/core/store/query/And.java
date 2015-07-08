@@ -24,8 +24,12 @@ import com.google.common.base.Optional;
  */
 public class And extends BinaryOperator {
 	
-	public And(Type type, Expression left, Expression right) {
-		super(type, left, right);
+	public And(Expression left, Expression right) {
+		super(left, right);
+	}
+	
+	public And(Expression left) {
+		super(left);
 	}
 
 	@Override

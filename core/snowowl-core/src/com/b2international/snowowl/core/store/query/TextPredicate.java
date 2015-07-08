@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.query;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 /**
  * @since 5.0
@@ -28,8 +30,10 @@ public class TextPredicate extends Predicate {
 	private String text;
 	private Operator operator;
 
-	public TextPredicate(Type type, Feature feature) {
-		super(type, feature);
+	public TextPredicate(Feature feature, String text, Operator operator) {
+		super(feature);
+		this.text = checkNotNull(text, "text");
+		this.operator = checkNotNull(operator, "operator");
 	}
 
 	void setText(String text) {

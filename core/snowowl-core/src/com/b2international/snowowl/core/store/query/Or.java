@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.query;
 
+import com.google.common.base.Optional;
+
 
 /**
  * Binary OR operator.
@@ -23,8 +25,17 @@ package com.b2international.snowowl.core.store.query;
  */
 public class Or extends BinaryOperator {
 	
-	public Or(Type type, Expression left, Expression right) {
-		super(type, left, right);
+	public Or(Expression left, Expression right) {
+		super(left, right);
 	}
 
+	public Or(Expression left) {
+		super(left);
+	}
+	
+	@Override
+	public String toString() {
+		Optional<Expression> right = getRight();
+		return getLeft() + " OR " + (right.isPresent() ? right.get() : "[N/A]");
+	}
 }

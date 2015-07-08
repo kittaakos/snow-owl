@@ -27,18 +27,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class Predicate implements Expression {
 
 	protected Feature feature;
-	protected Type type;
 	
-	public Predicate(Type type, Feature feature) {
-		this.type = checkNotNull(type, "type");
+	public Predicate(Feature feature) {
 		this.feature = checkNotNull(feature, "feature");
 	}
 
-	@Override
-	public Type getType() {
-		return type;
-	}
-	
 	public Feature getFeature() {
 		return feature;
 	}

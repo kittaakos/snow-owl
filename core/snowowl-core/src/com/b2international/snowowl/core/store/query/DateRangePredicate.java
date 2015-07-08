@@ -22,7 +22,7 @@ import java.util.Date;
  */
 public class DateRangePredicate extends RangePredicate<Date> {
 
-	public DateRangePredicate(Type type, Feature feature) {
-		super(type, feature);
+	public DateRangePredicate(Feature feature) {
+		super(feature);
 	}
 }

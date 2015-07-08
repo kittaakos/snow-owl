@@ -18,6 +18,6 @@ package com.b2international.snowowl.core.store.query;
 /**
  * @since 5.0
  */
-public enum AnyType implements Type {
-	INSTANCE;
+public interface NestedFeature extends Feature {
+	NestedPath getPath();
 }

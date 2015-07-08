@@ -25,10 +25,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 abstract public class UnaryOperator implements Expression {
 	
 	private Expression right;
-	private Type type;
 
-	public UnaryOperator(Type type, Expression right) {
-		this.type = checkNotNull(type, "type");
+	public UnaryOperator(Expression right) {
 		this.right = checkNotNull(right, "right");
 	}
 	
@@ -36,8 +34,4 @@ abstract public class UnaryOperator implements Expression {
 		return right;
 	}
 	
-	@Override
-	public Type getType() {
-		return type;
-	}
 }

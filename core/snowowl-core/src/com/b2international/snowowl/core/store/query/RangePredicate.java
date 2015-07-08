@@ -28,8 +28,8 @@ abstract public class RangePredicate<T> extends Predicate {
 	private T start;
 	private T end;
 	
-	public RangePredicate(Type type, Feature feature) {
-		super(type, feature);
+	public RangePredicate(Feature feature) {
+		super(feature);
 	}
 
 	public Optional<T> getStart() {

@@ -27,8 +27,8 @@ abstract public class SingleArgumentPredicate<A> extends Predicate {
 
 	private A argument;
 
-	public SingleArgumentPredicate(Type type, Feature feature, A argument) {
-		super(type, feature);
+	public SingleArgumentPredicate(Feature feature, A argument) {
+		super(feature);
 		this.argument = checkNotNull(argument, "argument");
 	}
 	
@@ -38,6 +38,6 @@ abstract public class SingleArgumentPredicate<A> extends Predicate {
 
 	@Override
 	public String toString() {
-		return String.format("%s.%s = %s", getType(), getFeature(), getArgument());
+		return String.format("%s = %s", getFeature(), getArgument());
 	}
 }

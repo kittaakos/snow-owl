@@ -24,8 +24,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class Group extends UnaryOperator {
 
-	public Group(Type type, Expression right) {
-		super(type, right);
+	public Group(Expression right) {
+		super(right);
 	}
 
 	@Override

@@ -21,8 +21,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class BooleanPredicate extends SingleArgumentPredicate<Boolean> {
 
-	public BooleanPredicate(Type type, Feature feature, Boolean argument) {
-		super(type, feature, argument);
+	public BooleanPredicate(Feature feature, Boolean argument) {
+		super(feature, argument);
 	}
 
 }

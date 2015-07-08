@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -29,16 +28,17 @@ import com.google.common.base.Optional;
 abstract public class BinaryOperator implements Expression {
 	private Expression left;
 	private Expression right;
-	private Type type;
 
-	public BinaryOperator(Type type, Expression left, Expression right) {
-		this.type = checkNotNull(type, "type");
+	public BinaryOperator(Expression left, Expression right) {
 		this.left = checkNotNull(left, "left");
 		this.right = checkNotNull(right, "right");
-		checkArgument(type.equals(left.getType()) && type.equals(right.getType()), 
-				"Mismatched expression types: %s, %s, %s.", type, left.getType(), right.getType());
 	}
 
+	public BinaryOperator(Expression left) {
+		this.left = checkNotNull(left, "left");
+		this.right = null;
+	}
+	
 	public Expression getLeft() {
 		return left;
 	}
@@ -48,8 +48,4 @@ abstract public class BinaryOperator implements Expression {
 		return Optional.fromNullable(right);
 	}
 
-	@Override
-	public Type getType() {
-		return type;
-	}
 }

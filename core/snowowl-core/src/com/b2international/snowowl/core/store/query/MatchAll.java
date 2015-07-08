@@ -23,11 +23,6 @@ package com.b2international.snowowl.core.store.query;
 public class MatchAll implements Expression {
 
 	@Override
-	public Type getType() {
-		return AnyType.INSTANCE;
-	}
-	
-	@Override
 	public String toString() {
 		return "MATCH ALL";
 	}

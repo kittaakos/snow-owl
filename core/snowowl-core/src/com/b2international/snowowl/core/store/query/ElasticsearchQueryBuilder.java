@@ -156,11 +156,10 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 	
 	private void visit(BooleanPredicate predicate) {
 		Feature feature = predicate.getFeature();
-		// TODO: do we need to translate the boolean value to a string here?
 		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
 		deque.push(new DequeItem(filter));
 	}
-	
+
 	private void visit(StringPredicate predicate) {
 		Feature feature = predicate.getFeature();
 		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
@@ -245,11 +244,10 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 	private void visit(Same same) {
 		if (deque.size() >= 1) {
 			DequeItem item = deque.pop();
-			String path = same.getNestedType().getPath();
 			if (item.isFilterBuilder()) {
-				deque.push(new DequeItem(FilterBuilders.nestedFilter(path, item.getFilterBuilder())));
+				deque.push(new DequeItem(FilterBuilders.nestedFilter(same.getPath().getPath(), item.getFilterBuilder())));
 			} else if (item.isQueryBuilder()) {
-				deque.push(new DequeItem(QueryBuilders.nestedQuery(path, item.getQueryBuilder())));
+				deque.push(new DequeItem(QueryBuilders.nestedQuery(same.getPath().getPath(), item.getQueryBuilder())));
 			} else {
 				handleIllegalDequeState();
 			}

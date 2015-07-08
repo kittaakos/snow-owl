@@ -22,7 +22,7 @@ import java.math.BigDecimal;
  */
 public class BigDecimalRangePredicate extends RangePredicate<BigDecimal> {
 
-	public BigDecimalRangePredicate(Type type, Feature feature) {
-		super(type, feature);
+	public BigDecimalRangePredicate(Feature feature) {
+		super(feature);
 	}
 }

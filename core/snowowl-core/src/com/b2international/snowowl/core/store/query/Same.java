@@ -15,8 +15,9 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+
+
 
 /**
  * Unary operator to indicate that some predicates should apply to the same nested object.
@@ -25,22 +26,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Same extends UnaryOperator {
 
-	private NestedType nestedType;
+	private NestedPath path;
 
-	public Same(Type type, NestedType nestedType, Expression right) {
-		super(type, right);
-		this.nestedType = checkNotNull(nestedType, "nestedType");
-		checkArgument(!nestedType.equals(type), "Type and nested type must not be the same: %s.", type);
-		checkArgument(nestedType.equals(right.getType()), "Mismatched expression types: %s, %s.", nestedType, right.getType());
+	public Same(NestedPath path, Expression right) {
+		super(right);
+		this.path = checkNotNull(path, "path");
 	}
 
-	public NestedType getNestedType() {
-		return nestedType;
+	public NestedPath getPath() {
+		return path;
 	}
 	
 	@Override
 	public String toString() {
-		return "SAME " + getNestedType() + " " + getRight().toString();
+		return "SAME " + getRight().toString();
 	}
 
 }

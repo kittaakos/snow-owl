@@ -23,8 +23,8 @@ package com.b2international.snowowl.core.store.query;
  */
 public class Not extends UnaryOperator {
 
-	public Not(Type type, Expression right) {
-		super(type, right);
+	public Not(Expression right) {
+		super(right);
 	}
 
 }
