@@ -246,12 +246,16 @@ abstract public class ExpressionBuilders {
 
 		@Override
 		public DescriptionBinaryOperatorBuilder or(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			Expression previousExpression = previous.get();
+			Or or = new Or(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(or);
+			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder not(DescriptionBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			return this;
 		}
 		
 	}
@@ -342,12 +346,16 @@ abstract public class ExpressionBuilders {
 
 		@Override
 		public MembershipBinaryOperatorBuilder or(MembershipBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			Expression previousExpression = previous.get();
+			Or or = new Or(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(or);
+			return this;
 		}
 
 		@Override
 		public MembershipBinaryOperatorBuilder not(MembershipBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			return this;
 		}
 		
 		private Feature ensureNestedness(MembershipFeature feature) {
@@ -620,12 +628,16 @@ abstract public class ExpressionBuilders {
 
 		@Override
 		public RelationshipBinaryOperatorBuilder or(RelationshipBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			Expression previousExpression = previous.get();
+			Or or = new Or(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(or);
+			return this;
 		}
 
 		@Override
 		public RelationshipBinaryOperatorBuilder not(RelationshipBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			return this;
 		}
 
 	}
@@ -758,12 +770,16 @@ abstract public class ExpressionBuilders {
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder or(ConcreteDomainBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			Expression previousExpression = previous.get();
+			Or or = new Or(previousExpression, expressionBuilder.build());
+			previous = Optional.<Expression>of(or);
+			return this;
 		}
 
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder not(ConcreteDomainBinaryOperatorBuilder expressionBuilder) {
-			throw new UnsupportedOperationException("Not implemented yet.");
+			previous = Optional.<Expression>of(new Not(expressionBuilder.build()));
+			return this;
 		}
 		
 		private Feature ensureNestedness(ConcreteDomainFeature feature) {
