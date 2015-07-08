@@ -19,9 +19,13 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentMap;
 
 import com.b2international.snowowl.core.store.BaseStore;
+import com.b2international.snowowl.core.store.query.Expression;
+import com.b2international.snowowl.core.store.query.PrefixPredicate;
 import com.b2international.snowowl.core.store.query.Query;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.MapMaker;
 
 /**
@@ -67,11 +71,11 @@ public class MemStore<T> extends BaseStore<T> {
 	
 	@Override
 	public QueryBuilder query() {
-		return Query.builder(this);
+		return Query.builder();
 	}
 
 	@Override
-	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+	public Iterable<T> search(AfterWhereBuilder query) {
 		throw new UnsupportedOperationException();
 	}
 	

@@ -15,8 +15,6 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.b2international.snowowl.core.store.Searchable;
 import com.b2international.snowowl.core.store.query.Query.AfterSelectBuilder;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
@@ -39,10 +37,6 @@ public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, Se
 	private SearchExecutor executor;
 
 	private Searchable searchable;
-
-	protected DefaultQueryBuilder(Searchable searchable) {
-		this.searchable = checkNotNull(searchable, "Searchable may not be null");
-	}
 
 	public int getLimit() {
 		return limit;
@@ -99,11 +93,6 @@ public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, Se
 		return this;
 	}
 
-	@Override
-	public <T> Iterable<T> search(Class<T> type) {
-		return searchable.search(this, type);
-	}
-	
 	@Override
 	public SearchContextBuilder executeWith(SearchExecutor executor) {
 		this.executor = executor;

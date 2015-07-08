@@ -22,7 +22,7 @@ import java.util.Collection;
  * @param <T>
  *            - the type of the objects to store
  */
-public interface Store<T> extends Searchable {
+public interface Store<T> extends TypedSearchable<T> {
 
 	/**
 	 * Puts the value into this store.

@@ -15,7 +15,6 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import com.b2international.snowowl.core.store.Searchable;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
@@ -43,8 +42,6 @@ public class Query {
 
 		AfterWhereBuilder sortBy(SortBy sortBy);
 
-		<T> Iterable<T> search(Class<T> type);
-		
 	}
 	
 	/**
@@ -122,7 +119,7 @@ public class Query {
 		return sb.toString();
 	}
 
-	public static QueryBuilder builder(Searchable searchable) {
-		return new DefaultQueryBuilder(searchable);
+	public static QueryBuilder builder() {
+		return new DefaultQueryBuilder();
 	}
 }

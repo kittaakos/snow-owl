@@ -109,7 +109,7 @@ public class DefaultRepositoryTransactionTest {
 		transaction.setCommitComment("Added Foo Bar person");
 		assertNotNull(transaction.commit());
 		
-		final Iterable<Person> persons = index.query().on("MAIN").selectAll().where(Expressions.exactMatch("id", PERSON_1_KEY)).search(Person.class);
+		final Iterable<Person> persons = index.search(index.query().on("MAIN").selectAll().where(Expressions.exactMatch("id", PERSON_1_KEY)), Person.class);
 		final Person person = Iterables.getFirst(persons, null);
 		assertNotNull(person);
 	}

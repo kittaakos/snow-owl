@@ -133,7 +133,7 @@ public class DefaultIndex implements Index {
 	
 	@Override
 	public final QueryBuilder query() {
-		return Query.builder(this);
+		return Query.builder();
 	}
 	
 	@Override

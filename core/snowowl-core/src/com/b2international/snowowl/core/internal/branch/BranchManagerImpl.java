@@ -139,11 +139,10 @@ public abstract class BranchManagerImpl implements BranchManager {
 	}
 
 	/*package*/ final Collection<? extends Branch> getChildren(BranchImpl branchImpl) {
-		final Collection<InternalBranch> values = newArrayList(branchStore
+		final Collection<InternalBranch> values = newArrayList(branchStore.search(branchStore
 				.query()
 				.selectAll()
-				.where(Expressions.prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR))
-				.search(InternalBranch.class));
+				.where(Expressions.prefixMatch(PATH_FIELD, branchImpl.path() + Branch.SEPARATOR))));
 		initialize(values);
 		return values;
 	}

@@ -20,17 +20,15 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 /**
  * @since 5.0
  */
-public interface Searchable extends QueryBuilderProvider {
+public interface TypedSearchable<T> extends QueryBuilderProvider {
 
 	/**
 	 * Execute the given query among all stored items.
 	 * 
 	 * @param query
 	 *            - the query builder
-	 * @param type
-	 *            - the type to restrict the execution of the query
 	 * @return - an iterable of matching values
 	 */
-	<T> Iterable<T> search(AfterWhereBuilder query, Class<T> type);
+	Iterable<T> search(AfterWhereBuilder query);
 
 }

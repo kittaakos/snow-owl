@@ -59,12 +59,11 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	@Override
 	public <T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey) {
 		try {
-			final Iterable<T> revisions = query()
+			final Iterable<T> revisions = search(query()
 					.on(branchPath)
 					.selectAll()
 					.where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey))
-					.limit(1)
-					.search(type);
+					.limit(1), type);
 			if (Iterables.isEmpty(revisions)) {
 				// TODO add branchPath to exception message
 				throw new NotFoundException(getType(type), String.valueOf(storageKey));
@@ -106,7 +105,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public TransactionalQueryBuilder query() {
-		return new DefaultTransactionalQueryBuilder(this);
+		return new DefaultTransactionalQueryBuilder();
 	}
 	
 	@Override

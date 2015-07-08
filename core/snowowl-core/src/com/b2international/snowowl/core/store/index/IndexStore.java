@@ -58,7 +58,7 @@ public class IndexStore<T> extends BaseStore<T> {
 
 	@Override
 	public Collection<T> values() {
-		return newArrayList(query().select(Select.all()).where(new MatchAll()).search(getTypeClass()));
+		return newArrayList(search(query().select(Select.all()).where(new MatchAll())));
 	}
 	
 	@Override
@@ -73,12 +73,12 @@ public class IndexStore<T> extends BaseStore<T> {
 	
 	@Override
 	public QueryBuilder query() {
-		return Query.builder(this);
+		return Query.builder();
 	}
 
 	@Override
-	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
-		return index.search(query, type);
+	public Iterable<T> search(AfterWhereBuilder query) {
+		return index.search(query, getTypeClass());
 	}
 	
 }

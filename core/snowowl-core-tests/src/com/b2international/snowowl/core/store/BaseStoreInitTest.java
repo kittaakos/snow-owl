@@ -50,7 +50,7 @@ public class BaseStoreInitTest {
 			public QueryBuilder query() { return null; }
 			
 			@Override
-			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			public Iterable<TypeWithoutIdAnnotation> search(AfterWhereBuilder query) { return null; }
 			
 			@Override
 			public String getName() { return null; }
@@ -79,7 +79,7 @@ public class BaseStoreInitTest {
 			public QueryBuilder query() { return null; }
 			
 			@Override
-			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			public Iterable<Data> search(AfterWhereBuilder query) { return null; }
 			
 			@Override
 			public String getName() { return null; }
@@ -108,7 +108,7 @@ public class BaseStoreInitTest {
 			public QueryBuilder query() { return null; }
 
 			@Override
-			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			public Iterable<TypeWithIdMethod> search(AfterWhereBuilder query) { return null; }
 			
 			@Override
 			public String getName() { return null; }
@@ -137,7 +137,7 @@ public class BaseStoreInitTest {
 			public QueryBuilder query() { return null; }
 
 			@Override
-			public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) { return null; }
+			public Iterable<TypeWithIdInterfaceSubclass> search(AfterWhereBuilder query) { return null; }
 
 			@Override
 			public String getName() { return null; }
