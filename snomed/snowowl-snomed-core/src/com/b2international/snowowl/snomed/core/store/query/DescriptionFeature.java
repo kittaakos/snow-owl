@@ -33,7 +33,7 @@ public enum DescriptionFeature implements NestedFeature {
 	TYPE_ID(SnomedIndexConstants.TYPE_ID),
 	LANGUAGE_CODE(SnomedIndexConstants.LANGUAGE_CODE),
 	CASE_SENSITIVITY_ID(SnomedIndexConstants.CASE_SENSITIVITY_ID),
-	TERM(SnomedIndexConstants.TERM);
+	TERM(SnomedIndexConstants.TERM_TOKENIZED);
 	
 	private final String field;
 

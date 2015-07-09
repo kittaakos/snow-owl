@@ -54,6 +54,7 @@ public abstract class SnomedIndexConstants {
 	public static final String LANGUAGE_CODE = "languageCode";
 	public static final String CASE_SENSITIVITY_ID = "caseSensitivityId";
 	public static final String TERM = "term";
+	public static final String TERM_TOKENIZED = "term.tokenized";
 	
 	// relationship fields
 	public static final String GROUP = "group";
