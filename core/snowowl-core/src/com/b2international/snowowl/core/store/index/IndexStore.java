@@ -37,6 +37,7 @@ public class IndexStore<T> extends BaseStore<T> {
 	public IndexStore(Index index, Class<T> type) {
 		super(type);
 		this.index = checkNotNull(index, "index");
+		this.index.admin().mappings().addMapping(type);
 	}
 	
 	@Override
