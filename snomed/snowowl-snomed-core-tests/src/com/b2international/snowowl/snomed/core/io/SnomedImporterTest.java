@@ -71,9 +71,9 @@ public class SnomedImporterTest {
 	private static final String INT_CONCEPT_FILE = "d:/release_v5.0.0/SnomedCT_RF2Release_INT_20150131/Full/Terminology/sct2_Concept_Full_INT_20150131.txt";
 	
 	// Full 20140131 INT Mini CT files
-	private static final String MINI_CONCEPT_FILE = "d:/release_v5.0.0/MiniCT/RF2Release/Full/Terminology/sct2_Concept_Full_INT_20140131.txt";
-	private static final String MINI_DESCRIPTION_FILE = "d:/release_v5.0.0/MiniCT/RF2Release/Full/Terminology/sct2_Description_Full-en_INT_20140131.txt";
-	private static final String MINI_RELATIONSHIP_FILE = "d:/release_v5.0.0/MiniCT/RF2Release/Full/Terminology/sct2_Relationship_Full_INT_20140131.txt";
+	private static final String MINI_CONCEPT_FILE = "resources/MiniCT/RF2Release/Full/Terminology/sct2_Concept_Full_INT_20140131.txt";
+	private static final String MINI_DESCRIPTION_FILE = "resources/MiniCT/RF2Release/Full/Terminology/sct2_Description_Full-en_INT_20140131.txt";
+	private static final String MINI_RELATIONSHIP_FILE = "resources/MiniCT/RF2Release/Full/Terminology/sct2_Relationship_Full_INT_20140131.txt";
 	
 	private static final String SETTINGS_FILE = "snomed_settings.json";
 	
@@ -88,6 +88,8 @@ public class SnomedImporterTest {
 	private final AtomicLong timestampProvider = new AtomicLong(0L);
 	private final AtomicInteger commitIdProvider = new AtomicInteger(0);
 	private SnomedBrowser browser;
+
+	private static final boolean debug = false;
 	
 	@Before
 	public void givenIndex() throws Exception {
@@ -127,7 +129,6 @@ public class SnomedImporterTest {
 			final Collection<String[]> descriptions = descriptionsByEffectiveTime.get(et);
 			final Collection<String[]> relationships = relationshipsByEffectiveTime.get(et);
 			
-			// TODO update taxonomy graph
 			for (String[] relationship : relationships) {
 				if (ISA.equals(relationship[7])) {
 					final String source = relationship[4];
@@ -141,7 +142,9 @@ public class SnomedImporterTest {
 						graph.removeEdge(source, target);
 						checkState(graph.addEdge(source, target, edge), "ISA relationship [%s] cannot be added to graph", edge, source, target);
 					}
-					System.out.println("ISA added to graph: " + edge);
+					if (debug) {
+						System.out.println("ISA added to graph: " + edge);
+					}
 				}
 			}
 			
