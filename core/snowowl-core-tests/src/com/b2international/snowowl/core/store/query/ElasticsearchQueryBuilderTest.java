@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.store.query;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.Date;
+
 import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -34,6 +36,8 @@ public class ElasticsearchQueryBuilderTest {
 	private static final String TEST_TEXT_ARGUMENT_1 = "test text argument";
 	private static final String TEST_TEXT_ARGUMENT_2 = "yet another text test argument";
 	private static final Boolean TEST_BOOLEAN_ARGUMENT = true;
+	private static final Date TEST_START_DATE = new Date();
+	private static final Date TEST_END_DATE = new Date();
 
 	private ElasticsearchQueryBuilder builder;
 
@@ -240,6 +244,49 @@ public class ElasticsearchQueryBuilderTest {
 		QueryBuilder result = builder.build(same);
 		QueryBuilder expected = QueryBuilders.nestedQuery(MockNestedPath.INSTANCE.getPath(),
 				QueryBuilders.matchQuery(MockNestedFeature.FOO.getField(), TEST_TEXT_ARGUMENT_1).operator(MatchQueryBuilder.Operator.AND));
+		assertEquals(expected.toString(), result.toString());
+	}
+	
+	@Test
+	public void whenDateRangePredicate_ThenConstantScoreQueryWithRangeFilter() {
+		DateRangePredicate predicate = new DateRangePredicate(MockFeature.FOO, TEST_START_DATE, TEST_END_DATE);
+		QueryBuilder result = builder.build(predicate);
+		QueryBuilder expected = QueryBuilders.constantScoreQuery(FilterBuilders.rangeFilter(MockFeature.FOO.getField()).from(TEST_START_DATE)
+				.to(TEST_END_DATE));
+		assertEquals(expected.toString(), result.toString());
+	}
+	
+	@Test
+	public void whenDateRangePredicateStartExcluded_ThenConstantScoreQueryWithRangeFilter() {
+		DateRangePredicate predicate = new DateRangePredicate(MockFeature.FOO, TEST_START_DATE, TEST_END_DATE, false, true);
+		QueryBuilder result = builder.build(predicate);
+		QueryBuilder expected = QueryBuilders.constantScoreQuery(FilterBuilders.rangeFilter(MockFeature.FOO.getField()).from(TEST_START_DATE)
+				.to(TEST_END_DATE).includeLower(false).includeUpper(true));
+		assertEquals(expected.toString(), result.toString());
+	}
+	
+	@Test
+	public void whenDateRangePredicateEndExcluded_ThenConstantScoreQueryWithRangeFilter() {
+		DateRangePredicate predicate = new DateRangePredicate(MockFeature.FOO, TEST_START_DATE, TEST_END_DATE, true, false);
+		QueryBuilder result = builder.build(predicate);
+		QueryBuilder expected = QueryBuilders.constantScoreQuery(FilterBuilders.rangeFilter(MockFeature.FOO.getField()).from(TEST_START_DATE)
+				.to(TEST_END_DATE).includeLower(true).includeUpper(false));
+		assertEquals(expected.toString(), result.toString());
+	}
+	
+	@Test
+	public void whenDateRangePredicateNoStart_ThenConstantScoreQueryWithRangeFilter() {
+		DateRangePredicate predicate = new DateRangePredicate(MockFeature.FOO, null, TEST_END_DATE);
+		QueryBuilder result = builder.build(predicate);
+		QueryBuilder expected = QueryBuilders.constantScoreQuery(FilterBuilders.rangeFilter(MockFeature.FOO.getField()).to(TEST_END_DATE));
+		assertEquals(expected.toString(), result.toString());
+	}
+	
+	@Test
+	public void whenDateRangePredicateNoEnd_ThenConstantScoreQueryWithRangeFilter() {
+		DateRangePredicate predicate = new DateRangePredicate(MockFeature.FOO, TEST_START_DATE, null);
+		QueryBuilder result = builder.build(predicate);
+		QueryBuilder expected = QueryBuilders.constantScoreQuery(FilterBuilders.rangeFilter(MockFeature.FOO.getField()).from(TEST_END_DATE));
 		assertEquals(expected.toString(), result.toString());
 	}
 }

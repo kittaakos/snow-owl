@@ -25,6 +25,7 @@ import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.RangeFilterBuilder;
 
 import com.b2international.snowowl.core.store.query.TextPredicate.Operator;
 import com.google.common.collect.Queues;
@@ -117,6 +118,9 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 		} else if (expression instanceof TextPredicate) {
 			TextPredicate predicate = (TextPredicate) expression;
 			visit(predicate);
+		} else if (expression instanceof DateRangePredicate) {
+			DateRangePredicate predicate = (DateRangePredicate) expression;
+			visit(predicate);
 		} else {
 			throw new IllegalArgumentException("Unexpected expression: " + expression);
 		}
@@ -169,6 +173,18 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 	private void visit(LongPredicate predicate) {
 		Feature feature = predicate.getFeature();
 		FilterBuilder filter = FilterBuilders.termFilter(feature.getField(), predicate.getArgument());
+		deque.push(new DequeItem(filter));
+	}
+	
+	private void visit(DateRangePredicate predicate) {
+		Feature feature = predicate.getFeature();
+		RangeFilterBuilder filter = FilterBuilders.rangeFilter(feature.getField());
+		if (predicate.getStart().isPresent()) {
+			filter.from(predicate.getStart().get()).includeLower(predicate.isStartInclusive());
+		}
+		if (predicate.getEnd().isPresent()) {
+			filter.to(predicate.getEnd().get()).includeUpper(predicate.isEndInclusive());
+		}
 		deque.push(new DequeItem(filter));
 	}
 

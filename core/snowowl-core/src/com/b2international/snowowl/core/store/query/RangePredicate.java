@@ -15,33 +15,71 @@
  */
 package com.b2international.snowowl.core.store.query;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.google.common.base.Optional;
 
 /**
  * Represents a predicate with a value range.
  * 
  * @since 5.0
- * @param <T> the value type
+ * @param <T>
+ *            the value type
  */
 abstract public class RangePredicate<T> extends Predicate {
 
-	private final T start;
-	private final T end;
-	
+	private final Optional<T> start;
+	private final Optional<T> end;
+	private final boolean startInclusive;
+	private final boolean endInclusive;
+
+	/**
+	 * Creates a range predicate with both start and end values included.
+	 * 
+	 * @param feature
+	 *            - the feature to query
+	 * @param start
+	 *            - the range start value
+	 * @param end
+	 *            - the range end value
+	 */
 	public RangePredicate(Feature feature, T start, T end) {
+		this(feature, start, end, true, true);
+	}
+
+	/**
+	 * Creates a range predicate.
+	 * 
+	 * @param feature
+	 *            - the feature to query
+	 * @param start
+	 *            - the range start value
+	 * @param end
+	 *            - the range end value
+	 * @param startInclusive
+	 *            - range start inclusiveness
+	 * @param endInclusive
+	 *            - range end inclusiveness
+	 */
+	public RangePredicate(Feature feature, T start, T end, boolean startInclusive, boolean endInclusive) {
 		super(feature);
-		this.start = checkNotNull(start, "start");
-		this.end = checkNotNull(end, "end");
+		this.start = Optional.fromNullable(start);
+		this.end = Optional.fromNullable(end);
+		this.startInclusive = startInclusive;
+		this.endInclusive = endInclusive;
 	}
 
 	public Optional<T> getStart() {
-		return Optional.fromNullable(start);
+		return start;
 	}
-	
+
 	public Optional<T> getEnd() {
-		return Optional.fromNullable(end);
+		return end;
 	}
-	
+
+	public boolean isStartInclusive() {
+		return startInclusive;
+	}
+
+	public boolean isEndInclusive() {
+		return endInclusive;
+	}
 }

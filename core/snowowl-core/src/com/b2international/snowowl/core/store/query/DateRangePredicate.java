@@ -25,4 +25,9 @@ public class DateRangePredicate extends RangePredicate<Date> {
 	public DateRangePredicate(Feature feature, Date start, Date end) {
 		super(feature, start, end);
 	}
+
+	public DateRangePredicate(Feature feature, Date start, Date end, boolean startInclusive, boolean endInclusive) {
+		super(feature, start, end, startInclusive, endInclusive);
+	}
+	
 }
