@@ -20,6 +20,8 @@ import java.nio.file.Files;
 
 import org.junit.rules.ExternalResource;
 
+import com.b2international.commons.FileUtils;
+
 /**
  * @since 5.0
  */
@@ -48,7 +50,7 @@ public class TemporaryDirectory extends ExternalResource {
 	@Override
 	protected void after() {
 		super.after();
-//		FileUtils.deleteDirectory(tmpDir);
+		FileUtils.deleteDirectory(tmpDir);
 		tmpDir = null;
 	}
 	
