@@ -37,7 +37,7 @@ class LocalBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-		final InternalBranch branch = new LocalBranchImpl(name, parent.path(), clock.incrementAndGet());
+		final InternalBranch branch = new LocalBranchImpl(name, parent.path(), parent.headTimestamp());
 		branch.metadata(metadata);
 		registerBranch(branch);
 		return branch;
