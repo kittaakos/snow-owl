@@ -142,11 +142,15 @@ public class SnomedImporterTest {
 					// check if relationship is already in the graph
 					if (graph.containsEdge(source, target) && !relationshipActive) {
 						final RelationshipEdge edge = graph.removeEdge(source, target);
-						System.out.println("ISA remove from graph: " + edge);
+						if (debug) {
+							System.out.println("ISA remove from graph: " + edge);
+						}
 					} else if (!graph.containsEdge(source, target) && relationshipActive) {
 						final RelationshipEdge edge = new RelationshipEdge(relationshipId);
 						checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
-						System.out.println("ISA added to graph: " + edge);
+						if (debug) {
+							System.out.println("ISA added to graph: " + edge);
+						}
 					}
 				}
 			}
