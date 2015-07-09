@@ -58,7 +58,11 @@ public class Mappings {
 	
 	@SuppressWarnings("unchecked")
 	public <T> MappingStrategy<T> getMapping(Class<T> type) {
-		return (MappingStrategy<T>) checkNotNull(mappings.get(type), "Mapping may not be null for %s", type) ;
+		MappingStrategy<?> strategy = mappings.get(type);
+		if (strategy == null && type.getSuperclass() != null) {
+			strategy = getMapping(type.getSuperclass());
+		}
+		return (MappingStrategy<T>) checkNotNull(strategy, "Mapping may not be null for %s", type) ;
 	}
 	
 	public Collection<MappingStrategy<?>> getMappings() {

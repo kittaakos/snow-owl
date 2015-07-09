@@ -16,10 +16,11 @@
 package com.b2international.snowowl.snomed.core.io;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -35,10 +36,13 @@ import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.b2international.snowowl.snomed.core.store.index.Description;
 import com.b2international.snowowl.snomed.core.store.index.Relationship;
 import com.b2international.snowowl.snomed.core.store.index.RelationshipGroup;
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.io.Files;
 
 /**
  * @since 5.0
@@ -57,34 +61,44 @@ public class SnomedEffectiveTimeImporter {
 
 	private DirectedGraph<String, RelationshipEdge> graph;
 	
-	public SnomedEffectiveTimeImporter(final SnomedBrowser browser, DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, Collection<String[]> concepts, Collection<String[]> descriptions, Collection<String[]> relationships) {
+	public SnomedEffectiveTimeImporter(final SnomedBrowser browser, DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, File concepts, File descriptions, File relationships) {
 		this.browser = browser;
 		this.graph = graph;
 		this.tx = tx;
-		this.concepts = concepts;
-		this.conceptDescriptions = HashMultimap.create(Multimaps.index(descriptions, new Function<String[], String>() {
+		this.concepts = readLines(concepts);
+		final Collection<String[]> descriptionLines = readLines(descriptions);
+		final Collection<String[]> relationshipLines = readLines(relationships);
+		this.conceptDescriptions = HashMultimap.create(Multimaps.index(descriptionLines, new Function<String[], String>() {
 			@Override
 			public String apply(String[] input) {
 				return input[4];
 			}
 		}));
-		
-		this.conceptRelationships = HashMultimap.create(Multimaps.index(relationships, new Function<String[], String>() {
+		this.conceptRelationships = HashMultimap.create(Multimaps.index(relationshipLines, new Function<String[], String>() {
 			@Override
 			public String apply(String[] input) {
 				return input[4];
 			}
 		}));
-		Loggers.REPOSITORY.log().info("Importing components [Concept: {}, Description: {}, Relationship: {}]", concepts.size(), descriptions.size(), relationships.size());
+		Loggers.REPOSITORY.log().info("Importing components [Concept: {}, Description: {}, Relationship: {}]", this.concepts.size(), descriptionLines.size(), relationshipLines.size());
 	}
 	
+	private Collection<String[]> readLines(File file) {
+		try {
+			return Collections2.transform(Files.readLines(file, Charsets.UTF_8), new Function<String, String[]>() {
+				@Override
+				public String[] apply(String input) {
+					return input.split("\t");
+				}
+			});
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	public void doImport() {
 		processConcepts();
-		// process remaining descriptions and relationships
 		processRemainingComponents();
-		checkState(concepts.isEmpty(), "At the end of effective time import, all concepts should be processed");
-		checkState(conceptDescriptions.isEmpty(), "At the end of effective time import, all descriptions should be processed");
-		checkState(conceptRelationships.isEmpty(), "At the end of effective time import, all relationships should be processed");
 	}
 
 	private void processRemainingComponents() {
@@ -102,11 +116,16 @@ public class SnomedEffectiveTimeImporter {
 	}
 
 	private void computeParents(Concept concept) {
-		final Collection<String> directParents = getSuperTypes(concept.getId());
-		final Set<String> ancestorIds = newHashSet();
-		populateAncestors(directParents, ancestorIds);
-		concept.getParentIds().addAll(directParents);
-		concept.getAncestorIds().addAll(ancestorIds);
+		if (concept.isActive()) {
+			final Collection<String> directParents = getSuperTypes(concept.getId());
+			final Set<String> ancestorIds = newHashSet();
+			populateAncestors(directParents, ancestorIds);
+			concept.getParentIds().addAll(directParents);
+			concept.getAncestorIds().addAll(ancestorIds);
+		} else {
+			concept.getParentIds().clear();
+			concept.getAncestorIds().clear();
+		}
 	}
 
 	private Collection<String> getSuperTypes(final String id) {

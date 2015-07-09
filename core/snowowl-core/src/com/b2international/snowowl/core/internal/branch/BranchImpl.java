@@ -240,5 +240,10 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 		
 		return true;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("Branch[%s, base=%s, head=%s, deleted=%s, state=%s]", path(), baseTimestamp(), headTimestamp(), isDeleted(), state());
+	}
 
 }
