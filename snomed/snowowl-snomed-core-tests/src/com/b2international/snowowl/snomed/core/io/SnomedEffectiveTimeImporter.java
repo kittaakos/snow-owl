@@ -21,7 +21,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -110,10 +109,10 @@ public class SnomedEffectiveTimeImporter {
 		concept.getAncestorIds().addAll(ancestorIds);
 	}
 
-	private List<String> getSuperTypes(final String id) {
+	private Collection<String> getSuperTypes(final String id) {
 		return Graphs.successorListOf(graph, id);
 	}
-
+	
 	private void populateAncestors(final Collection<String> parents, final Set<String> ancestorIds) {
 		for (String parent : parents) {
 			if (ancestorIds.add(parent)) {

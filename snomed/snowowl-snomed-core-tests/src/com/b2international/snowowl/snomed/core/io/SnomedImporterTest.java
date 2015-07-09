@@ -131,18 +131,20 @@ public class SnomedImporterTest {
 			
 			for (String[] relationship : relationships) {
 				if (ISA.equals(relationship[7])) {
+					final String relationshipId = relationship[0];
+					final boolean relationshipActive = "1".equals(relationship[2]);
 					final String source = relationship[4];
 					final String target = relationship[5];
+					
 					graph.addVertex(source);
 					graph.addVertex(target);
-					// check if the relationship is already there
-					final RelationshipEdge edge = new RelationshipEdge(relationship[0], "1".equals(relationship[2]));
-					if (!graph.addEdge(source, target, edge)) {
-						// if the edge is already there by ID then replace it with the latest version
-						graph.removeEdge(source, target);
-						checkState(graph.addEdge(source, target, edge), "ISA relationship [%s] cannot be added to graph", edge, source, target);
-					}
-					if (debug) {
+					// check if relationship is already in the graph
+					if (graph.containsEdge(source, target) && !relationshipActive) {
+						final RelationshipEdge edge = graph.removeEdge(source, target);
+						System.out.println("ISA remove from graph: " + edge);
+					} else if (!graph.containsEdge(source, target) && relationshipActive) {
+						final RelationshipEdge edge = new RelationshipEdge(relationshipId);
+						checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
 						System.out.println("ISA added to graph: " + edge);
 					}
 				}
@@ -168,8 +170,8 @@ public class SnomedImporterTest {
 		
 		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
 		assertFalse(concept20050131.isActive());
-		assertThat(concept20050131.getParentIds()).hasSize(1);
-		assertThat(concept20050131.getAncestorIds()).hasSize(5);
+		assertThat(concept20050131.getParentIds()).hasSize(0);
+		assertThat(concept20050131.getAncestorIds()).hasSize(0);
 		
 	}
 	
@@ -178,13 +180,11 @@ public class SnomedImporterTest {
 		private static final long serialVersionUID = 2072878661906449829L;
 		
 		private String id;
-		private boolean active;
 		
-		public RelationshipEdge(String id, boolean active) {
+		public RelationshipEdge(String id) {
 			this.id = id;
-			this.active = active;
 		}
-
+		
 		@Override
 		public int hashCode() {
 			return Objects.hash(id);
@@ -202,7 +202,7 @@ public class SnomedImporterTest {
 
 		@Override
 		public String toString() {
-			return String.format("%s[%s] %s->%s", id, active ? "active" : "inactive", getSource(), getTarget());
+			return String.format("%s: %s->%s", id, getSource(), getTarget());
 		}
 		
 	}
