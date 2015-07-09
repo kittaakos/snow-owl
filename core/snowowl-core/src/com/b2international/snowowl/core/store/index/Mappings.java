@@ -59,10 +59,26 @@ public class Mappings {
 	@SuppressWarnings("unchecked")
 	public <T> MappingStrategy<T> getMapping(Class<T> type) {
 		MappingStrategy<?> strategy = mappings.get(type);
-		if (strategy == null && type.getSuperclass() != null) {
-			strategy = getMapping(type.getSuperclass());
+		if (strategy == null) {
+			strategy = tryFindStrategy(type);
 		}
 		return (MappingStrategy<T>) checkNotNull(strategy, "Mapping may not be null for %s", type) ;
+	}
+	
+	private MappingStrategy<?> tryFindStrategy(Class<?> type) {
+		MappingStrategy<?> strategy = mappings.get(type);
+		if (type.getSuperclass() != null) {
+			strategy = tryFindStrategy(type.getSuperclass());
+		}
+		if (strategy == null) {
+			for (Class<?> iface : type.getInterfaces()) {
+				strategy = tryFindStrategy(iface);
+				if (strategy != null) {
+					break;
+				}
+			}
+		}
+		return strategy;
 	}
 	
 	public Collection<MappingStrategy<?>> getMappings() {
