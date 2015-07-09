@@ -17,9 +17,12 @@ package com.b2international.snowowl.snomed.core.store.query.builder;
 
 import static com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.descriptionMembership;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
+import com.b2international.snowowl.core.store.query.DateRangePredicate;
 import com.b2international.snowowl.core.store.query.Expression;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
@@ -28,7 +31,6 @@ import com.b2international.snowowl.core.store.query.StringPredicate;
 import com.b2international.snowowl.core.store.query.TextPredicate;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionFeature;
 import com.b2international.snowowl.snomed.core.store.query.DescriptionNestedPath;
-import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeature;
 import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.DescriptionMembershipBinaryOperatorBuilder;
 
 /**
@@ -90,6 +92,23 @@ abstract public class DescriptionExpressions {
 			return this;
 		}
 		
+		@Override
+		public DescriptionBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(DescriptionFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public DescriptionBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(DescriptionFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public DescriptionBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(DescriptionFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public DescriptionBinaryOperatorBuilder typeId(String argument) {
 			previous = new StringPredicate(DescriptionFeature.TYPE_ID, argument);

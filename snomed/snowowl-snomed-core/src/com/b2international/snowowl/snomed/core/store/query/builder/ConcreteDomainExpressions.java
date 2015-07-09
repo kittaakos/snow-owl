@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.store.query.builder;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
+import com.b2international.snowowl.core.store.query.DateRangePredicate;
 import com.b2international.snowowl.core.store.query.Expression;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
@@ -84,6 +87,23 @@ abstract public class ConcreteDomainExpressions {
 			return this;
 		}
 		
+		@Override
+		public ConcreteDomainBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(ConcreteDomainFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public ConcreteDomainBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(ConcreteDomainFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public ConcreteDomainBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(ConcreteDomainFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public ConcreteDomainBinaryOperatorBuilder type(String argument) {
 			previous = new StringPredicate(ConcreteDomainFeature.TYPE, argument);
@@ -212,6 +232,23 @@ abstract public class ConcreteDomainExpressions {
 			return this;
 		}
 		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(RelationshipConcreteDomainFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(RelationshipConcreteDomainFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public RelationshipConcreteDomainBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(RelationshipConcreteDomainFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public RelationshipConcreteDomainBinaryOperatorBuilder type(String argument) {
 			previous = new StringPredicate(RelationshipConcreteDomainFeature.TYPE, argument);

@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.store.query.builder;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
+import com.b2international.snowowl.core.store.query.DateRangePredicate;
 import com.b2international.snowowl.core.store.query.Expression;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
@@ -72,6 +75,24 @@ abstract public class ConceptExpressions {
 		@Override
 		public ConceptBinaryOperatorBuilder released(boolean argument) {
 			previous = new BooleanPredicate(SnomedComponentFeature.RELEASED, argument);
+			return this;
+		}
+		
+		@Override
+		public ConceptBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(SnomedComponentFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public ConceptBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(SnomedComponentFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public ConceptBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(SnomedComponentFeature.EFFECTIVE_TIME, date, null);
 			return this;
 		}
 

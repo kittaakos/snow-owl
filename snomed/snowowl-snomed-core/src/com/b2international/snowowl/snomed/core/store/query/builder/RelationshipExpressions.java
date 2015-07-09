@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.store.query.builder;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
+import com.b2international.snowowl.core.store.query.DateRangePredicate;
 import com.b2international.snowowl.core.store.query.Expression;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
@@ -87,6 +90,23 @@ abstract public class RelationshipExpressions {
 			return this;
 		}
 		
+		@Override
+		public RelationshipBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(RelationshipFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public RelationshipBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(RelationshipFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public RelationshipBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(RelationshipFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public RelationshipBinaryOperatorBuilder typeId(String argument) {
 			previous = new StringPredicate(RelationshipFeature.TYPE_ID, argument);

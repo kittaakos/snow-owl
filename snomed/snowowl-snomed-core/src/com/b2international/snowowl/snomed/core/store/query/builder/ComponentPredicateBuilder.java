@@ -15,11 +15,15 @@
  */
 package com.b2international.snowowl.snomed.core.store.query.builder;
 
+import java.util.Date;
+
 public interface ComponentPredicateBuilder<B> {
 	B id(String argument);
 	B moduleId(String argument);
 	B active(boolean argument);
 	B released(boolean argument);
-	// TODO: effective time
+	B effectiveTimeBetween(Date from, Date to);
+	B effectiveTimeBefore(Date date);
+	B effectiveTimeAfter(Date date);
 	B not(B expressionBuilder);
 }

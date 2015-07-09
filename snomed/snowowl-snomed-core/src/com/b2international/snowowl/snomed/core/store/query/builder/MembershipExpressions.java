@@ -15,9 +15,12 @@
  */
 package com.b2international.snowowl.snomed.core.store.query.builder;
 
+import java.util.Date;
+
 import com.b2international.snowowl.core.store.query.And;
 import com.b2international.snowowl.core.store.query.BooleanPredicate;
 import com.b2international.snowowl.core.store.query.Buildable;
+import com.b2international.snowowl.core.store.query.DateRangePredicate;
 import com.b2international.snowowl.core.store.query.Expression;
 import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Or;
@@ -68,6 +71,23 @@ abstract public class MembershipExpressions {
 			return this;
 		}
 		
+		@Override
+		public MembershipBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(MembershipFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public MembershipBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(MembershipFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public MembershipBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(MembershipFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public MembershipBinaryOperatorBuilder type(String argument) {
 			previous = new StringPredicate(MembershipFeature.TYPE, argument);
@@ -156,6 +176,23 @@ abstract public class MembershipExpressions {
 		}
 		
 		@Override
+		public DescriptionMembershipBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(DescriptionMembershipFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public DescriptionMembershipBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(DescriptionMembershipFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public DescriptionMembershipBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(DescriptionMembershipFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
+		@Override
 		public DescriptionMembershipBinaryOperatorBuilder type(String argument) {
 			previous = new StringPredicate(DescriptionMembershipFeature.TYPE, argument);
 			return this;
@@ -242,6 +279,23 @@ abstract public class MembershipExpressions {
 			return this;
 		}
 		
+		@Override
+		public RelationshipMembershipBinaryOperatorBuilder effectiveTimeBetween(Date from, Date to) {
+			previous = new DateRangePredicate(RelationshipMembershipFeature.EFFECTIVE_TIME, from, to);
+			return this;
+		}
+		
+		@Override
+		public RelationshipMembershipBinaryOperatorBuilder effectiveTimeBefore(Date date) {
+			previous = new DateRangePredicate(RelationshipMembershipFeature.EFFECTIVE_TIME, null, date);
+			return this;
+		}
+		
+		@Override
+		public RelationshipMembershipBinaryOperatorBuilder effectiveTimeAfter(Date date) {
+			previous = new DateRangePredicate(RelationshipMembershipFeature.EFFECTIVE_TIME, date, null);
+			return this;
+		}
 		@Override
 		public RelationshipMembershipBinaryOperatorBuilder type(String argument) {
 			previous = new StringPredicate(RelationshipMembershipFeature.TYPE, argument);
