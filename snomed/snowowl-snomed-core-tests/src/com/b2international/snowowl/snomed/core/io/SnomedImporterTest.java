@@ -179,11 +179,6 @@ public class SnomedImporterTest {
 			}
 			
 			@Override
-			public TransactionalIndex index() {
-				return original.index();
-			}
-			
-			@Override
 			public String branch() {
 				return original.branch();
 			}

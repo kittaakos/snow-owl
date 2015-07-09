@@ -55,11 +55,6 @@ class DefaultIndexTransaction implements IndexTransaction {
 	}
 	
 	@Override
-	public TransactionalIndex index() {
-		return this.index;
-	}
-	
-	@Override
 	public String branch() {
 		return branchPath;
 	}

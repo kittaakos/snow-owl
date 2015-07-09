@@ -246,11 +246,6 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 			}
 			
 			@Override
-			public TransactionalIndex index() {
-				return original.index();
-			}
-			
-			@Override
 			public String branch() {
 				return original.branch();
 			}

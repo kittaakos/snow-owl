@@ -31,10 +31,4 @@ public interface IndexTransaction {
 
 	String branch();
 	
-	/**
-	 * TODO do we need this method???
-	 * @return
-	 */
-	TransactionalIndex index();
-	
 }
