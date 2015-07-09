@@ -21,11 +21,17 @@ import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graphs;
 
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
+import com.b2international.snowowl.snomed.core.io.SnomedImporterTest.RelationshipEdge;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.b2international.snowowl.snomed.core.store.index.Description;
 import com.b2international.snowowl.snomed.core.store.index.Relationship;
@@ -49,9 +55,12 @@ public class SnomedEffectiveTimeImporter {
 	private Multimap<String, String[]> conceptRelationships;
 
 	private SnomedBrowser browser;
+
+	private DirectedGraph<String, RelationshipEdge> graph;
 	
-	public SnomedEffectiveTimeImporter(final SnomedBrowser browser, final IndexTransaction tx, Collection<String[]> concepts, Collection<String[]> descriptions, Collection<String[]> relationships) {
+	public SnomedEffectiveTimeImporter(final SnomedBrowser browser, DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, Collection<String[]> concepts, Collection<String[]> descriptions, Collection<String[]> relationships) {
 		this.browser = browser;
+		this.graph = graph;
 		this.tx = tx;
 		this.concepts = concepts;
 		this.conceptDescriptions = HashMultimap.create(Multimaps.index(descriptions, new Function<String[], String>() {
@@ -87,7 +96,29 @@ public class SnomedEffectiveTimeImporter {
 			checkNotNull(concept != null, "Concept '%s' should exists at this point", unprocessedConceptId);
 			appendDescriptions(concept);
 			appendRelationships(concept);
+			// due to relationship changes reset the parent list
+			computeParents(concept);
 			tx.add(concept.getStorageKey(), concept);
+		}
+	}
+
+	private void computeParents(Concept concept) {
+		final Collection<String> directParents = getSuperTypes(concept.getId());
+		final Set<String> ancestorIds = newHashSet();
+		populateAncestors(directParents, ancestorIds);
+		concept.getParentIds().addAll(directParents);
+		concept.getAncestorIds().addAll(ancestorIds);
+	}
+
+	private List<String> getSuperTypes(final String id) {
+		return Graphs.successorListOf(graph, id);
+	}
+
+	private void populateAncestors(final Collection<String> parents, final Set<String> ancestorIds) {
+		for (String parent : parents) {
+			if (ancestorIds.add(parent)) {
+				populateAncestors(getSuperTypes(parent), ancestorIds);
+			}
 		}
 	}
 
@@ -104,13 +135,10 @@ public class SnomedEffectiveTimeImporter {
 			}
 			// apply changes, by creating a completely new Concept from the current line
 			concept = Concept.of(conceptLine);
-			
+
+			computeParents(concept);
 			appendDescriptions(concept);
-			
-			// append relationship group by group
 			appendRelationships(concept);
-			
-			// remove processed descriptions and relationships
 			conceptDescriptions.removeAll(conceptId);
 			conceptRelationships.removeAll(conceptId);
 			

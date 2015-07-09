@@ -15,6 +15,7 @@
  */
 package com.b2international.snowowl.snomed.core.io;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -22,10 +23,15 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jgrapht.DirectedGraph;
+import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
+import org.jgrapht.graph.DefaultEdge;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,6 +64,8 @@ import com.google.common.io.Resources;
  * @since 5.0
  */
 public class SnomedImporterTest {
+
+	private static final String ISA = "116680003";
 
 	// Full 20150131 INT files
 	private static final String INT_CONCEPT_FILE = "d:/release_v5.0.0/SnomedCT_RF2Release_INT_20150131/Full/Terminology/sct2_Concept_Full_INT_20150131.txt";
@@ -107,11 +115,38 @@ public class SnomedImporterTest {
 		final Multimap<String, String[]> descriptionsByEffectiveTime = readRf2File(MINI_DESCRIPTION_FILE);
 		final Multimap<String, String[]> relationshipsByEffectiveTime = readRf2File(MINI_RELATIONSHIP_FILE);
 		
+		// create initial SNOMED CT taxonomy graph
+		
+		final DirectedGraph<String, RelationshipEdge> graph = DirectedAcyclicGraph.<String, RelationshipEdge>builder(RelationshipEdge.class).build();
+		
 		// index by effective time
 		for (String et : Ordering.natural().sortedCopy(conceptsByEffectiveTime.keySet())) {
 			final IndexTransaction tx = openTransaction(main);
 			Loggers.REPOSITORY.log().info("Importing SNOMED CT version {}", et);
-			new SnomedEffectiveTimeImporter(browser, tx, conceptsByEffectiveTime.get(et), descriptionsByEffectiveTime.get(et), relationshipsByEffectiveTime.get(et)).doImport();
+			final Collection<String[]> concepts = conceptsByEffectiveTime.get(et);
+			final Collection<String[]> descriptions = descriptionsByEffectiveTime.get(et);
+			final Collection<String[]> relationships = relationshipsByEffectiveTime.get(et);
+			
+			// TODO update taxonomy graph
+			for (String[] relationship : relationships) {
+				if (ISA.equals(relationship[7])) {
+					final String source = relationship[4];
+					final String target = relationship[5];
+					graph.addVertex(source);
+					graph.addVertex(target);
+					// check if the relationship is already there
+					final RelationshipEdge edge = new RelationshipEdge(relationship[0], "1".equals(relationship[2]));
+					if (!graph.addEdge(source, target, edge)) {
+						// if the edge is already there by ID then replace it with the latest version
+						graph.removeEdge(source, target);
+						checkState(graph.addEdge(source, target, edge), "ISA relationship [%s] cannot be added to graph", edge, source, target);
+					}
+					System.out.println("ISA added to graph: " + edge);
+				}
+			}
+			
+			// pass taxonomy to effective time importer
+			new SnomedEffectiveTimeImporter(browser, graph, tx, concepts, descriptions, relationships).doImport();
 			// single commit for the effective time
 			tx.commit(String.format("Imported SNOMED CT '%s' version", et));
 			// create a version for the effective time 
@@ -124,12 +159,50 @@ public class SnomedImporterTest {
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
 		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);
 		assertThat(concept20020131.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
+		// one direct parent 
+		assertThat(concept20020131.getParentIds()).hasSize(1);
+		assertThat(concept20020131.getAncestorIds()).hasSize(4);
 		
 		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
 		assertFalse(concept20050131.isActive());
+		assertThat(concept20050131.getParentIds()).hasSize(1);
+		assertThat(concept20050131.getAncestorIds()).hasSize(5);
+		
 	}
+	
+	static class RelationshipEdge extends DefaultEdge {
 
-	// basic importer implementation
+		private static final long serialVersionUID = 2072878661906449829L;
+		
+		private String id;
+		private boolean active;
+		
+		public RelationshipEdge(String id, boolean active) {
+			this.id = id;
+			this.active = active;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(id);
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass())
+				return false;
+			RelationshipEdge other = (RelationshipEdge) obj;
+			return Objects.equals(id, other.id);
+		}
+
+		@Override
+		public String toString() {
+			return String.format("%s[%s] %s->%s", id, active ? "active" : "inactive", getSource(), getTarget());
+		}
+		
+	}
 	
 	private Multimap<String, String[]> readRf2File(String filePath) throws IOException {
 		return Files.readLines(new File(filePath), Charsets.UTF_8, new LineProcessor<Multimap<String, String[]>>() {

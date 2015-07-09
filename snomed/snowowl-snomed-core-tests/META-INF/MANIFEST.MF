@@ -14,5 +14,6 @@ Require-Bundle: org.junit;bundle-version="4.11.0",
  org.eclipse.emf.ecore;visibility:=reexport,
  com.google.guava;bundle-version="15.0.0",
  snowowl-snomed-core;bundle-version="5.0.0",
- org.mockito.mockito-all;bundle-version="1.9.5"
+ org.mockito.mockito-all;bundle-version="1.9.5",
+ org.jgrapht.core;bundle-version="0.9.1"
 Bundle-ActivationPolicy: lazy
