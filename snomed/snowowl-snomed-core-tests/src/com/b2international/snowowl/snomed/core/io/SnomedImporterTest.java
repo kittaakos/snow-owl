@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -78,7 +79,7 @@ public class SnomedImporterTest {
 	private static final String SETTINGS_FILE = "snomed_settings.json";
 	
 	@Rule
-	public final ESRule rule = new ESRule();
+	public final ESLocalNodeRule rule = new ESLocalNodeRule();
 
 	private BranchManager manager = new MockBranchManager();
 	private Branch main;

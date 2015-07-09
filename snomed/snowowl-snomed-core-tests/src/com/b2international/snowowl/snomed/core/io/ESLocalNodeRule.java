@@ -11,7 +11,7 @@ import org.junit.rules.TestRule;
  * 
  * @since 5.0
  */
-public class ESRule extends ExternalResource {
+public class ESLocalNodeRule extends ExternalResource {
 
 	private Node node;
 	
