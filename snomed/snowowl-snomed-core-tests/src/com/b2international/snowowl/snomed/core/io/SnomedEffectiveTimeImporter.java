@@ -17,18 +17,21 @@ package com.b2international.snowowl.snomed.core.io;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.Graphs;
+import org.slf4j.Logger;
 
-import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
 import com.b2international.snowowl.snomed.core.io.SnomedImporterTest.RelationshipEdge;
@@ -38,34 +41,37 @@ import com.b2international.snowowl.snomed.core.store.index.Relationship;
 import com.b2international.snowowl.snomed.core.store.index.RelationshipGroup;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.io.Files;
+import com.google.common.io.LineProcessor;
 
 /**
  * @since 5.0
  */
 public class SnomedEffectiveTimeImporter {
 
-	private static final AtomicLong storageKeys = new AtomicLong(0L);
+	private static final Logger LOG = Loggers.REPOSITORY.log();
+	private static final AtomicLong STORAGE_KEYS = new AtomicLong(0L);
+	private static final Map<String, Long> STORAGEKEY_MAP = newHashMap();
+	private static final Map<String, Concept> LATEST_CONCEPT_REVISION_MAP = newHashMap();
 	
 	private IndexTransaction tx;
 	
-	private Collection<String[]> concepts;
+	private File concepts;
 	private Multimap<String, String[]> conceptDescriptions;
 	private Multimap<String, String[]> conceptRelationships;
 
-	private SnomedBrowser browser;
-
 	private DirectedGraph<String, RelationshipEdge> graph;
 	
-	public SnomedEffectiveTimeImporter(final SnomedBrowser browser, DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, File concepts, File descriptions, File relationships) {
-		this.browser = browser;
+	public SnomedEffectiveTimeImporter(DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, File concepts, File descriptions, File relationships) {
 		this.graph = graph;
 		this.tx = tx;
-		this.concepts = readLines(concepts);
+		final Stopwatch watch = Stopwatch.createStarted();
+		this.concepts = concepts;
 		final Collection<String[]> descriptionLines = readLines(descriptions);
 		final Collection<String[]> relationshipLines = readLines(relationships);
 		this.conceptDescriptions = HashMultimap.create(Multimaps.index(descriptionLines, new Function<String[], String>() {
@@ -80,11 +86,13 @@ public class SnomedEffectiveTimeImporter {
 				return input[4];
 			}
 		}));
-		Loggers.REPOSITORY.log().info("Importing components [Concept: {}, Description: {}, Relationship: {}]", this.concepts.size(), descriptionLines.size(), relationshipLines.size());
+		LOG.info("Read sliced RF2 files in {}", watch);
+		LOG.info("Importing components [Concept: ?, Description: {}, Relationship: {}]", descriptionLines.size(), relationshipLines.size());
 	}
 	
 	private Collection<String[]> readLines(File file) {
 		try {
+			LOG.info("Reading file {}", file);
 			return Collections2.transform(Files.readLines(file, Charsets.UTF_8), new Function<String, String[]>() {
 				@Override
 				public String[] apply(String input) {
@@ -97,20 +105,27 @@ public class SnomedEffectiveTimeImporter {
 	}
 
 	public void doImport() {
-		processConcepts();
-		processRemainingComponents();
+		try {
+			processConcepts();
+			processRemainingComponents();
+		} catch (Exception e) {
+			throw new SnowOwlException("Failed to process effective time", e);
+		}
 	}
 
 	private void processRemainingComponents() {
+		LOG.info("Processing remaining SNOMED CT components [Descriptions: {}, Relationships: {}]", conceptDescriptions.keySet().size(), conceptRelationships.keySet().size());
 		final Collection<String> unprocessedConcepts = newHashSet(conceptDescriptions.keySet());
 		unprocessedConcepts.addAll(conceptRelationships.keySet());
 		for (String unprocessedConceptId : unprocessedConcepts) {
-			final Concept concept = browser.getConcept(tx.branch(), unprocessedConceptId);
+			final Concept concept = LATEST_CONCEPT_REVISION_MAP.get(unprocessedConceptId);
 			checkNotNull(concept != null, "Concept '%s' should exists at this point", unprocessedConceptId);
 			appendDescriptions(concept);
 			appendRelationships(concept);
 			// due to relationship changes reset the parent list
 			computeParents(concept);
+			
+			LATEST_CONCEPT_REVISION_MAP.put(concept.getId(), concept);
 			tx.add(concept.getStorageKey(), concept);
 		}
 	}
@@ -140,29 +155,34 @@ public class SnomedEffectiveTimeImporter {
 		}
 	}
 
-	private void processConcepts() {
-		for (String[] conceptLine : newArrayList(concepts)) {
-			final String conceptId = conceptLine[0];
-			Concept concept = null;
-			long storageKey = -1L;
-			try {
-				concept = browser.getConcept(tx.branch(), conceptId);
-				storageKey = concept.getStorageKey();
-			} catch (NotFoundException e) {
-				storageKey = storageKeys.incrementAndGet();
+	private void processConcepts() throws IOException {
+		LOG.info("Processing SNOMED CT concepts");
+		Files.readLines(concepts, Charsets.UTF_8, new LineProcessor<Boolean>() {
+			@Override
+			public boolean processLine(String line) throws IOException {
+				final String[] conceptLine = line.split("\t");
+				final String conceptId = conceptLine[0];
+				Concept concept = Concept.of(conceptLine);
+				computeParents(concept);
+				appendDescriptions(concept);
+				appendRelationships(concept);
+				conceptDescriptions.removeAll(conceptId);
+				conceptRelationships.removeAll(conceptId);
+				
+				if (!STORAGEKEY_MAP.containsKey(conceptId)) {
+					STORAGEKEY_MAP.put(conceptId, STORAGE_KEYS.incrementAndGet());
+				}
+				long storageKey = STORAGEKEY_MAP.get(conceptId);
+				LATEST_CONCEPT_REVISION_MAP.put(conceptId, concept);
+				tx.add(storageKey, concept);
+				return true;
 			}
-			// apply changes, by creating a completely new Concept from the current line
-			concept = Concept.of(conceptLine);
 
-			computeParents(concept);
-			appendDescriptions(concept);
-			appendRelationships(concept);
-			conceptDescriptions.removeAll(conceptId);
-			conceptRelationships.removeAll(conceptId);
-			
-			tx.add(storageKey, concept);
-			concepts.remove(conceptLine);
-		}
+			@Override
+			public Boolean getResult() {
+				return true;
+			}
+		});
 	}
 	
 	private void appendRelationships(Concept concept) {

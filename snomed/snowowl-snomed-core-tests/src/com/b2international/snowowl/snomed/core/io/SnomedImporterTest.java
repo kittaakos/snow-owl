@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.elasticsearch.common.base.Stopwatch;
 import org.jgrapht.DirectedGraph;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.graph.DefaultEdge;
@@ -36,6 +37,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
@@ -52,7 +54,6 @@ import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
 import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
-import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -67,6 +68,7 @@ import com.google.common.io.Resources;
  */
 public class SnomedImporterTest {
 
+	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private static final String ISA = "116680003";
 
 	// Full 20150131 INT files
@@ -129,11 +131,13 @@ public class SnomedImporterTest {
 		// index by effective time
 		for (String et : Ordering.natural().sortedCopy(conceptFilesByEffectiveTime.keySet())) {
 			final IndexTransaction tx = openTransaction(main);
-			Loggers.REPOSITORY.log().info("Importing SNOMED CT version {}", et);
+			LOG.info("Importing SNOMED CT version {}", et);
 			final File concepts = conceptFilesByEffectiveTime.get(et);
 			final File descriptions = descriptionFilesByEffectiveTime.get(et);
 			final File relationships = relationshipFilesByEffectiveTime.get(et);
 			
+			final Stopwatch watch = Stopwatch.createStarted();
+			LOG.info("Building taxonomy of {}", et);
 			Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Boolean>() {
 				@Override
 				public boolean processLine(String line) throws IOException {
@@ -168,9 +172,10 @@ public class SnomedImporterTest {
 					return true;
 				}
 			});
+			LOG.info("Taxonomy building of {} took {}", et, watch);
 			
 			// pass taxonomy to effective time importer
-			new SnomedEffectiveTimeImporter(browser, graph, tx, concepts, descriptions, relationships).doImport();
+			new SnomedEffectiveTimeImporter(graph, tx, concepts, descriptions, relationships).doImport();
 			// single commit for the effective time
 			tx.commit(String.format("Imported SNOMED CT '%s' version", et));
 			// create a version for the effective time
@@ -228,7 +233,7 @@ public class SnomedImporterTest {
 	
 	private Map<String, File> readRf2File(String filePath) throws IOException {
 		final File original = new File(filePath);
-		Loggers.REPOSITORY.log().info("Slicing file {}", original);
+		LOG.info("Slicing file {}", original);
 		final Map<String, File> result = Files.readLines(original, Charsets.UTF_8, new LineProcessor<Map<String, File>>() {
 			
 			private Map<String, Writer> effectiveTimeWriters = newHashMap();
@@ -264,7 +269,7 @@ public class SnomedImporterTest {
 				return effectiveTimeFiles;
 			}
 		});
-		Loggers.REPOSITORY.log().info("Completed slicing of file {}", original);
+		LOG.info("Completed slicing of file {}", original);
 		return result;
 	}
 	
