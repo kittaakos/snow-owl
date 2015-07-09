@@ -20,12 +20,9 @@ import static com.google.common.collect.Maps.newHashMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Objects;
@@ -42,8 +39,9 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Index;
@@ -53,6 +51,7 @@ import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
 import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
+import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -89,8 +88,8 @@ public class SnomedImporterTest {
 	
 	private TransactionalIndex txIndex;
 	
-//	private Store<InternalBranch> branchStore;
-	private BranchManager branching = new MockBranchManager();
+	private Store<InternalBranch> branchStore;
+	private LocalBranchManagerImpl branching;
 	private Branch main;
 	
 	private final AtomicLong clock = new AtomicLong(0L);
@@ -105,8 +104,8 @@ public class SnomedImporterTest {
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
 		final Index index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
-//		this.branchStore = new MemStore<>(InternalBranch.class);
-//		this.branching = new LocalBranchManagerImpl(branchStore, clock);
+		this.branchStore = new MemStore<>(InternalBranch.class);
+		this.branching = new LocalBranchManagerImpl(branchStore, clock);
 		this.main = branching.getMainBranch();
 		
 		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), branching);
@@ -120,9 +119,9 @@ public class SnomedImporterTest {
 	
 	@Test
 	public void testRf2ImportOnMAIN() throws Exception {
-		final Map<String, File> conceptFilesByEffectiveTime = readRf2File(INT_CONCEPT_FILE);
-		final Map<String, File> descriptionFilesByEffectiveTime = readRf2File(INT_DESCRIPTION_FILE);
-		final Map<String, File> relationshipFilesByEffectiveTime = readRf2File(INT_RELATIONSHIP_FILE);
+		final Map<String, File> conceptFilesByEffectiveTime = readRf2File(MINI_CONCEPT_FILE);
+		final Map<String, File> descriptionFilesByEffectiveTime = readRf2File(MINI_DESCRIPTION_FILE);
+		final Map<String, File> relationshipFilesByEffectiveTime = readRf2File(MINI_RELATIONSHIP_FILE);
 		
 		final DirectedGraph<String, RelationshipEdge> graph = DirectedAcyclicGraph.<String, RelationshipEdge>builder(RelationshipEdge.class).build();
 		
@@ -271,7 +270,7 @@ public class SnomedImporterTest {
 	@After
 	public void after() {
 		for (Branch branch : branching.getBranches()) {
-			System.out.println(branch);
+			System.out.println(String.format("Branch[%s, base=%s, head=%s, deleted=%s, state=%s]", branch.path(), branch.baseTimestamp(), branch.headTimestamp(), branch.isDeleted(), branch.state()));
 		}
 	}
 	
@@ -297,8 +296,7 @@ public class SnomedImporterTest {
 			public void commit(String commitMessage) {
 				original.commit(commitMessage);
 				// make commit available in the branch as timestamp
-				when(branch.headTimestamp()).thenReturn(commitTimestamp);
-//				branching.handleCommit(branch, commitTimestamp);
+				branching.handleCommit(branch, commitTimestamp);
 			}
 			
 			@Override
