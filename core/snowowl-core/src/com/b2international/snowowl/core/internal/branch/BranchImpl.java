@@ -30,7 +30,6 @@ import com.b2international.snowowl.core.store.index.Mapping;
 /**
  * @since 4.1
  */
-@Mapping(type = "branch")
 public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBranch {
 
     private static final Pattern VALID_NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_-]{1,50}");
@@ -47,7 +46,7 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
     private final long headTimestamp;
     private final boolean deleted;
     
-    protected BranchImpl(String name, String parentPath, long baseTimestamp) {
+    public BranchImpl(String name, String parentPath, long baseTimestamp) {
     	this(name, parentPath, baseTimestamp, baseTimestamp);
     }
     

@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.internal.branch.BranchImpl;
 import com.b2international.snowowl.core.internal.branch.BranchManagerImpl;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.store.Store;
@@ -37,7 +38,7 @@ class LocalBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-		final InternalBranch branch = new LocalBranchImpl(name, parent.path(), parent.headTimestamp());
+		final InternalBranch branch = new BranchImpl(name, parent.path(), parent.headTimestamp());
 		branch.metadata(metadata);
 		registerBranch(branch);
 		return branch;
