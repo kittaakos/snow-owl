@@ -17,11 +17,13 @@ package com.b2international.snowowl.core.internal.branch;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.store.Id;
+import com.b2international.snowowl.core.store.index.Mapping;
 
 
 /**
  * @since 4.1
  */
+@Mapping(type = "branch")
 public interface InternalBranch extends Branch {
 
 	@Id
