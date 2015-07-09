@@ -26,14 +26,15 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.action.update.UpdateRequestBuilder;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.common.collect.MapMaker;
 import org.slf4j.Logger;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.tx.IndexCommit;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -41,24 +42,65 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 5.0
  */
-public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
+public class DefaultBulkIndex implements BulkIndex {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private static final int BULK_THRESHOLD = 10000;
 	
 	private final ConcurrentMap<Integer, BulkRequestBuilder> activeBulks = new MapMaker().makeMap();
 	private final Multimap<Integer, ListenableActionFuture<BulkResponse>> pendingBulks = Multimaps.synchronizedMultimap(HashMultimap.<Integer, ListenableActionFuture<BulkResponse>>create());
+	private InternalIndex index;
 
-	public DefaultBulkIndex(Client client, String index, Mappings mappings) {
-		super(client, index, mappings);
-	}
-	
-	public DefaultBulkIndex(Client client, String index, Mappings mappings, Map<String, Object> settings) {
-		super(client, index, mappings, settings);
+	public DefaultBulkIndex(Index index) {
+		this.index = ClassUtils.checkAndCast(index, InternalIndex.class);
 	}
 	
 	@Override
-	protected void doIndex(IndexRequestBuilder req) {
+	public IndexAdmin admin() {
+		return this.index.admin();
+	}
+	
+	@Override
+	public <T> T get(Class<T> type, String key) {
+		return index.get(type, key);
+	}
+	
+	@Override
+	public Map<String, Object> get(String type, String key) {
+		return index.get(type, key);
+	}
+	
+	@Override
+	public <T> MappingStrategy<T> mapping(Class<T> type) {
+		return index.mapping(type);
+	}
+	
+	@Override
+	public String name() {
+		return index.name();
+	}
+	
+	@Override
+	public <T> void put(String key, T object) {
+		put(index.getType(object.getClass()), key, object);
+	}
+	
+	@Override
+	public void put(String type, String key, Object object) {
+		bulkIndex(index.prepareIndex(type, key, object));
+	}
+
+	@Override
+	public <T> void putWithParent(String parentKey, T object) {
+		putWithParent(index.getType(object.getClass()), parentKey, object);
+	}
+	
+	@Override
+	public void putWithParent(String type, String parentKey, Object object) {
+		bulkIndex(index.prepareIndexWithParent(type, parentKey, object));
+	}
+	
+	private void bulkIndex(final IndexRequestBuilder req) {
 		final Map<String, Object> source = req.request().sourceAsMap();
 		// TODO remove this limitation somehow
 		checkArgument(source.containsKey(IndexCommit.COMMIT_ID_FIELD), "BulkIndex cannot be used without index transaction support, use it via TransactionalIndex");
@@ -66,19 +108,33 @@ public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
 		getBulkRequest(bulkId).add(req);
 	}
 	
-	@Override
-	protected boolean doDelete(DeleteRequestBuilder req) {
-		throw new UnsupportedOperationException("Figure out how to get the commit identifier");
+	private boolean bulkDelete(final DeleteRequestBuilder req) {
+		throw new UnsupportedOperationException("TODO implement how to get the commit identifier"); 
 	}
 	
 	@Override
-	protected void doUpdate(UpdateRequestBuilder req) {
-		throw new UnsupportedOperationException("Figure out how to get the commit identifier");
+	public QueryBuilder query() {
+		return index.query();
 	}
-
+	
+	@Override
+	public <T> boolean remove(Class<T> type, String key) {
+		return remove(index.getType(type), key);
+	}
+	
+	@Override
+	public boolean remove(String type, String key) {
+		return bulkDelete(index.prepareDelete(type, key));
+	}
+	
+	@Override
+	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+		return index.search(query, type);
+	}
+	
 	@Override
 	public void create(int bulkId) {
-		activeBulks.putIfAbsent(bulkId, client().prepareBulk());
+		activeBulks.putIfAbsent(bulkId, index.client().prepareBulk());
 	}
 	
 	@Override
@@ -105,7 +161,7 @@ public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
 		if (req.numberOfActions() >= BULK_THRESHOLD || force) {
 			synchronized (req) {
 				if (req.numberOfActions() >= BULK_THRESHOLD || force) {
-					if (activeBulks.replace(bulkId, req, client().prepareBulk())) {
+					if (activeBulks.replace(bulkId, req, index.client().prepareBulk())) {
 						final ListenableActionFuture<BulkResponse> future = req.setRefresh(true).execute();
 						pendingBulks.put(bulkId, future);
 						future.addListener(new ActionListener<BulkResponse>() {

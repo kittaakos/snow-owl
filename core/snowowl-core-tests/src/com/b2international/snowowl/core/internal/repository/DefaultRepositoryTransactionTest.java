@@ -43,6 +43,8 @@ import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.cp.IEClassProvider;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
+import com.b2international.snowowl.core.store.index.DefaultIndex;
+import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
@@ -64,7 +66,7 @@ public class DefaultRepositoryTransactionTest {
 	public ESRule es = new ESRule();
 	
 	private Repository repository;
-	private TransactionalIndex index;
+	private TransactionalIndex txIndex;
 	
 	@Rule
 	public TemporaryDirectory dir = new TemporaryDirectory(getClass().getSimpleName().toLowerCase());
@@ -84,11 +86,12 @@ public class DefaultRepositoryTransactionTest {
 		repository.activate();
 		
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), repository.branching());
-		final IndexAdmin admin = this.index.admin();
+		final Index index = new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class));
+		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), repository.branching());
+		final IndexAdmin admin = this.txIndex.admin();
 		admin.delete();
 		admin.create();
-		factory.setIndex(index);
+		factory.setIndex(txIndex);
 		// user is logged in
 		((InternalRepository)repository).addUser(USER, PASS);
 	}
@@ -104,7 +107,7 @@ public class DefaultRepositoryTransactionTest {
 		transaction.setCommitComment("Added Foo Bar person");
 		assertNotNull(transaction.commit());
 		
-		final Iterable<Person> persons = index.search(index.query().on("MAIN").selectAll().where(Expressions.exactMatch("id", PERSON_1_KEY)), Person.class);
+		final Iterable<Person> persons = txIndex.search(txIndex.query().on("MAIN").selectAll().where(Expressions.exactMatch("id", PERSON_1_KEY)), Person.class);
 		final Person person = Iterables.getFirst(persons, null);
 		assertNotNull(person);
 	}

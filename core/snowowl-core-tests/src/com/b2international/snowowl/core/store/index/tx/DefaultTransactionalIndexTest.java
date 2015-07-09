@@ -31,6 +31,8 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
+import com.b2international.snowowl.core.store.index.DefaultIndex;
+import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.tests.ESRule;
@@ -50,7 +52,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	@Rule
 	public ESRule es = new ESRule();
 
-	private TransactionalIndex index;
+	private TransactionalIndex txIndex;
 	
 	private AtomicLong timestampProvider = new AtomicLong(0L);
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
@@ -71,8 +73,9 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		// json support
 		final ObjectMapper mapper = new DefaultObjectMapper();
 		// create transactional index
-		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), manager);
-		final IndexAdmin admin = this.index.admin();
+		final Index index = new DefaultIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class));
+		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), manager);
+		final IndexAdmin admin = this.txIndex.admin();
 		admin.delete();
 		admin.create();
 		this.person1_2015 = createPerson1();
@@ -84,7 +87,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 
 	@Test(expected = NotFoundException.class)
 	public void loadingMissingRevision_ShouldThrowNotFoundException() throws Exception {
-		this.index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		this.txIndex.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 	}
 	
 	@Test
@@ -93,7 +96,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx.add(PERSON_1_STORAGEKEY, person1_2015);
 		tx.commit(COMMIT_MESSAGE);
 		
-		final Person rev = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		final Person rev = txIndex.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 		assertEquals(PERSON_1_STORAGEKEY, rev.getStorageKey());
 		assertEquals(person1_2015, rev);
 	}
@@ -106,7 +109,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx2.add(PERSON_1_STORAGEKEY, person1_YobChanged);
 		tx2.commit(COMMIT_MESSAGE);
 		
-		final Person rev = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		final Person rev = txIndex.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 		assertEquals(person1_YobChanged, rev);
 	}
 	
@@ -114,7 +117,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	public void whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
 		final Branch branchA = createBranch(Branch.MAIN_PATH, "a");
-		final Person rev = index.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
+		final Person rev = txIndex.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
 		assertEquals(person1_2015, rev);
 	}
 
@@ -130,11 +133,11 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx.add(PERSON_1_STORAGEKEY, person1_YobChanged);
 		tx.commit(COMMIT_MESSAGE);
 		// verify that MAIN version still has yob 2015
-		final Person personMain = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		final Person personMain = txIndex.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 		assertEquals(person1_2015, personMain);
 		
 		// verify that Branch A has new version with yob 1997
-		final Person personBranch = index.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
+		final Person personBranch = txIndex.loadRevision(Person.class, branchA.path(), PERSON_1_STORAGEKEY);
 		assertEquals(person1_YobChanged, personBranch);
 	}
 	
@@ -149,11 +152,11 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx.commit(COMMIT_MESSAGE);
 		
 		// verify that MAIN version still has yob 2015, but firstName 'MAIN'
-		final Person personMain = index.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
+		final Person personMain = txIndex.loadRevision(Person.class, Branch.MAIN_PATH, PERSON_1_STORAGEKEY);
 		assertEquals(person1_FirstNameChanged, personMain);
 		
 		// verify that Branch A has new version with yob 1997
-		final Person personBranch = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		final Person personBranch = txIndex.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
 		assertEquals(person1_YobChanged, personBranch);
 	}
 	
@@ -167,13 +170,13 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		tx.commit(COMMIT_MESSAGE);
 
 		// verify that person has Foo before rebase
-		final Person personBeforeRebase = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		final Person personBeforeRebase = txIndex.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
 		assertEquals(person1_2015, personBeforeRebase);
 		
 		// rebase branch should move baseTimestamp forward
 		manager.getBranch("MAIN/a").rebase("Rebased branch A");
 		// verify that person has MAIN after rebase
-		final Person personAfterRebase = index.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
+		final Person personAfterRebase = txIndex.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
 		assertEquals(person1_FirstNameChanged, personAfterRebase);
 	}
 	
@@ -220,7 +223,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private IndexTransaction openTransaction(final Branch branch) {
 		final int commitId = commitIdProvider.incrementAndGet();
 		final long commitTimestamp = timestampProvider.incrementAndGet();
-		final IndexTransaction original = index.transaction(commitId, commitTimestamp, branch.path());
+		final IndexTransaction original = txIndex.transaction(commitId, commitTimestamp, branch.path());
 		return new IndexTransaction() {
 
 			@Override

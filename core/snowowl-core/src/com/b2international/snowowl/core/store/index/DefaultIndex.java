@@ -23,7 +23,6 @@ import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 
 import com.b2international.commons.ClassUtils;
@@ -40,7 +39,7 @@ import com.b2international.snowowl.core.store.query.req.SearchExecutor;
  * 
  * @since 5.0
  */
-public class DefaultIndex implements Index {
+public final class DefaultIndex implements Index, InternalIndex {
 
 	private Client client;
 	private String index;
@@ -57,7 +56,7 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public final <T> T get(Class<T> type, String key) {
+	public <T> T get(Class<T> type, String key) {
 		final MappingStrategy<T> mapping = mapping(type);
 		return mapping.convert(get(mapping.getType(), key));
 	}
@@ -73,15 +72,13 @@ public class DefaultIndex implements Index {
 	}
 	
 	@Override
-	public final <T> void put(String key, T object) {
+	public <T> void put(String key, T object) {
 		put(getType(object.getClass()), key, object);
 	}
 	
 	@Override
 	public void put(String type, String key, Object object) {
-		final Map<String, Object> map = toMap(object);
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type, key).setSource(map);
-		doIndex(req);		
+		prepareIndex(type, key, object).setRefresh(true).get();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -90,54 +87,69 @@ public class DefaultIndex implements Index {
 	}
 
 	@Override
-	public final <T> void putWithParent(String parentKey, T object) {
+	public <T> void putWithParent(String parentKey, T object) {
 		putWithParent(getType(object.getClass()), parentKey, object);
 	}
 	
 	@Override
 	public void putWithParent(String type, String parentKey, Object object) {
-		final Map<String, Object> map = toMap(object);
-		final IndexRequestBuilder req = this.client.prepareIndex(index, type).setParent(parentKey).setSource(map);
-		doIndex(req);
+		prepareIndexWithParent(type, parentKey, object).setRefresh(true).get();
 	}
 
 	@Override
-	public final <T> boolean remove(Class<T> type, String key) {
+	public IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, Object object) {
+		final Map<String, Object> map = toMap(object);
+		return this.client.prepareIndex(index, type).setParent(parentKey).setSource(map);
+	}
+
+	@Override
+	public <T> boolean remove(Class<T> type, String key) {
 		return remove(getType(type), key);
 	}
 	
 	@Override
 	public boolean remove(String type, String key) {
-		final DeleteRequestBuilder req = this.client.prepareDelete(index, type, key);
-		return doDelete(req);
+		return prepareDelete(type, key).setRefresh(true).get().isFound();
+	}
+	
+	@Override
+	public IndexRequestBuilder prepareIndex(String type, String key, Object object) {
+		final Map<String, Object> map = toMap(object);
+		return this.client.prepareIndex(index, type, key).setSource(map);
 	}
 
-	private <T> String getType(Class<T> type) {
+	@Override
+	public DeleteRequestBuilder prepareDelete(String type, String key) {
+		return this.client.prepareDelete(index, type, key);
+	}
+
+	@Override
+	public <T> String getType(Class<T> type) {
 		return mapping(type).getType();
 	}
 
 	@Override
-	public final String name() {
+	public String name() {
 		return index;
 	}
 	
 	@Override
-	public final <T> MappingStrategy<T> mapping(Class<T> type) {
+	public <T> MappingStrategy<T> mapping(Class<T> type) {
 		return admin().mappings().getMapping(type);
 	}
 
 	@Override
-	public final IndexAdmin admin() {
+	public IndexAdmin admin() {
 		return admin;
 	}
 	
 	@Override
-	public final QueryBuilder query() {
+	public QueryBuilder query() {
 		return Query.builder();
 	}
 	
 	@Override
-	public final <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
+	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
 		final SearchContextBuilder context = ClassUtils.checkAndCast(query, SearchContextBuilder.class);
 		final MappingStrategy<T> mapping = mapping(type);
 		final String typeName = mapping.getType();
@@ -149,20 +161,9 @@ public class DefaultIndex implements Index {
 		return executor.execute(req, query, type);
 	}
 	
-	protected final Client client() {
+	@Override
+	public Client client() {
 		return client;
-	}
-	
-	protected void doIndex(IndexRequestBuilder req) {
-		req.setRefresh(true).get();
-	}
-	
-	protected boolean doDelete(DeleteRequestBuilder req) {
-		return req.setRefresh(true).get().isFound();
-	}
-	
-	protected void doUpdate(UpdateRequestBuilder req) {
-		req.setRefresh(true).get();
 	}
 	
 }
