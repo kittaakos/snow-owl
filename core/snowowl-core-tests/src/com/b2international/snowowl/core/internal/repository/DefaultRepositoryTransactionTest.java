@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import person.PersonPackage;
 
+import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.repository.Repository;
 import com.b2international.snowowl.core.repository.RepositorySession;
 import com.b2international.snowowl.core.repository.cp.IEClassProvider;
@@ -51,9 +52,6 @@ import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.TemporaryDirectory;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonChangeProcessorFactory;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 
@@ -76,10 +74,7 @@ public class DefaultRepositoryTransactionTest {
 		// manually set up h2 adapter instance
 		IDBAdapter.REGISTRY.put("h2", new H2Adapter());
 		// json support
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.NON_PRIVATE);
-		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		final ObjectMapper mapper = new DefaultObjectMapper();
 		// create repository
 		final IEClassProvider eClassProvider = mock(IEClassProvider.class);
 		when(eClassProvider.getEClass(anyString(), anyLong())).thenReturn(PersonPackage.Literals.PERSON);

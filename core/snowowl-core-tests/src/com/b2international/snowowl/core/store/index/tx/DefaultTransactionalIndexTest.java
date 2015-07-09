@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.branch.MockBranchManager;
@@ -35,9 +36,6 @@ import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonFixtures;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -71,10 +69,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		// branch support
 		main = manager.getMainBranch();
 		// json support
-		final ObjectMapper mapper = new ObjectMapper();
-		mapper.setVisibility(PropertyAccessor.SETTER, Visibility.NON_PRIVATE);
-		mapper.setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
-		mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		final ObjectMapper mapper = new DefaultObjectMapper();
 		// create transactional index
 		this.index = new DefaultTransactionalIndex(new DefaultBulkIndex(es.client(), getClass().getSimpleName().toLowerCase(), Mappings.of(mapper, Person.class)), manager);
 		final IndexAdmin admin = this.index.admin();
