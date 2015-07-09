@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.store.query.Same;
 import com.b2international.snowowl.core.store.query.StringPredicate;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipFeature;
 import com.b2international.snowowl.snomed.core.store.query.RelationshipNestedPath;
-import com.b2international.snowowl.snomed.core.store.query.SnomedComponentFeature;
 import com.b2international.snowowl.snomed.core.store.query.builder.ConcreteDomainExpressions.RelationshipConcreteDomainBinaryOperatorBuilder;
 import com.b2international.snowowl.snomed.core.store.query.builder.MembershipExpressions.RelationshipMembershipBinaryOperatorBuilder;
 
@@ -66,25 +65,25 @@ abstract public class RelationshipExpressions {
 		
 		@Override
 		public RelationshipBinaryOperatorBuilder id(String argument) {
-			previous = new StringPredicate(SnomedComponentFeature.ID, argument);
+			previous = new StringPredicate(RelationshipFeature.ID, argument);
 			return this;
 		}
 
 		@Override
 		public RelationshipBinaryOperatorBuilder moduleId(String argument) {
-			previous = new StringPredicate(SnomedComponentFeature.MODULE_ID, argument);
+			previous = new StringPredicate(RelationshipFeature.MODULE_ID, argument);
 			return this;
 		}
 
 		@Override
 		public RelationshipBinaryOperatorBuilder active(boolean argument) {
-			previous = new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument);
+			previous = new BooleanPredicate(RelationshipFeature.ACTIVE, argument);
 			return this;
 		}
 
 		@Override
 		public RelationshipBinaryOperatorBuilder released(boolean argument) {
-			previous = new BooleanPredicate(SnomedComponentFeature.RELEASED, argument);
+			previous = new BooleanPredicate(RelationshipFeature.RELEASED, argument);
 			return this;
 		}
 		

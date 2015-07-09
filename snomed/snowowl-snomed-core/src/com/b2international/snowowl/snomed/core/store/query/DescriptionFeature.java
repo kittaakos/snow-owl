@@ -25,27 +25,30 @@ import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
  * @since 5.0
  */
 public enum DescriptionFeature implements NestedFeature {
-	TYPE_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TYPE_ID),
-	LANGUAGE_CODE(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.LANGUAGE_CODE),
-	CASE_SENSITIVITY_ID(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.CASE_SENSITIVITY_ID),
-	TERM(ConceptNestedPath.DESCRIPTIONS, SnomedIndexConstants.TERM);
+	ID(SnomedIndexConstants.ID),
+	RELEASED(SnomedIndexConstants.RELEASED),
+	ACTIVE(SnomedIndexConstants.ACTIVE), 
+	EFFECTIVE_TIME(SnomedIndexConstants.EFFECTIVE_TIME),
+	MODULE_ID(SnomedIndexConstants.MODULE_ID),
+	TYPE_ID(SnomedIndexConstants.TYPE_ID),
+	LANGUAGE_CODE(SnomedIndexConstants.LANGUAGE_CODE),
+	CASE_SENSITIVITY_ID(SnomedIndexConstants.CASE_SENSITIVITY_ID),
+	TERM(SnomedIndexConstants.TERM);
 	
 	private final String field;
-	private final NestedPath path;
 
-	private DescriptionFeature(NestedPath path, String field) {
-		this.path = checkNotNull(path, "path");
+	private DescriptionFeature(String field) {
 		this.field = checkNotNull(field, "field");
 	}
 	
 	@Override
 	public String getField() {
-		return path.getPath() + "." + field;
+		return getPath().getPath() + "." + field;
 	}
 
 	@Override
 	public NestedPath getPath() {
-		return path;
+		return ConceptNestedPath.DESCRIPTIONS;
 	}
 	
 }

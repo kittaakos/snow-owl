@@ -68,25 +68,25 @@ abstract public class DescriptionExpressions {
 		
 		@Override
 		public DescriptionBinaryOperatorBuilder id(String argument) {
-			previous = new StringPredicate(SnomedComponentFeature.ID, argument);
+			previous = new StringPredicate(DescriptionFeature.ID, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder moduleId(String argument) {
-			previous = new StringPredicate(SnomedComponentFeature.MODULE_ID, argument);
+			previous = new StringPredicate(DescriptionFeature.MODULE_ID, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder active(boolean argument) {
-			previous = new BooleanPredicate(SnomedComponentFeature.ACTIVE, argument);
+			previous = new BooleanPredicate(DescriptionFeature.ACTIVE, argument);
 			return this;
 		}
 
 		@Override
 		public DescriptionBinaryOperatorBuilder released(boolean argument) {
-			previous = new BooleanPredicate(SnomedComponentFeature.RELEASED, argument);
+			previous = new BooleanPredicate(DescriptionFeature.RELEASED, argument);
 			return this;
 		}
 		

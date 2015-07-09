@@ -25,6 +25,11 @@ import com.b2international.snowowl.snomed.core.store.index.SnomedIndexConstants;
  * @since 5.0
  */
 public enum RelationshipFeature implements NestedFeature {
+	ID(SnomedIndexConstants.ID),
+	RELEASED(SnomedIndexConstants.RELEASED),
+	ACTIVE(SnomedIndexConstants.ACTIVE), 
+	EFFECTIVE_TIME(SnomedIndexConstants.EFFECTIVE_TIME),
+	MODULE_ID(SnomedIndexConstants.MODULE_ID),
 	GROUP(SnomedIndexConstants.GROUP),
 	UNION_GROUP(SnomedIndexConstants.UNION_GROUP),
 	TYPE_ID(SnomedIndexConstants.TYPE_ID),
