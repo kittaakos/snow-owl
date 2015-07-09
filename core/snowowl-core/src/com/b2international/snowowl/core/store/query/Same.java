@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class Same extends UnaryOperator {
 
-	private NestedPath path;
+	private final NestedPath path;
 
 	public Same(NestedPath path, Expression right) {
 		super(right);

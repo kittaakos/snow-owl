@@ -76,7 +76,7 @@ abstract public class Select {
 	}
 
 	public static final class Fields extends Select {
-		private List<String> fields;
+		private final List<String> fields;
 
 		Fields(String... fields) {
 			this.fields = Arrays.asList(checkNotNull(fields, "fields"));
@@ -93,7 +93,7 @@ abstract public class Select {
 	}
 	
 	public static final class NestedObject extends Select {
-		private String path;
+		private final String path;
 
 		NestedObject(String path) {
 			this.path = checkNotNull(path, "path");
@@ -111,7 +111,7 @@ abstract public class Select {
 	}
 
 	public static final class Multiple extends Select {
-		private List<Select> items;
+		private final List<Select> items;
 
 		public Multiple(List<Select> items) {
 			this.items = ImmutableList.copyOf(checkNotNull(items, "items"));

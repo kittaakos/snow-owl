@@ -25,7 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 abstract public class SingleArgumentPredicate<A> extends Predicate {
 
-	private A argument;
+	private final A argument;
 
 	public SingleArgumentPredicate(Feature feature, A argument) {
 		super(feature);

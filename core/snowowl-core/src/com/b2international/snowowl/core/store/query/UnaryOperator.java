@@ -24,7 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 abstract public class UnaryOperator implements Expression {
 	
-	private Expression right;
+	private final Expression right;
 
 	public UnaryOperator(Expression right) {
 		this.right = checkNotNull(right, "right");

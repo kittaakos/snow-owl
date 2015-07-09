@@ -64,7 +64,7 @@ public class ElasticsearchQueryBuilder implements ExpressionQueryBuilder {
 		}
 	}
 	
-	private Deque<DequeItem> deque = Queues.newLinkedBlockingDeque();
+	private final Deque<DequeItem> deque = Queues.newLinkedBlockingDeque();
 	
 	@Override
 	public QueryBuilder build(Expression expression) {

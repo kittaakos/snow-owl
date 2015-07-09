@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.query;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.base.Optional;
 
 /**
@@ -25,26 +27,21 @@ import com.google.common.base.Optional;
  */
 abstract public class RangePredicate<T> extends Predicate {
 
-	private T start;
-	private T end;
+	private final T start;
+	private final T end;
 	
-	public RangePredicate(Feature feature) {
+	public RangePredicate(Feature feature, T start, T end) {
 		super(feature);
+		this.start = checkNotNull(start, "start");
+		this.end = checkNotNull(end, "end");
 	}
 
 	public Optional<T> getStart() {
 		return Optional.fromNullable(start);
 	}
 	
-	void setStart(T start) {
-		this.start = start;
-	}
-	
 	public Optional<T> getEnd() {
 		return Optional.fromNullable(end);
 	}
 	
-	void setEnd(T end) {
-		this.end = end;
-	}
 }

@@ -26,7 +26,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public abstract class Predicate implements Expression {
 
-	protected Feature feature;
+	protected final Feature feature;
 	
 	public Predicate(Feature feature) {
 		this.feature = checkNotNull(feature, "feature");

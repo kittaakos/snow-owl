@@ -27,8 +27,8 @@ public class TextPredicate extends Predicate {
 		ALL, EXACT, ANY, NONE
 	}
 
-	private String text;
-	private Operator operator;
+	private final String text;
+	private final Operator operator;
 
 	public TextPredicate(Feature feature, String text, Operator operator) {
 		super(feature);
@@ -36,16 +36,8 @@ public class TextPredicate extends Predicate {
 		this.operator = checkNotNull(operator, "operator");
 	}
 
-	void setText(String text) {
-		this.text = text;
-	}
-	
 	public String getText() {
 		return text;
-	}
-	
-	void setOperator(Operator operator) {
-		this.operator = operator;
 	}
 	
 	public Operator getOperator() {

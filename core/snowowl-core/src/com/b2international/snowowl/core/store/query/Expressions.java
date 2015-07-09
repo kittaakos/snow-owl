@@ -102,9 +102,4 @@ public class Expressions {
 	public static PredicateBuilder builder() {
 		return new BuilderImpl();
 	}
-	
-	public static void main(String[] args) {
-		Expression expression = builder().exactMatch("qwe", "ewq").and(builder().not(builder().exactMatch("asd", "dsa"))).build();
-		System.out.println(expression);
-	}
 }

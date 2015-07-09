@@ -26,8 +26,8 @@ import com.google.common.base.Optional;
  * @since 5.0
  */
 abstract public class BinaryOperator implements Expression {
-	private Expression left;
-	private Expression right;
+	private final Expression left;
+	private final Expression right;
 
 	public BinaryOperator(Expression left, Expression right) {
 		this.left = checkNotNull(left, "left");
