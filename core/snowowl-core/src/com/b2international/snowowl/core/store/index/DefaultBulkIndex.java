@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
+import com.b2international.snowowl.core.store.index.tx.IndexCommit;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -58,7 +59,10 @@ public class DefaultBulkIndex extends DefaultIndex implements BulkIndex {
 	
 	@Override
 	protected void doIndex(IndexRequestBuilder req) {
-		final int bulkId = (int) req.request().sourceAsMap().get("commitId");
+		final Map<String, Object> source = req.request().sourceAsMap();
+		// TODO remove this limitation somehow
+		checkArgument(source.containsKey(IndexCommit.COMMIT_ID_FIELD), "BulkIndex cannot be used without index transaction support, use it via TransactionalIndex");
+		final int bulkId = (int) source.get(IndexCommit.COMMIT_ID_FIELD);
 		getBulkRequest(bulkId).add(req);
 	}
 	
