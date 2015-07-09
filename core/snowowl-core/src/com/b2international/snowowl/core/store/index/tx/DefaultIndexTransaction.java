@@ -54,4 +54,14 @@ class DefaultIndexTransaction implements IndexTransaction {
 		this.index.commit(commitId, commitTimestamp, branchPath, commitMessage);
 	}
 	
+	@Override
+	public TransactionalIndex index() {
+		return this.index;
+	}
+	
+	@Override
+	public String branch() {
+		return branchPath;
+	}
+	
 }

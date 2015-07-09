@@ -28,5 +28,13 @@ public interface IndexTransaction {
 	<T extends Revision> void delete(long storageKey, Class<T> type);
 	
 	void commit(String commitMessage);
+
+	String branch();
+	
+	/**
+	 * TODO do we need this method???
+	 * @return
+	 */
+	TransactionalIndex index();
 	
 }

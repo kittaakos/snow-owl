@@ -245,6 +245,16 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 				original.add(storageKey, object);
 			}
 			
+			@Override
+			public TransactionalIndex index() {
+				return original.index();
+			}
+			
+			@Override
+			public String branch() {
+				return original.branch();
+			}
+			
 		};
 	}
 	
