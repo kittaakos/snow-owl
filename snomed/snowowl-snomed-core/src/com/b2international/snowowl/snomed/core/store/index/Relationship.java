@@ -31,9 +31,9 @@ public class Relationship extends SnomedComponent {
 	private int group;
 	private int unionGroup;
 	private String typeId;
-	private List<String> typeAllAncestorIds = new ArrayList<>();
+	private List<String> typeAncestorIds = new ArrayList<>();
 	private String destinationId;
-	private List<String> destinationAllAncestorIds = new ArrayList<>();
+	private List<String> destinationAncestorIds = new ArrayList<>();
 	private String characteristicTypeId;
 	private String modifierId;
 	private List<Membership> memberships = new ArrayList<>();
@@ -63,12 +63,12 @@ public class Relationship extends SnomedComponent {
 		this.typeId = typeId;
 	}
 
-	public List<String> getTypeAllAncestorIds() {
-		return typeAllAncestorIds;
+	public List<String> getTypeAncestorIds() {
+		return typeAncestorIds;
 	}
 
-	void setTypeAllAncestorIds(List<String> typeAllAncestorIds) {
-		this.typeAllAncestorIds = typeAllAncestorIds;
+	void setTypeAncestorIds(List<String> typeAncestorIds) {
+		this.typeAncestorIds = typeAncestorIds;
 	}
 
 	public String getDestinationId() {
@@ -79,12 +79,12 @@ public class Relationship extends SnomedComponent {
 		this.destinationId = destinationId;
 	}
 
-	public List<String> getDestinationAllAncestorIds() {
-		return destinationAllAncestorIds;
+	public List<String> getDestinationAncestorIds() {
+		return destinationAncestorIds;
 	}
 
-	void setDestinationAllAncestorIds(List<String> destinationAllAncestorIds) {
-		this.destinationAllAncestorIds = destinationAllAncestorIds;
+	void setDestinationAncestorIds(List<String> destinationAncestorIds) {
+		this.destinationAncestorIds = destinationAncestorIds;
 	}
 
 	public String getCharacteristicTypeId() {

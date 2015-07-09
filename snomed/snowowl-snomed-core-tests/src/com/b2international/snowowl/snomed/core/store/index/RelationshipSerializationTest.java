@@ -23,10 +23,6 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import com.b2international.snowowl.snomed.core.store.index.ConcreteDomain;
-import com.b2international.snowowl.snomed.core.store.index.Membership;
-import com.b2international.snowowl.snomed.core.store.index.Relationship;
-import com.b2international.snowowl.snomed.core.store.index.SimpleTypeMembership;
 import com.b2international.snowowl.snomed.core.store.index.comparators.RelationshipComparator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -40,7 +36,7 @@ public class RelationshipSerializationTest {
 		relationship.setActive(true);
 		relationship.setCharacteristicTypeId("11111111");
 		relationship.setConcreteDomains(Collections.<ConcreteDomain> singletonList(new ConcreteDomain()));
-		relationship.setDestinationAllAncestorIds(Collections.<String> singletonList("22222222"));
+		relationship.setDestinationAncestorIds(Collections.<String> singletonList("22222222"));
 		relationship.setDestinationId("33333333");
 		relationship.setEffectiveTime(new Date());
 		relationship.setGroup(22);
@@ -49,7 +45,7 @@ public class RelationshipSerializationTest {
 		relationship.setModifierId("55555555");
 		relationship.setModuleId("66666666");
 		relationship.setReleased(true);
-		relationship.setTypeAllAncestorIds(Collections.<String> singletonList("77777777"));
+		relationship.setTypeAncestorIds(Collections.<String> singletonList("77777777"));
 		relationship.setTypeId("88888888");
 		relationship.setUnionGroup(33);
 		// serialize

@@ -40,7 +40,7 @@ public class RelationshipComparator extends SnomedComponentComparator<Relationsh
 		int concreteDomainComparison = concreteDomainListComparator.compare(o1.getConcreteDomains(), o2.getConcreteDomains());
 		if (concreteDomainComparison != 0)
 			return concreteDomainComparison;
-		int destinationAllAncestorIdsComparison = stringListComparator.compare(o1.getDestinationAllAncestorIds(), o2.getDestinationAllAncestorIds());
+		int destinationAllAncestorIdsComparison = stringListComparator.compare(o1.getDestinationAncestorIds(), o2.getDestinationAncestorIds());
 		if (destinationAllAncestorIdsComparison != 0)
 			return destinationAllAncestorIdsComparison;
 		int destinationIdComparison = CompareUtils.nullSafeCompare(o1.getDestinationId(), o2.getDestinationId());
@@ -55,7 +55,7 @@ public class RelationshipComparator extends SnomedComponentComparator<Relationsh
 		int modifierIdComparison = CompareUtils.nullSafeCompare(o1.getModifierId(), o2.getModifierId());
 		if (modifierIdComparison != 0)
 			return modifierIdComparison;
-		int typeAllAncestorIdsComparison = stringListComparator.compare(o1.getTypeAllAncestorIds(), o2.getTypeAllAncestorIds());
+		int typeAllAncestorIdsComparison = stringListComparator.compare(o1.getTypeAncestorIds(), o2.getTypeAncestorIds());
 		if (typeAllAncestorIdsComparison != 0)
 			return typeAllAncestorIdsComparison;
 		int typeIdComparison = CompareUtils.nullSafeCompare(o1.getTypeId(), o2.getTypeId());

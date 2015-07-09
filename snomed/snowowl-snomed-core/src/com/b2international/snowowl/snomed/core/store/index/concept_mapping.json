@@ -414,7 +414,7 @@
                             "type": "string",
                             "index": "not_analyzed"
                         },
-                        "typeAllAncestorIds": {
+                        "typeAncestorIds": {
                             "type": "string",
                             "index": "not_analyzed"
                         },
@@ -422,7 +422,7 @@
                             "type": "string",
                             "index": "not_analyzed"
                         },
-                        "destinationAllAncestorIds": {
+                        "destinationAncestorIds": {
                             "type": "string",
                             "index": "not_analyzed"
                         },
