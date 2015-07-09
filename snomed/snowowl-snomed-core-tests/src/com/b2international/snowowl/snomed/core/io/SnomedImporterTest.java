@@ -46,6 +46,7 @@ import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
+import com.b2international.snowowl.core.store.index.IndexStore;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
@@ -104,7 +105,7 @@ public class SnomedImporterTest {
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
 		final Index index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
-		this.branchStore = new MemStore<>(InternalBranch.class);
+		this.branchStore = new IndexStore<>(index, InternalBranch.class);
 		this.branching = new LocalBranchManagerImpl(branchStore, clock);
 		this.main = branching.getMainBranch();
 		
@@ -149,7 +150,7 @@ public class SnomedImporterTest {
 						if (graph.containsEdge(source, target) && !relationshipActive) {
 							final RelationshipEdge edge = graph.removeEdge(source, target);
 							if (debug) {
-								System.out.println("ISA remove from graph: " + edge);
+								System.out.println("ISA removed from graph: " + edge);
 							}
 						} else if (!graph.containsEdge(source, target) && relationshipActive) {
 							final RelationshipEdge edge = new RelationshipEdge(relationshipId);
@@ -269,8 +270,10 @@ public class SnomedImporterTest {
 	
 	@After
 	public void after() {
-		for (Branch branch : branching.getBranches()) {
-			System.out.println(String.format("Branch[%s, base=%s, head=%s, deleted=%s, state=%s]", branch.path(), branch.baseTimestamp(), branch.headTimestamp(), branch.isDeleted(), branch.state()));
+		if (debug) {
+			for (Branch branch : branching.getBranches()) {
+				System.out.println(String.format("Branch[%s, base=%s, head=%s, deleted=%s, state=%s]", branch.path(), branch.baseTimestamp(), branch.headTimestamp(), branch.isDeleted(), branch.state()));
+			}
 		}
 	}
 	
