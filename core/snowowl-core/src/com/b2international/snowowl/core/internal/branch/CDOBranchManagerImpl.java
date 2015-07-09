@@ -72,7 +72,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
+    protected InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
     	final RepositorySession repositorySession = SessionContext.getRepositorySession(repository);
     	
         CDOBranch targetBranch = getCDOBranch(target);
@@ -107,7 +107,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+    protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
         final CDOBranch childCDOBranch = createCDOBranch(parent, name);
         final CDOBranchPoint[] basePath = childCDOBranch.getBasePath();
         final int[] cdoBranchPath = new int[basePath.length];

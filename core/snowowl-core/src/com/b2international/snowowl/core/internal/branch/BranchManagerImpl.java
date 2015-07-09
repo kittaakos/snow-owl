@@ -46,7 +46,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		registerBranch(main);
 	}
 
-	void registerBranch(final InternalBranch branch) {
+	protected void registerBranch(final InternalBranch branch) {
 		branch.setBranchManager(this);
 		branchStore.put(branch);
 	}
@@ -62,7 +62,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return reopen(parent, name, metadata);
 	}
 
-	abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
+	protected abstract InternalBranch reopen(InternalBranch parent, String name, Metadata metadata);
 
 	@Override
 	public Branch getMainBranch() {
@@ -117,7 +117,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		}
 	}
 
-	abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage);
+	protected abstract InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage);
 
 	/*package*/ final InternalBranch delete(final InternalBranch branchImpl) {
 		for (Branch child : branchImpl.children()) {
@@ -132,7 +132,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		return deleted;
 	}
 	
-	/*package*/ final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
+	protected final InternalBranch handleCommit(final InternalBranch branch, final long timestamp) {
 		final InternalBranch branchAfterCommit = branch.withHeadTimestamp(timestamp);
 		registerBranch(branchAfterCommit);
 		return branchAfterCommit;
@@ -146,4 +146,5 @@ public abstract class BranchManagerImpl implements BranchManager {
 		initialize(values);
 		return values;
 	}
+
 }

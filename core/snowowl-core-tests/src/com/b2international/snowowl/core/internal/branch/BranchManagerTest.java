@@ -54,12 +54,12 @@ public class BranchManagerTest {
 		}
 
 		@Override
-		InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
+		protected InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
 			return handleCommit(target, clock.getTimestamp());
 		}
 
 		@Override
-		InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
+		protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
 			final InternalBranch branch = new BranchImpl(name, parent.path(), clock.getTimestamp());
 			branch.metadata(metadata);
 			registerBranch(branch);
