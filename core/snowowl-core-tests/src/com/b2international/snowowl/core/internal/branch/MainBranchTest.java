@@ -22,7 +22,9 @@ import static org.mockito.Mockito.mock;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * @since 4.1
@@ -32,7 +34,7 @@ public class MainBranchTest {
 	private BranchManagerImpl manager;
 	private MainBranchImpl main;
 	private MainBranchImpl mainWithTimestamp;
-	private BranchSerializer serializer;
+	private ObjectMapper mapper;
 
 	@Before
 	public void before() {
@@ -41,7 +43,7 @@ public class MainBranchTest {
 		main.setBranchManager(manager);
 		mainWithTimestamp = new MainBranchImpl(5L);
 		mainWithTimestamp.setBranchManager(manager);
-		serializer = new BranchSerializer();
+		mapper = new DefaultObjectMapper();
 	}
 
 	@Test
@@ -111,15 +113,15 @@ public class MainBranchTest {
 	@Test
 	public void serializationTest() throws Exception {
 		main.metadata().put("key", "value");
-		final String json = serializer.writeValueAsString(main);
+		final String json = mapper.writeValueAsString(main);
 		assertEquals("{\"type\":\"MainBranchImpl\",\"baseTimestamp\":0,\"headTimestamp\":0,\"metadata\":{\"key\":\"value\"},\"name\":\"MAIN\",\"parentPath\":\"\",\"deleted\":false}", json);
 	}
 	
 	@Test
 	public void deserializationTest() throws Exception {
 		main.metadata().put("key", "value");
-		final String json = serializer.writeValueAsString(main);
-		final BranchImpl value = serializer.readValue(json, BranchImpl.class);
+		final String json = mapper.writeValueAsString(main);
+		final BranchImpl value = mapper.readValue(json, BranchImpl.class);
 		assertEquals("MAIN", value.path());
 		assertEquals("MAIN", value.name());
 		assertEquals(0L, value.baseTimestamp());

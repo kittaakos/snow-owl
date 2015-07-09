@@ -15,6 +15,16 @@
  */
 package com.b2international.snowowl.core;
 
+import com.b2international.snowowl.core.internal.branch.BranchImpl;
+import com.b2international.snowowl.core.internal.branch.BranchImplMixin;
+import com.b2international.snowowl.core.internal.branch.CDOBranchImpl;
+import com.b2international.snowowl.core.internal.branch.CDOBranchImplMixin;
+import com.b2international.snowowl.core.internal.branch.CDOMainBranchImpl;
+import com.b2international.snowowl.core.internal.branch.CDOMainBranchImplMixin;
+import com.b2international.snowowl.core.internal.branch.InternalBranch;
+import com.b2international.snowowl.core.internal.branch.InternalBranchMixin;
+import com.b2international.snowowl.core.internal.branch.MainBranchImpl;
+import com.b2international.snowowl.core.internal.branch.MainBranchImplMixin;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -28,9 +38,21 @@ public class DefaultObjectMapper extends ObjectMapper {
 	private static final long serialVersionUID = 4051979122143555810L;
 
 	public DefaultObjectMapper() {
+		super();
 		setVisibility(PropertyAccessor.SETTER, Visibility.NON_PRIVATE);
 		setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+		initMixinAnnotations();
+	}
+	
+	private void initMixinAnnotations() {
+		addMixInAnnotations(Metadata.class, MetadataMixin.class);
+		addMixInAnnotations(MetadataHolder.class, MetadataHolderMixin.class);
+		addMixInAnnotations(BranchImpl.class, BranchImplMixin.class);
+		addMixInAnnotations(MainBranchImpl.class, MainBranchImplMixin.class);
+		addMixInAnnotations(CDOBranchImpl.class, CDOBranchImplMixin.class);
+		addMixInAnnotations(CDOMainBranchImpl.class, CDOMainBranchImplMixin.class);
+		addMixInAnnotations(InternalBranch.class, InternalBranchMixin.class);
 	}
 	
 }
