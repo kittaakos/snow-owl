@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -57,6 +58,7 @@ import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
 import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
+import com.b2international.snowowl.snomed.core.store.index.Relationship;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Ordering;
@@ -211,13 +213,21 @@ public class SnomedImporterTest {
 		assertThat(concept20050131.getParentIds()).hasSize(0);
 		assertThat(concept20050131.getAncestorIds()).hasSize(0);
 		
-		// Name space concept
+		// Name space concept, assert description and relationship numbers
 		final Concept namespace20020731 = browser.getConcept("MAIN/20020731", "370136006");
 		assertThat(namespace20020731.getDescriptions()).hasSize(2);
+		assertThat(namespace20020731.getRelationshipGroups()).hasSize(1);
+		assertThat(namespace20020731.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
 		final Concept namespace20030131 = browser.getConcept("MAIN/20030131", "370136006");
 		assertThat(namespace20030131.getDescriptions()).hasSize(3);
+		assertThat(namespace20030131.getRelationshipGroups()).hasSize(1);
+		final List<Relationship> relationships = namespace20030131.getRelationshipGroups().get(0).getRelationships();
+		assertThat(relationships).hasSize(1);
 		final Concept namespace20110131 = browser.getConcept("MAIN/20110131", "370136006");
 		assertThat(namespace20110131.getDescriptions()).hasSize(3);
+		assertThat(namespace20110131.getRelationshipGroups()).hasSize(1);
+		final List<Relationship> namespaceRelationships20110131 = namespace20110131.getRelationshipGroups().get(0).getRelationships();
+		assertThat(namespaceRelationships20110131).hasSize(2);
 	}
 	
 	static class RelationshipEdge extends DefaultEdge {

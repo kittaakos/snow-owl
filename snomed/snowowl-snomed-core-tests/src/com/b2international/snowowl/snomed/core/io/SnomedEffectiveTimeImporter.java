@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -173,8 +174,6 @@ public class SnomedEffectiveTimeImporter {
 				computeParents(concept);
 				appendDescriptions(concept);
 				appendRelationships(concept);
-				conceptDescriptions.removeAll(conceptId);
-				conceptRelationships.removeAll(conceptId);
 				
 				if (!STORAGEKEY_MAP.containsKey(conceptId)) {
 					STORAGEKEY_MAP.put(conceptId, STORAGE_KEYS.incrementAndGet());
@@ -193,27 +192,72 @@ public class SnomedEffectiveTimeImporter {
 	}
 	
 	private void appendRelationships(Concept concept) {
+		final Collection<RelationshipGroup> previousRelationshipGroups = newArrayList(concept.getRelationshipGroups());
+		concept.getRelationshipGroups().clear();
 		final Multimap<Integer, String[]> relationshipGroups = Multimaps.index(conceptRelationships.get(concept.getId()), new Function<String[], Integer>() {
 			@Override
 			public Integer apply(String[] input) {
 				return Integer.parseInt(input[6]);
 			}
 		});
+		final Map<String, Relationship> addedRelationships = newHashMap();
+		final Map<Integer, RelationshipGroup> addedRelationshipGroups = newHashMap(); 
 		for (Integer groupId : relationshipGroups.keySet()) {
 			final RelationshipGroup group = RelationshipGroup.of(groupId);
 			for (String[] conceptRelationship : relationshipGroups.get(groupId)) {
-				group.getRelationships().add(Relationship.of(conceptRelationship));
-				conceptRelationships.remove(concept.getId(), conceptRelationship);
+				final Relationship relationship = Relationship.of(conceptRelationship);
+				group.getRelationships().add(relationship);
+				addedRelationships.put(relationship.getId(), relationship);
 			}
 			concept.getRelationshipGroups().add(group);
+			addedRelationshipGroups.put(groupId, group);
+		}
+		conceptRelationships.removeAll(concept.getId());
+		// append unchanged relationships from previous revision
+		for (RelationshipGroup previousGroup : previousRelationshipGroups) {
+			if (addedRelationshipGroups.containsKey(previousGroup.getGroup())) {
+				// added as changed
+				final RelationshipGroup addedGroup = addedRelationshipGroups.get(previousGroup.getGroup());
+				for (Relationship previousRelationship : previousGroup.getRelationships()) {
+					// check if this relationship is already added
+					if (!addedRelationships.containsKey(previousRelationship.getId())) {
+						// if not added, then add to the current group
+						addedGroup.getRelationships().add(previousRelationship);
+					}
+				}
+			} else {
+				// missing group, add only if at least one relationship is missing from the addedRelationships
+				Collection<Relationship> previousRelationships = newArrayList(previousGroup.getRelationships());
+				previousGroup.getRelationships().clear();
+				for (Relationship previousRelationship : previousRelationships) {
+					if (!addedRelationships.containsKey(previousRelationship.getId())) {
+						previousGroup.getRelationships().add(previousRelationship);
+					}
+				}
+				// add back previous group if at least one relationship is in it
+				if (!previousGroup.getRelationships().isEmpty()) {
+					concept.getRelationshipGroups().add(previousGroup);
+				}
+			}
 		}
 	}
 	
 	private void appendDescriptions(Concept concept) {
+		// make sure we have only one description for each ID, and that's the latest one
+		final List<Description> previousDescriptionRevisions = newArrayList(concept.getDescriptions());
+		concept.getDescriptions().clear();
+		final Collection<String> addedDescriptions = newHashSet();
 		for (String[] conceptDescription : newArrayList(conceptDescriptions.get(concept.getId()))) {
 			concept.getDescriptions().add(Description.of(conceptDescription));
-			conceptDescriptions.remove(concept.getId(), conceptDescription);
-		}		
+			addedDescriptions.add(conceptDescription[0]);
+		}
+		conceptDescriptions.removeAll(concept.getId());
+		// append unchanged descriptions from previous revision
+		for (Description description : previousDescriptionRevisions) {
+			if (!addedDescriptions.contains(description.getId())) {
+				concept.getDescriptions().add(description);
+			}
+		}
 	}
 
 }
