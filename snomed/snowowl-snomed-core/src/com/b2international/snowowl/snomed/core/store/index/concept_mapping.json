@@ -4,16 +4,17 @@
     },
     "properties": {
         "storageKey": {
-            "type": "string",
-            "index": "not_analyzed"
+            "type": "long"
         },
         "deleted": {
             "type": "boolean"
         },
-        "commitTimestamp": {
-            "type": "string",
-            "index": "not_analyzed"
-        },
+		"commitId" : {
+			"type" : "long"
+		},
+		"commitTimestamp" : {
+			"type" : "long"
+		},
         "id": {
             "type": "string",
             "index": "not_analyzed"

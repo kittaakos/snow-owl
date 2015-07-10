@@ -3,13 +3,15 @@
         "type": "commit"
     },
     "properties": {
-        "commitTimestamp": {
-            "type": "string",
-            "index": "not_analyzed"
-        },
         "deleted": {
             "type": "boolean"
         },
+		"commitId" : {
+			"type" : "long"
+		},
+		"commitTimestamp" : {
+			"type" : "long"
+		},
         "conceptId": {
             "type": "string",
             "index": "not_analyzed"
