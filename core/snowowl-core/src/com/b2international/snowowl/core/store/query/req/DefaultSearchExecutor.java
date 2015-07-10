@@ -51,18 +51,7 @@ public class DefaultSearchExecutor implements SearchExecutor {
 	
 	@Override
 	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType) {
-		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
-		req.setQuery(getQuery(qb)).setFrom(qb.getOffset()).setSize(qb.getLimit());
-		final SortBy sortBy = qb.getSortBy();
-		// TODO remove this hack from here
-		if (sortBy instanceof SortByField) {
-			req.addSort(((SortByField) sortBy).getField(), getSortMode((SortByField) sortBy));
-		} else if (sortBy instanceof MultiSortBy) {
-			for (SortBy sort : ((MultiSortBy) sortBy).getItems()) {
-				req.addSort(((SortByField) sort).getField(), getSortMode((SortByField) sort));
-			}
-		}
-		// TODO add request post processing
+		buildQuery(req, builder);
 		// TODO async responses, async response processing???, convert Iterable to Observable from RX Java???
 		LOG.trace("Executing query: {}", req);
 		final SearchResponse response = req.get();
@@ -70,6 +59,19 @@ public class DefaultSearchExecutor implements SearchExecutor {
 			throw new FormattedRuntimeException("Failed to execute query '%s': ", req, response);
 		}
 		return processor.process(response, resultType);
+	}
+
+	protected void buildQuery(SearchRequestBuilder req, final AfterWhereBuilder builder) {
+		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
+		req.setQuery(getQuery(qb)).setFrom(qb.getOffset()).setSize(qb.getLimit());
+		final SortBy sortBy = qb.getSortBy();
+		if (sortBy instanceof SortByField) {
+			req.addSort(((SortByField) sortBy).getField(), getSortMode((SortByField) sortBy));
+		} else if (sortBy instanceof MultiSortBy) {
+			for (SortBy sort : ((MultiSortBy) sortBy).getItems()) {
+				req.addSort(((SortByField) sort).getField(), getSortMode((SortByField) sort));
+			}
+		}
 	}
 	
 	protected QueryBuilder getQuery(final DefaultQueryBuilder qb) {

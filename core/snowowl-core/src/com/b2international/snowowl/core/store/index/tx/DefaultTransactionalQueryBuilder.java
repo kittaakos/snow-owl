@@ -17,8 +17,6 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
-import com.b2international.snowowl.core.store.query.SortBy;
-import com.b2international.snowowl.core.store.query.SortBy.Order;
 
 /**
  * @since 5.0
@@ -26,10 +24,6 @@ import com.b2international.snowowl.core.store.query.SortBy.Order;
 public class DefaultTransactionalQueryBuilder extends DefaultQueryBuilder implements TransactionalQueryBuilder {
 
 	private String branchPath = Branch.MAIN_PATH;
-
-	DefaultTransactionalQueryBuilder() {
-		sortBy(SortBy.builder().add(IndexCommit.COMMIT_TIMESTAMP_FIELD, Order.DESC).add(Revision.STORAGE_KEY, Order.ASC).build());
-	}
 
 	@Override
 	public TransactionalQueryBuilder on(String branchPath) {

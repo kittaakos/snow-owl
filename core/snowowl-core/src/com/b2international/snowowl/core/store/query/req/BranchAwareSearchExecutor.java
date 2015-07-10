@@ -22,10 +22,12 @@ import static org.elasticsearch.index.query.FilterBuilders.orFilter;
 import static org.elasticsearch.index.query.FilterBuilders.rangeFilter;
 import static org.elasticsearch.index.query.FilterBuilders.termFilter;
 
+import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.OrFilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.branch.Branch;
@@ -33,6 +35,7 @@ import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalQueryBuilder;
 import com.b2international.snowowl.core.store.index.tx.IndexCommit;
 import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
+import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 
 /**
  * @since 5.0
@@ -46,6 +49,12 @@ public class BranchAwareSearchExecutor extends DefaultSearchExecutor {
 		this.branchManager = checkNotNull(branchManager, "BranchManager may not be null");
 	}
 
+	@Override
+	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
+		super.buildQuery(req, builder);
+		req.addSort(IndexCommit.COMMIT_TIMESTAMP_FIELD, SortOrder.DESC);
+	}
+	
 	@Override
 	protected QueryBuilder getQuery(DefaultQueryBuilder builder) {
 		final DefaultTransactionalQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultTransactionalQueryBuilder.class);
