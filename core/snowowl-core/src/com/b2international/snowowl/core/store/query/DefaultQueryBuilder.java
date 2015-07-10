@@ -27,7 +27,7 @@ import com.b2international.snowowl.core.store.query.req.SearchExecutor;
  */
 public class DefaultQueryBuilder implements QueryBuilder, AfterSelectBuilder, SearchContextBuilder {
 
-	private static final int DEFAULT_LIMIT = Integer.MAX_VALUE;
+	private static final int DEFAULT_LIMIT = 10;
 
 	private int offset = 0;
 	private int limit = DEFAULT_LIMIT;

@@ -55,8 +55,8 @@ public class DefaultSearchExecutor implements SearchExecutor {
 		// TODO async responses, async response processing???, convert Iterable to Observable from RX Java???
 		LOG.trace("Executing query: {}", req);
 		final SearchResponse response = req.get();
-		if (response.getSuccessfulShards() <= 0) {
-			throw new FormattedRuntimeException("Failed to execute query '%s': ", req, response);
+		if (response.getFailedShards() > 0) {
+			throw new FormattedRuntimeException("Failed to execute query '%s': %s", req, response);
 		}
 		return processor.process(response, resultType);
 	}
