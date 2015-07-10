@@ -88,5 +88,10 @@ public class Description extends SnomedComponent {
 		description.setCaseSensitivityId(values[8]);
 		return description;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("Description[%s]", getId(), EffectiveTimes.format(getEffectiveTime(), DateFormats.SHORT));
+	}
 
 }

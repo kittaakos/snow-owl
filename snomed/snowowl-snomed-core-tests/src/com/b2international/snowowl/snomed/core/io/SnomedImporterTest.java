@@ -17,6 +17,7 @@ package com.b2international.snowowl.snomed.core.io;
 
 import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -26,6 +27,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -126,10 +128,15 @@ public class SnomedImporterTest {
 		final Map<String, File> descriptionFilesByEffectiveTime = readRf2File(MINI_DESCRIPTION_FILE);
 		final Map<String, File> relationshipFilesByEffectiveTime = readRf2File(MINI_RELATIONSHIP_FILE);
 		
+		final Set<String> effectiveTimes = newHashSet();
+		effectiveTimes.addAll(conceptFilesByEffectiveTime.keySet());
+		effectiveTimes.addAll(descriptionFilesByEffectiveTime.keySet());
+		effectiveTimes.addAll(relationshipFilesByEffectiveTime.keySet());
+		
 		final DirectedGraph<String, RelationshipEdge> graph = DirectedAcyclicGraph.<String, RelationshipEdge>builder(RelationshipEdge.class).build();
 		
 		// index by effective time
-		for (String et : Ordering.natural().sortedCopy(conceptFilesByEffectiveTime.keySet())) {
+		for (String et : Ordering.natural().sortedCopy(effectiveTimes)) {
 			final IndexTransaction tx = openTransaction(main);
 			LOG.info("Importing SNOMED CT version {}", et);
 			final File concepts = conceptFilesByEffectiveTime.get(et);
@@ -137,42 +144,46 @@ public class SnomedImporterTest {
 			final File relationships = relationshipFilesByEffectiveTime.get(et);
 			
 			final Stopwatch watch = Stopwatch.createStarted();
-			LOG.info("Building taxonomy of {}", et);
-			Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Boolean>() {
-				@Override
-				public boolean processLine(String line) throws IOException {
-					final String[] relationship = line.split("\t");
-					if (ISA.equals(relationship[7])) {
-						final String relationshipId = relationship[0];
-						final boolean relationshipActive = "1".equals(relationship[2]);
-						final String source = relationship[4];
-						final String target = relationship[5];
-						
-						graph.addVertex(source);
-						graph.addVertex(target);
-						// check if relationship is already in the graph
-						if (graph.containsEdge(source, target) && !relationshipActive) {
-							final RelationshipEdge edge = graph.removeEdge(source, target);
-							if (debug) {
-								System.out.println("ISA removed from graph: " + edge);
-							}
-						} else if (!graph.containsEdge(source, target) && relationshipActive) {
-							final RelationshipEdge edge = new RelationshipEdge(relationshipId);
-							checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
-							if (debug) {
-								System.out.println("ISA added to graph: " + edge);
+			if (relationships != null) {
+				LOG.info("Building taxonomy from relationships of {}", et);
+				Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Boolean>() {
+					@Override
+					public boolean processLine(String line) throws IOException {
+						final String[] relationship = line.split("\t");
+						if (ISA.equals(relationship[7])) {
+							final String relationshipId = relationship[0];
+							final boolean relationshipActive = "1".equals(relationship[2]);
+							final String source = relationship[4];
+							final String target = relationship[5];
+							
+							graph.addVertex(source);
+							graph.addVertex(target);
+							// check if relationship is already in the graph
+							if (graph.containsEdge(source, target) && !relationshipActive) {
+								final RelationshipEdge edge = graph.removeEdge(source, target);
+								if (debug) {
+									System.out.println("ISA removed from graph: " + edge);
+								}
+							} else if (!graph.containsEdge(source, target) && relationshipActive) {
+								final RelationshipEdge edge = new RelationshipEdge(relationshipId);
+								checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
+								if (debug) {
+									System.out.println("ISA added to graph: " + edge);
+								}
 							}
 						}
+						return true;
 					}
-					return true;
-				}
-
-				@Override
-				public Boolean getResult() {
-					return true;
-				}
-			});
-			LOG.info("Taxonomy building of {} took {}", et, watch);
+					
+					@Override
+					public Boolean getResult() {
+						return true;
+					}
+				});
+				LOG.info("Taxonomy building of {} took {}", et, watch);
+			} else {
+				LOG.info("No relationship changes in {}, using previous taxonomy", et);
+			}
 			
 			// pass taxonomy to effective time importer
 			new SnomedEffectiveTimeImporter(graph, tx, concepts, descriptions, relationships).doImport();
@@ -194,9 +205,19 @@ public class SnomedImporterTest {
 		
 		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
 		assertFalse(concept20050131.isActive());
+		assertThat(concept20020131.getDescriptions()).hasSize(2);
+		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);
+		assertThat(concept20020131.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
 		assertThat(concept20050131.getParentIds()).hasSize(0);
 		assertThat(concept20050131.getAncestorIds()).hasSize(0);
 		
+		// Name space concept
+		final Concept namespace20020731 = browser.getConcept("MAIN/20020731", "370136006");
+		assertThat(namespace20020731.getDescriptions()).hasSize(2);
+		final Concept namespace20030131 = browser.getConcept("MAIN/20030131", "370136006");
+		assertThat(namespace20030131.getDescriptions()).hasSize(3);
+		final Concept namespace20110131 = browser.getConcept("MAIN/20110131", "370136006");
+		assertThat(namespace20110131.getDescriptions()).hasSize(3);
 	}
 	
 	static class RelationshipEdge extends DefaultEdge {

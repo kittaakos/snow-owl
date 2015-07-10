@@ -23,6 +23,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -91,6 +92,9 @@ public class SnomedEffectiveTimeImporter {
 	}
 	
 	private Collection<String[]> readLines(File file) {
+		if (file == null) {
+			return Collections.emptySet();
+		}
 		try {
 			LOG.info("Reading file {}", file);
 			return Collections2.transform(Files.readLines(file, Charsets.UTF_8), new Function<String, String[]>() {
@@ -156,6 +160,9 @@ public class SnomedEffectiveTimeImporter {
 	}
 
 	private void processConcepts() throws IOException {
+		if (concepts == null) {
+			return;
+		}
 		LOG.info("Processing SNOMED CT concepts");
 		Files.readLines(concepts, Charsets.UTF_8, new LineProcessor<Boolean>() {
 			@Override
