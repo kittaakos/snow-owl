@@ -37,6 +37,16 @@ class LocalBranchManagerImpl extends BranchManagerImpl {
 	}
 
 	@Override
+	protected void initMainBranch(InternalBranch main) {
+		InternalBranch mainBranch = (InternalBranch) getMainBranch();
+		if (mainBranch != null) {
+			super.initMainBranch(mainBranch);
+		} else {
+			super.initMainBranch(main);
+		}
+	}
+	
+	@Override
 	protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
 		final InternalBranch branch = new BranchImpl(name, parent.path(), parent.headTimestamp());
 		branch.metadata(metadata);

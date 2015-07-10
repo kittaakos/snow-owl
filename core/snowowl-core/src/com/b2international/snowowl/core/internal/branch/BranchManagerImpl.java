@@ -42,7 +42,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 		initMainBranch(new MainBranchImpl(mainBranchTimestamp));
 	}
 	
-	/*package*/ void initMainBranch(final InternalBranch main) {
+	protected void initMainBranch(final InternalBranch main) {
 		registerBranch(main);
 	}
 
