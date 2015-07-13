@@ -17,23 +17,32 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.search.MultiSearchRequestBuilder;
+import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
+import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
+import com.b2international.snowowl.core.store.index.InternalIndex;
 import com.b2international.snowowl.core.store.index.MappingStrategy;
 import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.AggregatingBranchSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.AggregationSearchResponseProcessor;
+import com.b2international.snowowl.core.store.query.req.MultiIndexSearchExecutor;
+import com.b2international.snowowl.core.store.query.req.MultiIndexSearchProcessor;
 import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.Iterables;
 
@@ -53,7 +62,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 
 	public DefaultTransactionalIndex(BulkIndex index, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
-		this.index.admin().mappings().addMapping(IndexCommit.class);
+//		this.index.admin().mappings().addMapping(IndexCommit.class);
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 
@@ -82,8 +91,8 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public void commit(int commitId, long commitTimestamp, String branchPath, String commitMessage) {
-		final IndexCommit commit = new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage);
-		this.index.put(String.valueOf(commitId), commit);
+//		final IndexCommit commit = new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage);
+//		this.index.put(String.valueOf(commitId), commit);
 		this.index.flush(commitId);
 		LOG.info("Committed transaction '{}' on '{}' with message '{}'", commitId, branchPath, commitMessage);
 	}
@@ -111,9 +120,11 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
-		final SearchContextBuilder context = ClassUtils.checkAndCast(query, SearchContextBuilder.class);
-		context.executeWith(new AggregatingBranchSearchExecutor(new AggregationSearchResponseProcessor(admin().mappings().mapper()), branchManager));
-		return this.index.search(context, type);
+//		final DefaultTransactionalQueryBuilder context = ClassUtils.checkAndCast(query, DefaultTransactionalQueryBuilder.class);
+//		final Branch branch = branchManager.getBranch(context.getBranchPath());
+//		context.executeWith(new MultiIndexSearchExecutor(new MultiIndexSearchProcessor(admin().mappings().mapper()), branch));
+//		context.executeWith(new AggregatingBranchSearchExecutor(new AggregationSearchResponseProcessor(admin().mappings().mapper()), branchManager));
+		return this.index.search(query, type);
 	}
 	
 	private <T> String getType(Class<T> type) {

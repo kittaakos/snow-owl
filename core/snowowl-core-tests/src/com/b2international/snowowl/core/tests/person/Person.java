@@ -90,4 +90,9 @@ public class Person extends Component {
 		return p;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Person[id=%s, name=%s %s, yob=%s, addresses=%s]", getId(), getFirstName(), getLastName(), getYob(), getAddresses());
+	}
+	
 }

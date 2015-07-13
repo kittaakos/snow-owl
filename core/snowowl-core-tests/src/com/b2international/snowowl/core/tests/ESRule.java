@@ -22,6 +22,7 @@ public class ESRule extends ExternalResource {
 	
 	@Override
 	protected void after() {
+		client().admin().indices().prepareDelete("_all").get();
 		node.close();
 	}
 	
