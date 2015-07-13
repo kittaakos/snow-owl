@@ -26,6 +26,7 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.client.Client;
 import org.elasticsearch.common.collect.MapMaker;
 import org.slf4j.Logger;
 
@@ -42,7 +43,7 @@ import com.google.common.collect.Multimaps;
 /**
  * @since 5.0
  */
-public class DefaultBulkIndex implements BulkIndex {
+public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 	private static final int BULK_THRESHOLD = 10000;
@@ -98,6 +99,31 @@ public class DefaultBulkIndex implements BulkIndex {
 	@Override
 	public void putWithParent(String type, String parentKey, String key, Object object) {
 		bulkIndex(index.prepareIndexWithParent(type, parentKey, key, object));
+	}
+	
+	@Override
+	public Client client() {
+		return index.client();
+	}
+	
+	@Override
+	public <T> String getType(Class<T> type) {
+		return index.getType(type);
+	}
+	
+	@Override
+	public DeleteRequestBuilder prepareDelete(String type, String key) {
+		return index.prepareDelete(type, key);
+	}
+	
+	@Override
+	public IndexRequestBuilder prepareIndex(String type, String key, Object object) {
+		return index.prepareIndex(type, key, object);
+	}
+	
+	@Override
+	public IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, String key, Object object) {
+		return index.prepareIndexWithParent(type, parentKey, key, object);
 	}
 	
 	private void bulkIndex(final IndexRequestBuilder req) {
