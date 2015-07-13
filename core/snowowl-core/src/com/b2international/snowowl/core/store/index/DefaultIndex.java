@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.store.query.req.SearchExecutor;
  * 
  * @since 5.0
  */
-public final class DefaultIndex implements InternalIndex {
+public class DefaultIndex implements InternalIndex {
 
 	private Client client;
 	private String index;
@@ -154,11 +154,16 @@ public final class DefaultIndex implements InternalIndex {
 		final MappingStrategy<T> mapping = mapping(type);
 		final String typeName = mapping.getType();
 		final SearchRequestBuilder req = this.client.prepareSearch(index).setTypes(typeName);
+		final SearchExecutor executor = getExecutor(context);
+		return executor.execute(req, query, type);
+	}
+
+	protected SearchExecutor getExecutor(final SearchContextBuilder context) {
 		SearchExecutor executor = context.executor();
 		if (executor == null) {
 			executor = new DefaultSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()));
 		}
-		return executor.execute(req, query, type);
+		return executor;
 	}
 	
 	@Override
