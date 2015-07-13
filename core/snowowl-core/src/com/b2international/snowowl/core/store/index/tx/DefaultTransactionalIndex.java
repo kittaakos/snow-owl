@@ -34,6 +34,7 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.AggregatingBranchSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.AggregationSearchResponseProcessor;
+import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.Iterables;
 
 /**
@@ -57,7 +58,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 
 	@Override
-	public <T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey) {
+	public <T extends Component> T loadRevision(Class<T> type, String branchPath, long storageKey) {
 		try {
 			final Iterable<T> revisions = search(query()
 					.on(branchPath)
@@ -75,8 +76,8 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 	
 	@Override
-	public void addRevision(String branchPath, Revision revision) {
-		this.index.putWithParent(String.valueOf(revision.getCommitId()), revision);
+	public void addRevision(String branchPath, Component revision) {
+		this.index.putWithParent(String.valueOf(revision.getCommitId()), revision.getId(), revision);
 	}
 	
 	@Override

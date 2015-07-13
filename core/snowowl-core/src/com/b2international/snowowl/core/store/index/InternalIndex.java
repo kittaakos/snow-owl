@@ -30,8 +30,8 @@ public interface InternalIndex extends Index {
 	
 	IndexRequestBuilder prepareIndex(String type, String key, Object object);
 
-	IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, Object object);
-
+	IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, String key, Object object);
+	
 	DeleteRequestBuilder prepareDelete(String type, String key);
 	
 	<T> String getType(Class<T> type);

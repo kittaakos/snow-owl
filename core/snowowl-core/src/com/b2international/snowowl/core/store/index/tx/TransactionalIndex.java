@@ -19,6 +19,7 @@ import com.b2international.snowowl.core.store.Searchable;
 import com.b2international.snowowl.core.store.index.Administrable;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.MappingProvider;
+import com.b2international.snowowl.core.terminology.Component;
 
 /**
  * @since 5.0
@@ -36,7 +37,7 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 * @param revision
 	 *            - the revision
 	 */
-	void addRevision(String branchPath, Revision revision);
+	void addRevision(String branchPath, Component revision);
 
 	/**
 	 * Loads the latest revision of an object from the index with the given type and storageKey as identifier.
@@ -49,7 +50,7 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 *            - the storage identifier of the revision
 	 * @return the loaded revision object
 	 */
-	<T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey);
+	<T extends Component> T loadRevision(Class<T> type, String branchPath, long storageKey);
 
 	/**
 	 * Indexes a commit group as parent for all previously added revision (with the given commitId) available for search.

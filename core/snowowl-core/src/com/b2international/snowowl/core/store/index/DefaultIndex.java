@@ -39,7 +39,7 @@ import com.b2international.snowowl.core.store.query.req.SearchExecutor;
  * 
  * @since 5.0
  */
-public final class DefaultIndex implements Index, InternalIndex {
+public final class DefaultIndex implements InternalIndex {
 
 	private Client client;
 	private String index;
@@ -87,19 +87,19 @@ public final class DefaultIndex implements Index, InternalIndex {
 	}
 
 	@Override
-	public <T> void putWithParent(String parentKey, T object) {
-		putWithParent(getType(object.getClass()), parentKey, object);
+	public <T> void putWithParent(String parentKey, String key, T object) {
+		putWithParent(getType(object.getClass()), parentKey, key, object);
 	}
 	
 	@Override
-	public void putWithParent(String type, String parentKey, Object object) {
-		prepareIndexWithParent(type, parentKey, object).setRefresh(true).get();
+	public void putWithParent(String type, String parentKey, String key, Object object) {
+		prepareIndexWithParent(type, parentKey, key, object).setRefresh(true).get();
 	}
 
 	@Override
-	public IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, Object object) {
+	public IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, String key, Object object) {
 		final Map<String, Object> map = toMap(object);
-		return this.client.prepareIndex(index, type).setParent(parentKey).setSource(map);
+		return this.client.prepareIndex(index, type, key).setParent(parentKey).setSource(map);
 	}
 
 	@Override

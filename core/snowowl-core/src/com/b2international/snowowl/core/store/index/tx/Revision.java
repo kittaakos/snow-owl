@@ -29,19 +29,19 @@ public abstract class Revision {
 	private long commitTimestamp;
 	private boolean deleted = false;
 	
-	void setCommitId(int commitId) {
+	protected void setCommitId(int commitId) {
 		this.commitId = commitId;
 	}
 	
-	void setCommitTimestamp(long commitTimestamp) {
+	protected void setCommitTimestamp(long commitTimestamp) {
 		this.commitTimestamp = commitTimestamp;
 	}
 	
-	void setDeleted(boolean deleted) {
+	protected void setDeleted(boolean deleted) {
 		this.deleted = deleted;
 	}
 	
-	void setStorageKey(long storageKey) {
+	protected void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
 	}
 	

@@ -63,12 +63,14 @@ public interface Index extends MappingProvider, Searchable, Administrable<IndexA
 	 *            - the object's type
 	 * @param parentKey
 	 *            - the document id of the parent document
+	 * @param key
+	 *            - the unique identifier of the object
 	 * @param object
 	 *            - the object to store
 	 */
-	void putWithParent(String type, String parentKey, Object object);
+	void putWithParent(String type, String parentKey, String key, Object object);
 
-	<T> void putWithParent(String parentKey, T object);
+	<T> void putWithParent(String parentKey, String key, T object);
 
 	/**
 	 * Store/Put an object represented by the given {@link Map} of String, Object pairs in this index under the given type, identified with the given

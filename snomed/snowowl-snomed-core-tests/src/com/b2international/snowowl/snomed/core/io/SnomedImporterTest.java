@@ -55,8 +55,8 @@ import com.b2international.snowowl.core.store.index.IndexStore;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
-import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
+import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.b2international.snowowl.snomed.core.store.index.Relationship;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -322,12 +322,12 @@ public class SnomedImporterTest {
 		return new IndexTransaction() {
 			
 			@Override
-			public void add(long storageKey, Revision object) {
+			public void add(long storageKey, Component object) {
 				original.add(storageKey, object);				
 			}
 			
 			@Override
-			public <T extends Revision> void delete(long storageKey, Class<T> type) {
+			public <T extends Component> void delete(long storageKey, Class<T> type) {
 				original.delete(storageKey, type);				
 			}
 			

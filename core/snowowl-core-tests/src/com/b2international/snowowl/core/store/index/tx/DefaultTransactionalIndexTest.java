@@ -35,6 +35,7 @@ import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
+import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonFixtures;
@@ -227,7 +228,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		return new IndexTransaction() {
 
 			@Override
-			public <T extends Revision> void delete(long storageKey, Class<T> type) {
+			public <T extends Component> void delete(long storageKey, Class<T> type) {
 				original.delete(storageKey, type);				
 			}
 			
@@ -239,7 +240,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 			}
 
 			@Override
-			public void add(long storageKey, Revision object) {
+			public void add(long storageKey, Component object) {
 				original.add(storageKey, object);
 			}
 			

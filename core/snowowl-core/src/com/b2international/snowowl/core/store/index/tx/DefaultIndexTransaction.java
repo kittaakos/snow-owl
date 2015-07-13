@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.b2international.snowowl.core.terminology.Component;
+
 /**
  * @since 5.0
  */
@@ -35,7 +37,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	}
 	
 	@Override
-	public void add(long storageKey, Revision revision) {
+	public void add(long storageKey, Component revision) {
 		revision.setCommitId(commitId);
 		revision.setCommitTimestamp(commitTimestamp);
 		revision.setStorageKey(storageKey);
@@ -43,7 +45,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	}
 	
 	@Override
-	public <T extends Revision> void delete(long storageKey, Class<T> type) {
+	public <T extends Component> void delete(long storageKey, Class<T> type) {
 		final T revision = index.loadRevision(type, branchPath, storageKey);
 		revision.setDeleted(true);
 		index.addRevision(branchPath, revision);

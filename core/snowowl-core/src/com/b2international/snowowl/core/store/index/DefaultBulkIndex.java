@@ -91,13 +91,13 @@ public class DefaultBulkIndex implements BulkIndex {
 	}
 
 	@Override
-	public <T> void putWithParent(String parentKey, T object) {
-		putWithParent(index.getType(object.getClass()), parentKey, object);
+	public <T> void putWithParent(String parentKey, String key, T object) {
+		putWithParent(index.getType(object.getClass()), parentKey, key, object);
 	}
 	
 	@Override
-	public void putWithParent(String type, String parentKey, Object object) {
-		bulkIndex(index.prepareIndexWithParent(type, parentKey, object));
+	public void putWithParent(String type, String parentKey, String key, Object object) {
+		bulkIndex(index.prepareIndexWithParent(type, parentKey, key, object));
 	}
 	
 	private void bulkIndex(final IndexRequestBuilder req) {
