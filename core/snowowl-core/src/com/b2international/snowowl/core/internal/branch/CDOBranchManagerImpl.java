@@ -54,7 +54,7 @@ public class CDOBranchManagerImpl extends BranchManagerImpl {
     }
 
     @Override
-    void initMainBranch(InternalBranch main) {
+	protected void initMainBranch(InternalBranch main) {
         super.initMainBranch(new CDOMainBranchImpl(main.baseTimestamp(), main.headTimestamp()));
     }
 
