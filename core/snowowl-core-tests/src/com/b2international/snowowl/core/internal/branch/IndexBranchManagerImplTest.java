@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.internal.branch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.util.Collection;
@@ -70,18 +70,30 @@ public class IndexBranchManagerImplTest {
 	}
 	
 	private Collection<String> getBranchIndexSet(Branch branch) {
-		return branch.metadata().get("branches", Collection.class);
+		return branch.metadata().get(IndexBranchManagerImpl.BRANCH_INDEXES, Collection.class);
 	}
 
 	@Test
 	public void initializeIndexOnBranchCreation() throws Exception {
 		final Branch mainA = manager.getMainBranch().createChild("a");
 		final Collection<String> mainABranches = getBranchIndexSet(mainA);
-		assertThat(mainABranches).hasSize(2);
+		assertThat(mainABranches).containsExactly("person_main_a_2", "person_main_1");
 		checkIndexes(mainABranches);
 		final Collection<String> mainBranches = getBranchIndexSet(manager.getMainBranch());
-		assertThat(mainBranches).hasSize(2);
+		assertThat(mainBranches).containsExactly("person_main_2", "person_main_1");
 		checkIndexes(mainBranches);
+	}
+	
+	@Test
+	public void initializeIndexOnNestedBranchCreation() throws Exception {
+		final Branch a = manager.getMainBranch().createChild("a");
+		final Branch b = a.createChild("b");
+		final Collection<String> bBranches = getBranchIndexSet(b);
+		assertThat(bBranches).containsExactly("person_main_a_b_3", "person_main_a_2", "person_main_1");
+		final Collection<String> aBranches = getBranchIndexSet(a);
+		assertThat(aBranches).containsExactly("person_main_a_3", "person_main_a_2", "person_main_1");
+		final Collection<String> mainBranches = getBranchIndexSet(manager.getMainBranch());
+		assertThat(mainBranches).containsExactly("person_main_2", "person_main_1");
 	}
 
 	private void checkIndexes(Collection<String> indexNames) {

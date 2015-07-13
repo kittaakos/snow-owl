@@ -15,9 +15,11 @@
  */
 package com.b2international.snowowl.core.internal.branch;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Lists.newLinkedList;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -29,20 +31,21 @@ import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.Mappings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Ordering;
 
 /**
  * @since 5.0
  */
 public class IndexBranchManagerImpl extends BranchManagerImpl {
 
+	static final String INDEX_NAME_TEMPLATE = "%s_%s_%s";
+	public static final String BRANCH_INDEXES = "indexes";
 	private Client client;
 	private Mappings mappings;
 	private Map<String, Object> settings;
 	private String repositoryId;
 	private AtomicLong clock;
-
+	
 	public IndexBranchManagerImpl(Store<InternalBranch> branchStore, long mainBranchTimestamp, String repositoryId, Client client, Mappings mappings, Map<String, Object> settings, AtomicLong clock) {
 		super(branchStore, mainBranchTimestamp);
 		this.repositoryId = repositoryId;
@@ -52,35 +55,52 @@ public class IndexBranchManagerImpl extends BranchManagerImpl {
 		this.clock = clock;
 		// init MAIN branch index
 		final Branch main = getMainBranch();
-		final String indexName = createIndex(main.path(), main.baseTimestamp());
-		main.metadata(updateBranchIndexSetMetadata(null, main.metadata(), indexName));
+		createIndex(main);
 		registerBranch((InternalBranch) main);
 	}
 	
-	private Metadata updateBranchIndexSetMetadata(Branch parent, Metadata metadata, String indexName) {
-		checkNotNull(metadata, "metadata");
-		final Builder<String> builder = ImmutableSet.builder();
-		// append parent branch indexes
+	private void updateBranchIndexSetMetadata(Branch parent, Branch current, String newWriteableIndexName) {
+		final Metadata metadata = current.metadata();
+		final LinkedList<String> indexes = newLinkedList();
+		indexes.add(newWriteableIndexName);
+		final Map<Long, String> branchesByBaseTimestamp = newHashMap();
 		if (parent != null) {
-			final Collection<String> branches = parent.metadata().get("branches", Collection.class);
-			builder.addAll(branches);
+			addIndexes(parent.metadata(), branchesByBaseTimestamp);
 		}
-		// add current indexes
-		final Collection<String> currentBranches = metadata.get("branches", Collection.class);
-		if (currentBranches != null) {
-			builder.addAll(currentBranches);
+		addIndexes(metadata, branchesByBaseTimestamp);
+		for (Long base : Ordering.natural().reverse().sortedCopy(branchesByBaseTimestamp.keySet())) {
+			if (base <= current.baseTimestamp()) {
+				indexes.add(branchesByBaseTimestamp.get(base));
+			}
 		}
-		builder.add(indexName);
-		metadata.put("branches", builder.build());
-		return metadata;
+		metadata.put(BRANCH_INDEXES, indexes);
 	}
 
-	private String createIndex(String branchPath, long baseTimestamp) {
-		final String indexName = String.format("%s_%s_%s", repositoryId, branchPath.replaceAll("/", "_"), baseTimestamp).toLowerCase();
+	private void addIndexes(Metadata metadata, Map<Long, String> map) {
+		final Collection<String> branchIndexes = metadata.get(BRANCH_INDEXES, Collection.class);
+		if (branchIndexes != null) {
+			for (String index : branchIndexes) {
+				final long base = parseBaseTimestamp(index);
+				map.put(base, index);
+			}
+		}
+	}
+
+	private long parseBaseTimestamp(String index) {
+		return Long.parseLong(index.substring(index.lastIndexOf("_") + 1));
+	}
+
+	private void createIndex(Branch branch) {
+		createIndex(branch, branch.baseTimestamp());
+	}
+	
+	private void createIndex(Branch branch, long baseTimestamp) {
+		final String branchPath = branch.path();
+		final String indexName = String.format(INDEX_NAME_TEMPLATE, repositoryId, branchPath.replaceAll("/", "_"), baseTimestamp).toLowerCase();
 		final Index index = new DefaultIndex(client, indexName, mappings, settings);
 		// create the index immediately
 		index.admin().create();
-		return indexName;
+		updateBranchIndexSetMetadata(branch.parent() == branch ? null : branch.parent(), branch, indexName);		
 	}
 
 	@Override
@@ -88,10 +108,11 @@ public class IndexBranchManagerImpl extends BranchManagerImpl {
 		final long baseTimestamp = clock.incrementAndGet();
 		final InternalBranch branch = new BranchImpl(name, parent.path(), baseTimestamp);
 		branch.setBranchManager(this);
-		final String indexName = createIndex(branch.path(), baseTimestamp);
-		final String newParentIndex = createIndex(parent.path(), baseTimestamp);
-		branch.metadata(updateBranchIndexSetMetadata(parent, metadata == null ? branch.metadata() : metadata, indexName));
-		parent.metadata(updateBranchIndexSetMetadata(parent.parent(), parent.metadata(), newParentIndex));
+		if (metadata != null) {
+			branch.metadata(metadata);
+		}
+		createIndex(branch);
+		createIndex(parent, baseTimestamp);
 		registerBranch(branch);
 		registerBranch(parent);
 		return branch;
@@ -99,7 +120,12 @@ public class IndexBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	protected InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-		throw new UnsupportedOperationException();
+		handleCommit(target);
+		return target;
 	}
-
+	
+	public void handleCommit(Branch branch) {
+		handleCommit((InternalBranch)branch, clock.incrementAndGet());
+	}
+	
 }
