@@ -17,32 +17,19 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.search.MultiSearchRequestBuilder;
-import org.elasticsearch.client.Client;
 import org.slf4j.Logger;
 
-import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
-import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
-import com.b2international.snowowl.core.store.index.InternalIndex;
 import com.b2international.snowowl.core.store.index.MappingStrategy;
 import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
-import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
-import com.b2international.snowowl.core.store.query.req.AggregatingBranchSearchExecutor;
-import com.b2international.snowowl.core.store.query.req.AggregationSearchResponseProcessor;
-import com.b2international.snowowl.core.store.query.req.MultiIndexSearchExecutor;
-import com.b2international.snowowl.core.store.query.req.MultiIndexSearchProcessor;
 import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.Iterables;
 
@@ -86,7 +73,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public void addRevision(String branchPath, Component revision) {
-		this.index.putWithParent(String.valueOf(revision.getCommitId()), revision.getId(), revision);
+		this.index.put(String.valueOf(revision.getStorageKey()), revision);
 	}
 	
 	@Override
