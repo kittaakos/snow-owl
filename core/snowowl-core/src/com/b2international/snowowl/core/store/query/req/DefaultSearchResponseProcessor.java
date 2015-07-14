@@ -42,7 +42,11 @@ public class DefaultSearchResponseProcessor implements SearchResponseProcessor {
 	public <T> Iterable<T> process(SearchResponse response, Class<T> resultType) {
 		final Collection<T> result = newArrayListWithExpectedSize(response.getHits().getHits().length);
 		for (SearchHit hit : response.getHits()) {
-			result.add(mapper.convertValue(hit.getSource(), resultType));
+			if (String.class == resultType) {
+				result.add((T) hit.getId());
+			} else {
+				result.add(mapper.convertValue(hit.getSource(), resultType));
+			}
 		}
 		return result;
 	}

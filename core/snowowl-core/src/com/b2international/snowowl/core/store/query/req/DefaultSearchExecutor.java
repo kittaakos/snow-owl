@@ -32,6 +32,7 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.SortBy;
 import com.b2international.snowowl.core.store.query.SortBy.MultiSortBy;
 import com.b2international.snowowl.core.store.query.SortBy.SortByField;
+import com.google.common.base.Stopwatch;
 
 /**
  * TODO move to internal package
@@ -49,19 +50,30 @@ public class DefaultSearchExecutor implements SearchExecutor {
 		this.processor = checkNotNull(processor, "processor");
 	}
 	
+	protected final SearchResponseProcessor getProcessor() {
+		return processor;
+	}
+	
 	@Override
 	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType) {
-		buildQuery(req, builder);
-		// TODO async responses, async response processing???, convert Iterable to Observable from RX Java???
-		LOG.trace("Executing query: {}", req);
-		final SearchResponse response = req.get();
-		if (response.getFailedShards() > 0) {
-			throw new FormattedRuntimeException("Failed to execute query '%s': %s", req, response);
-		}
+		buildRequest(req, builder);
+		// TODO async responses, async response processing
+		final SearchResponse response = executeRequest(req);
 		return processor.process(response, resultType);
 	}
 
-	protected void buildQuery(SearchRequestBuilder req, final AfterWhereBuilder builder) {
+	protected SearchResponse executeRequest(SearchRequestBuilder req) {
+		Stopwatch watch = Stopwatch.createStarted();
+		LOG.trace("Executing query: {}", req);
+		final SearchResponse response = req.get();
+		LOG.info("Executed query in {}", watch);
+		if (response.getFailedShards() > 0) {
+			throw new FormattedRuntimeException("Failed to execute query '%s': %s", req, response);
+		}
+		return response;
+	}
+
+	protected void buildRequest(SearchRequestBuilder req, final AfterWhereBuilder builder) {
 		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
 		req.setQuery(getQuery(qb)).setFrom(qb.getOffset()).setSize(qb.getLimit());
 		final SortBy sortBy = qb.getSortBy();

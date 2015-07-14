@@ -43,7 +43,7 @@ public class AggregatingBranchSearchExecutor extends BranchAwareSearchExecutor {
 	}
 
 	@Override
-	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
+	protected void buildRequest(SearchRequestBuilder req, AfterWhereBuilder builder) {
 		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
 		req.setQuery(getQuery(qb)).setFrom(0).setSize(0);
 		

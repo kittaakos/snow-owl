@@ -31,7 +31,9 @@ import org.elasticsearch.client.Client;
 import com.b2international.commons.reflect.MethodInvokerUtil;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,12 +48,12 @@ public class MultiIndexSearchExecutor extends DefaultSearchExecutor {
 	private String firstIndex;
 	private NegatingSearchExecutor negatingExecutor;
 
-	public MultiIndexSearchExecutor(SearchResponseProcessor processor, Client client, LinkedList<String> indexes) {
-		super(processor);
+	public MultiIndexSearchExecutor(Client client, LinkedList<String> indexes, ObjectMapper mapper) {
+		super(new DefaultSearchResponseProcessor(mapper));
 		this.client = client;
 		this.indexes = Lists.reverse(indexes);
 		this.firstIndex = this.indexes.get(0);
-		this.negatingExecutor = new NegatingSearchExecutor(processor);
+		this.negatingExecutor = new NegatingSearchExecutor(getProcessor());
 	}
 	
 	@Override
@@ -62,18 +64,19 @@ public class MultiIndexSearchExecutor extends DefaultSearchExecutor {
 			final Map<Long, T> results = newHashMap();
 			// execute index search in reverse order, starting with the base -> first fork point
 			for (String index : indexes) {
+				Stopwatch watch = Stopwatch.createStarted();
 				final SearchRequestBuilder newReq = client.prepareSearch(index).setTypes(types);
 				final Iterable<T> positiveResults = newHashSet(super.execute(newReq, builder, resultType));
 				// put and replace all new results
 				results.putAll(createIndex(idGetter, positiveResults));
 				if (!firstIndex.equals(index)) {
-					final Iterable<T> negativeResults = newHashSet(negatingExecutor.execute(newReq, builder, resultType));
+					final Iterable<String> negativeResults = newHashSet(negatingExecutor.execute(newReq, builder, String.class));
 					// run two queries if not the first index, the original and one negated
-					for (T result : negativeResults) {
-						final Long storageKey = (Long) MethodInvokerUtil.invoke(idGetter, result);
-						results.remove(storageKey);
+					for (String result : negativeResults) {
+						results.remove(Long.valueOf(result));
 					}
 				}
+				System.out.println(String.format("Processed '%s' index request in %s", index, watch));
 			}
 			return ImmutableSet.copyOf(results.values());
 		} catch (Exception e) {

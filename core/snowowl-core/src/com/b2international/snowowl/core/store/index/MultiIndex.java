@@ -25,7 +25,6 @@ import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.client.Client;
 
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
-import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
 import com.b2international.snowowl.core.store.query.req.MultiIndexSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
@@ -61,7 +60,7 @@ public class MultiIndex extends DefaultIndex {
 	@Override
 	protected SearchExecutor getExecutor(SearchContextBuilder context) {
 		if (context.executor() == null) {
-			return new MultiIndexSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()), client(), indexes);
+			return new MultiIndexSearchExecutor(client(), indexes, admin().mappings().mapper());
 		}
 		return super.getExecutor(context);
 	}

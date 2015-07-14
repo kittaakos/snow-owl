@@ -20,6 +20,7 @@ import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
 import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.snomed.core.store.index.Concept;
 import com.b2international.snowowl.snomed.core.store.index.SnomedComponent;
+import com.b2international.snowowl.snomed.core.store.query.builder.ConceptExpressions;
 import com.google.common.collect.Iterables;
 
 /**
@@ -43,6 +44,14 @@ public class SnomedBrowser {
 			throw new NotFoundException(type.getName(), id);
 		}
 		return concept;
+	}
+
+	public Iterable<Concept> getChildren(String branchPath, String conceptId) {
+		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().parent(conceptId).build()).limit(1000), Concept.class);
+	}
+	
+	public Iterable<Concept> getDescendants(String branchPath, String conceptId) {
+		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().ancestor(conceptId).build()).limit(100000), Concept.class);
 	}
 	
 }

@@ -136,15 +136,14 @@ public class SnomedEffectiveTimeImporter {
 	}
 
 	private void computeParents(Concept concept) {
+		concept.getParentIds().clear();
+		concept.getAncestorIds().clear();
 		if (concept.isActive()) {
 			final Collection<String> directParents = getSuperTypes(concept.getId());
 			final Set<String> ancestorIds = newHashSet();
 			populateAncestors(directParents, ancestorIds);
 			concept.getParentIds().addAll(directParents);
 			concept.getAncestorIds().addAll(ancestorIds);
-		} else {
-			concept.getParentIds().clear();
-			concept.getAncestorIds().clear();
 		}
 	}
 

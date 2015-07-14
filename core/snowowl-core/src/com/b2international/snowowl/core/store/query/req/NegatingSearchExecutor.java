@@ -16,12 +16,11 @@
 package com.b2international.snowowl.core.store.query.req;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 
 import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
-import com.b2international.snowowl.core.store.query.Not;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 
 /**
@@ -34,15 +33,20 @@ public class NegatingSearchExecutor extends DefaultSearchExecutor {
 	}
 	
 	@Override
-	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
-		super.buildQuery(req, builder);
-		// storageKey only
-		req.setFetchSource(new String[]{"id, storageKey"}, null);
+	protected void buildRequest(SearchRequestBuilder req, AfterWhereBuilder builder) {
+		super.buildRequest(req, builder);
+		req.setFetchSource(false);
+		req.setSize(400000);
+	}
+	
+	@Override
+	protected SearchResponse executeRequest(SearchRequestBuilder req) {
+		return super.executeRequest(req);
 	}
 	
 	@Override
 	protected QueryBuilder getQuery(DefaultQueryBuilder qb) {
-		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.queryFilter(elasticQueryBuilder.build(new Not(qb.getWhere()))));
+		return QueryBuilders.boolQuery().mustNot(elasticQueryBuilder.build(qb.getWhere()));
 	}
 
 }

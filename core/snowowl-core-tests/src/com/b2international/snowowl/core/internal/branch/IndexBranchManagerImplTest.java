@@ -16,7 +16,7 @@
 package com.b2international.snowowl.core.internal.branch;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Collection;
@@ -94,6 +94,18 @@ public class IndexBranchManagerImplTest {
 		assertThat(aBranches).containsExactly("person_main_a_3", "person_main_a_2", "person_main_1");
 		final Collection<String> mainBranches = getBranchIndexSet(manager.getMainBranch());
 		assertThat(mainBranches).containsExactly("person_main_2", "person_main_1");
+	}
+	
+	@Test
+	public void initializeSecondBranchFromMAIN_MAINShouldHaveThreeIndexes() throws Exception {
+		final Branch a = manager.getMainBranch().createChild("a");
+		final Branch b = manager.getMainBranch().createChild("b");
+		final Collection<String> bBranches = getBranchIndexSet(b);
+		assertThat(bBranches).containsExactly("person_main_b_3", "person_main_2", "person_main_1");
+		final Collection<String> aBranches = getBranchIndexSet(a);
+		assertThat(aBranches).containsExactly("person_main_a_2", "person_main_1");
+		final Collection<String> mainBranches = getBranchIndexSet(manager.getMainBranch());
+		assertThat(mainBranches).containsExactly("person_main_3", "person_main_2", "person_main_1");
 	}
 
 	private void checkIndexes(Collection<String> indexNames) {

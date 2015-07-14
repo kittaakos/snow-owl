@@ -70,6 +70,9 @@ public class DefaultIndexAdmin implements IndexAdmin {
 			if (!settings.containsKey("index.refresh_interval")) {
 				mutableSettings.put("index.refresh_interval", "-1");
 			}
+			// disable on SSDs
+			mutableSettings.put("index.merge.scheduler.max_thread_count", "1");
+			mutableSettings.put("index.translog.flush_threshold_size", "1gb");
 			create.setSettings(mutableSettings);
 			for (MappingStrategy<?> mapping : mappings.getMappings()) {
 				final String mappingJson = mapping.getMapping();
@@ -80,10 +83,10 @@ public class DefaultIndexAdmin implements IndexAdmin {
 			final CreateIndexResponse response = create.get();
 			if (response.isAcknowledged()) {
 				LOG.info("Created index '{}'", index);
+				awaitEndOfInitialization();
 			} else {
 				throw new FormattedRuntimeException("Failed to create index '%s'", index);
 			}
-			awaitEndOfInitialization();
 		}
 	}
 	

@@ -254,7 +254,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 				original.commit(commitMessage);
 				// make commit available in the branch as timestamp
 //				when(branch.headTimestamp()).thenReturn(commitTimestamp);
-				manager.handleCommit(branch);
+				manager.handleCommit(branch, commitTimestamp);
 			}
 
 			@Override

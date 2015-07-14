@@ -50,8 +50,8 @@ public class BranchAwareSearchExecutor extends DefaultSearchExecutor {
 	}
 
 	@Override
-	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
-		super.buildQuery(req, builder);
+	protected void buildRequest(SearchRequestBuilder req, AfterWhereBuilder builder) {
+		super.buildRequest(req, builder);
 		req.addSort(IndexCommit.COMMIT_TIMESTAMP_FIELD, SortOrder.DESC);
 	}
 	

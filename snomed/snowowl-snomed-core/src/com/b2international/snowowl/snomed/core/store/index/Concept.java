@@ -158,5 +158,10 @@ public class Concept extends SnomedComponent {
 		concept.setDefinitionStatusId(values[4]);
 		return concept;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("Concept[id=%s, storageKey=%s, active=%s, effectiveTime=%s, term=%s]", getId(), getStorageKey(), isActive(), EffectiveTimes.format(getEffectiveTime()), getDescriptions().get(0).getTerm());
+	}
 
 }
