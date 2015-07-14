@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,7 +66,11 @@ public class DefaultIndexAdmin implements IndexAdmin {
 	public void create() {
 		if (!exists()) {
 			final CreateIndexRequestBuilder create = this.admin.indices().prepareCreate(index);
-			create.setSettings(settings);
+			final Map<String,Object> mutableSettings = newHashMap(settings);
+			if (!settings.containsKey("index.refresh_interval")) {
+				mutableSettings.put("index.refresh_interval", "-1");
+			}
+			create.setSettings(mutableSettings);
 			for (MappingStrategy<?> mapping : mappings.getMappings()) {
 				final String mappingJson = mapping.getMapping();
 				if (!Strings.isNullOrEmpty(mappingJson)) {
