@@ -36,6 +36,7 @@ import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.tx.IndexCommit;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
@@ -171,6 +172,9 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 			do {
 				Thread.sleep(200);
 			} while(pendingBulks.containsKey(bulkId));
+			final Stopwatch watch = Stopwatch.createStarted();
+			client().admin().indices().prepareRefresh(name()).get();
+			LOG.info("Refresh index '{}' in {}", name(), watch);
 		} catch (InterruptedException e) {
 			throw new SnowOwlException("Failed to wait for pending bulk flush", e);
 		}
@@ -188,7 +192,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 			synchronized (req) {
 				if (req.numberOfActions() >= BULK_THRESHOLD || force) {
 					if (activeBulks.replace(bulkId, req, index.client().prepareBulk())) {
-						final ListenableActionFuture<BulkResponse> future = req.setRefresh(true).execute();
+						final ListenableActionFuture<BulkResponse> future = req.execute();
 						pendingBulks.put(bulkId, future);
 						future.addListener(new ActionListener<BulkResponse>() {
 							@Override
