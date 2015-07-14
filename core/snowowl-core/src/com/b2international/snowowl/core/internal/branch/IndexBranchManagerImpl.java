@@ -120,8 +120,7 @@ public class IndexBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	protected InternalBranch applyChangeSet(InternalBranch target, InternalBranch source, boolean dryRun, String commitMessage) {
-		handleCommit(target);
-		return target;
+		throw new UnsupportedOperationException();
 	}
 	
 	public void handleCommit(Branch branch) {
