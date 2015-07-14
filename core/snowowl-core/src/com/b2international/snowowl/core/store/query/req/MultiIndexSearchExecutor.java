@@ -18,7 +18,11 @@ package com.b2international.snowowl.core.store.query.req;
 import java.util.LinkedList;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.search.sort.SortOrder;
 
+import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.core.store.index.tx.IndexCommit;
+import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 
 /**
@@ -38,6 +42,17 @@ public class MultiIndexSearchExecutor extends DefaultSearchExecutor {
 		// search explicitly on all branch indexes
 		req.setIndices(indexes.toArray(new String[indexes.size()]));
 		return super.execute(req, builder, resultType);
+	}
+	
+	@Override
+	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
+		super.buildQuery(req, builder);
+		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
+		if (qb.getLimit() != Integer.MAX_VALUE) {
+			// TODO one unique component doc per index 
+			req.setSize(qb.getLimit() * indexes.size());
+		}
+		req.addSort(IndexCommit.COMMIT_TIMESTAMP_FIELD, SortOrder.DESC);
 	}
 	
 }

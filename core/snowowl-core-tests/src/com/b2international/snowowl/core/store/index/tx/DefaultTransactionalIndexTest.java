@@ -17,33 +17,23 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.collect.Lists.newLinkedList;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
-import java.io.File;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import com.b2international.commons.FileUtils;
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.internal.branch.IndexBranchManagerImpl;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
-import com.b2international.snowowl.core.store.index.DefaultIndex;
-import com.b2international.snowowl.core.store.index.Index;
-import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.MultiIndex;
 import com.b2international.snowowl.core.store.mem.MemStore;
