@@ -24,11 +24,9 @@ import org.elasticsearch.action.get.MultiGetRequestBuilder;
 import org.elasticsearch.action.get.MultiGetResponse;
 import org.elasticsearch.client.Client;
 
-import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
 import com.b2international.snowowl.core.store.query.req.MultiIndexSearchExecutor;
-import com.b2international.snowowl.core.store.query.req.MultiIndexSearchProcessor;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
@@ -58,11 +56,6 @@ public class MultiIndex extends DefaultIndex {
 			}
 		}
 		return null;
-	}
-	
-	@Override
-	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
-		return super.search(query, type);
 	}
 	
 	@Override
