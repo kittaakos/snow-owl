@@ -32,7 +32,10 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.SortBy;
 import com.b2international.snowowl.core.store.query.SortBy.MultiSortBy;
 import com.b2international.snowowl.core.store.query.SortBy.SortByField;
+import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * TODO move to internal package
@@ -61,6 +64,18 @@ public class DefaultSearchExecutor implements SearchExecutor {
 		final SearchResponse response = executeRequest(req);
 		return processor.process(response, resultType);
 	}
+	
+	@Override
+	public <T> ListenableFuture<Iterable<T>> executeAsync(SearchRequestBuilder req, AfterWhereBuilder builder, final Class<T> resultType) {
+		buildRequest(req, builder);
+		ListenableFuture<SearchResponse> responseFuture = executeRequestAsync(req);
+		return Futures.transform(responseFuture, new Function<SearchResponse, Iterable<T>>() {
+			@Override
+			public Iterable<T> apply(SearchResponse input) {
+				return processor.process(input, resultType);
+			}
+		});
+	}
 
 	protected SearchResponse executeRequest(SearchRequestBuilder req) {
 		Stopwatch watch = Stopwatch.createStarted();
@@ -71,6 +86,11 @@ public class DefaultSearchExecutor implements SearchExecutor {
 			throw new FormattedRuntimeException("Failed to execute query '%s': %s", req, response);
 		}
 		return response;
+	}
+	
+	protected ListenableFuture<SearchResponse> executeRequestAsync(SearchRequestBuilder req) {
+		LOG.trace("Executing async query: {}", req);
+		return AsyncUtils.toListenableFuture(req.execute());
 	}
 
 	protected void buildRequest(SearchRequestBuilder req, final AfterWhereBuilder builder) {

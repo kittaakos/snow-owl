@@ -18,6 +18,7 @@ package com.b2international.snowowl.core.store.query.req;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * TODO non-API interface move to internal package
@@ -26,5 +27,7 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 public interface SearchExecutor {
 
 	<T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType);
+
+	<T> ListenableFuture<Iterable<T>> executeAsync(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType);
 	
 }
