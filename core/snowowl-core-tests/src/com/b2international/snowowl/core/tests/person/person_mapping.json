@@ -1,7 +1,4 @@
 {
-	"_parent" : {
-		"type" : "commit"
-	},
 	"properties" : {
 		"commitId" : {
 			"type" : "long"
