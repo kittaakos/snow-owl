@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -173,6 +174,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		assertEquals(person1_YobChanged, personBranch);
 	}
 	
+	@Ignore
 	@Test
 	public void whenRebasingBranch_ThenQueryShouldReturnNewVersionOnBranch() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN();
