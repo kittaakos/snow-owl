@@ -41,7 +41,7 @@ import com.b2international.snowowl.core.store.query.SortBy.SortByField;
 public class DefaultSearchExecutor implements SearchExecutor {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
-	private final ElasticsearchQueryBuilder elasticQueryBuilder = new ElasticsearchQueryBuilder();
+	protected final ElasticsearchQueryBuilder elasticQueryBuilder = new ElasticsearchQueryBuilder();
 
 	private SearchResponseProcessor processor;
 	

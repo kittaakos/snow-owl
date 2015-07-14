@@ -15,44 +15,83 @@
  */
 package com.b2international.snowowl.core.store.query.req;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.search.sort.SortOrder;
+import org.elasticsearch.client.Client;
 
-import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.store.index.tx.IndexCommit;
-import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
+import com.b2international.commons.reflect.MethodInvokerUtil;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 /**
  * @since 5.0
  */
 public class MultiIndexSearchExecutor extends DefaultSearchExecutor {
 
-	private LinkedList<String> indexes;
+	private List<String> indexes;
+	private Client client;
+	private String firstIndex;
+	private NegatingSearchExecutor negatingExecutor;
 
-	public MultiIndexSearchExecutor(SearchResponseProcessor processor, LinkedList<String> indexes) {
+	public MultiIndexSearchExecutor(SearchResponseProcessor processor, Client client, LinkedList<String> indexes) {
 		super(processor);
-		this.indexes = indexes;
+		this.client = client;
+		this.indexes = Lists.reverse(indexes);
+		this.firstIndex = this.indexes.get(0);
+		this.negatingExecutor = new NegatingSearchExecutor(processor);
 	}
 	
 	@Override
 	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType) {
-		// search explicitly on all branch indexes
-		req.setIndices(indexes.toArray(new String[indexes.size()]));
-		return super.execute(req, builder, resultType);
-	}
-	
-	@Override
-	protected void buildQuery(SearchRequestBuilder req, AfterWhereBuilder builder) {
-		super.buildQuery(req, builder);
-		final DefaultQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultQueryBuilder.class);
-		if (qb.getLimit() != Integer.MAX_VALUE) {
-			// TODO one unique component doc per index 
-			req.setSize(qb.getLimit() * indexes.size());
+		try {
+			final Method idGetter = checkNotNull(resultType.getMethod("getStorageKey"), "Type must be subclass of Revision");
+			final String[] types = req.request().types();
+			final Map<Long, T> results = newHashMap();
+			// execute index search in reverse order, starting with the base -> first fork point
+			for (String index : indexes) {
+				final SearchRequestBuilder newReq = client.prepareSearch(index).setTypes(types);
+				final Iterable<T> positiveResults = newHashSet(super.execute(newReq, builder, resultType));
+				// put and replace all new results
+				results.putAll(createIndex(idGetter, positiveResults));
+				if (!firstIndex.equals(index)) {
+					final Iterable<T> negativeResults = newHashSet(negatingExecutor.execute(newReq, builder, resultType));
+					// run two queries if not the first index, the original and one negated
+					for (T result : negativeResults) {
+						final Long storageKey = (Long) MethodInvokerUtil.invoke(idGetter, result);
+						results.remove(storageKey);
+					}
+				}
+			}
+			return ImmutableSet.copyOf(results.values());
+		} catch (Exception e) {
+			throw new SnowOwlException("Failed to get idgetter %s", resultType.getName());
 		}
-		req.addSort(IndexCommit.COMMIT_TIMESTAMP_FIELD, SortOrder.DESC);
 	}
-	
+
+	private <T> Map<Long, T> createIndex(final Method getter, Iterable<T> results) {
+		return Maps.uniqueIndex(results, new Function<T, Long>() {
+			@Override
+			public Long apply(T input) {
+				try {
+					return (Long) MethodInvokerUtil.invoke(getter, input);
+				} catch (InvocationTargetException e) {
+					throw new SnowOwlException("Failed to call %s", getter.getName());
+				}
+			}
+		});
+	}
+
 }

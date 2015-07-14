@@ -61,14 +61,9 @@ public class MultiIndex extends DefaultIndex {
 	@Override
 	protected SearchExecutor getExecutor(SearchContextBuilder context) {
 		if (context.executor() == null) {
-			return new MultiIndexSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()), indexes);
+			return new MultiIndexSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()), client(), indexes);
 		}
 		return super.getExecutor(context);
-	}
-	
-	@Override
-	public String name() {
-		return String.format("Index[write=%s, all=%s]", super.name(), indexes);
 	}
 	
 }
