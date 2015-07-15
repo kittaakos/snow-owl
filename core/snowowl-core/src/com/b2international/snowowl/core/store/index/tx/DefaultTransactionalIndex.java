@@ -73,7 +73,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public void addRevision(String branchPath, Component revision) {
-		this.index.put(String.valueOf(revision.getStorageKey()), revision);
+		this.index.put(revision);
 	}
 	
 	@Override
