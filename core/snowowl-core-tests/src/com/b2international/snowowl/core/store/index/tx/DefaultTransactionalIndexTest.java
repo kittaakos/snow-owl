@@ -15,7 +15,7 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,8 +42,6 @@ import com.b2international.snowowl.core.tests.person.PersonFixtures;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * TODO remove/delete test case
- * 
  * @since 5.0
  */
 public class DefaultTransactionalIndexTest extends PersonFixtures {
@@ -183,6 +181,21 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		// verify that person has MAIN after rebase
 		final Person personAfterRebase = txIndex.loadRevision(Person.class, "MAIN/a", PERSON_1_STORAGEKEY);
 		assertEquals(person1_FirstNameChanged, personAfterRebase);
+	}
+	
+	@Test
+	public void deleteRevision_ShouldThrowNotFoundOnBranch_() throws Exception {
+		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
+		final IndexTransaction tx = openTransaction(main);
+		tx.delete(PERSON_1_STORAGEKEY, Person.class);
+		tx.commit(COMMIT_MESSAGE);
+		
+		try {
+			final Person p = txIndex.loadRevision(Person.class, main.path(), PERSON_1_STORAGEKEY);
+			fail("Person is still available after deleting it: " + p);
+		} catch (NotFoundException e) {
+			// expected
+		}
 	}
 	
 //	@Test
