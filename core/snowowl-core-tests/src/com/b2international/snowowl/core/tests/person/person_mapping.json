@@ -7,6 +7,7 @@
 			"type": "long"		
 		},
 		"visibleIns" : {
+			"type" : "nested",
 			"properties" : {
 				"branchPath" : {
 					"type" : "string",
