@@ -66,7 +66,7 @@ public abstract class BranchManagerImpl implements BranchManager {
 
 	@Override
 	public Branch getMainBranch() {
-		return getBranch(MainBranchImpl.MAIN_PATH);
+		return getBranch(Branch.MAIN_PATH);
 	}
 
 	@Override
