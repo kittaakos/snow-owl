@@ -43,6 +43,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * @since 5.0
  */
+@Deprecated
 public class IndexBranchManagerImplTest {
 
 	@Rule

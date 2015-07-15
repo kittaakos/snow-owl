@@ -38,6 +38,7 @@ import com.google.common.collect.Ordering;
 /**
  * @since 5.0
  */
+@Deprecated
 public class IndexBranchManagerImpl extends BranchManagerImpl {
 
 	static final String INDEX_NAME_TEMPLATE = "%s_%s_%s";
