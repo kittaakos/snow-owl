@@ -50,7 +50,7 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 *            - the storage identifier of the revision
 	 * @return the loaded revision object
 	 */
-	<T extends Component> T loadRevision(Class<T> type, String branchPath, long storageKey);
+	<T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey);
 
 	/**
 	 * Indexes a commit group as parent for all previously added revision (with the given commitId) available for search.
@@ -71,5 +71,16 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 * @return
 	 */
 	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
+
+	/**
+	 * Update a revision's {@link VisibleIn} entry for the given branchPath with the given commitTimestamp to indicate that the revision is not the
+	 * latest revision.
+	 * 
+	 * @param type
+	 * @param storageKey
+	 * @param branchPath
+	 * @param commitTimestamp
+	 */
+	<T extends Revision> void updateRevision(Class<T> type, long storageKey, String branchPath, long commitTimestamp);
 
 }

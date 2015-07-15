@@ -17,9 +17,17 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Iterator;
+
 import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
+import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
@@ -27,9 +35,13 @@ import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
+import com.b2international.snowowl.core.store.index.InternalIndex;
 import com.b2international.snowowl.core.store.index.MappingStrategy;
 import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
+import com.b2international.snowowl.core.store.query.req.BranchAwareSearchExecutor;
+import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
+import com.b2international.snowowl.core.store.query.req.ScanningSearchHitIterator;
 import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.Iterables;
 
@@ -42,6 +54,8 @@ import com.google.common.collect.Iterables;
 public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	private static final Logger LOG = Loggers.REPOSITORY.log();
+
+	private static final String UPDATE_VISIBLE_IN_TO_SCRIPT = "ctx._source.visibleIns.find{it.branchPath == branchPath}.to = commitTimestamp";
 	
 	private BulkIndex index;
 
@@ -54,7 +68,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 
 	@Override
-	public <T extends Component> T loadRevision(Class<T> type, String branchPath, long storageKey) {
+	public <T extends Revision> T loadRevision(Class<T> type, String branchPath, long storageKey) {
 		try {
 			final Iterable<T> revisions = search(query()
 					.on(branchPath)
@@ -68,6 +82,25 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 			return Iterables.getFirst(revisions, null);
 		} catch (ElasticsearchException e) {
 			throw new FormattedRuntimeException("Failed to retrieve '%s' from branch '%s' in index %s/%s", storageKey, branchPath, index.name(), type, e);
+		}
+	}
+	
+	@Override
+	public <T extends Revision> void updateRevision(Class<T> type, long storageKey, String branchPath, long commitTimestamp) {
+		try {
+			final InternalIndex internalIndex = (InternalIndex)index;
+			final Client client = internalIndex.client();
+			Iterator<SearchHit> hitIterator = new ScanningSearchHitIterator(client, QueryBuilders.termQuery(Revision.STORAGE_KEY, storageKey), index.name(), 5000);
+			while (hitIterator.hasNext()) {
+				SearchHit next = hitIterator.next();
+				final UpdateRequestBuilder update = client.prepareUpdate(index.name(), internalIndex.getType(type), next.getId());
+				update.addScriptParam("branchPath", branchPath);
+				update.addScriptParam("commitTimestamp", commitTimestamp);
+				update.setScript(UPDATE_VISIBLE_IN_TO_SCRIPT, ScriptType.INLINE);
+				update.get();
+			}
+		} catch (NotFoundException e) {
+			// ignore, the revision may not exists, skip update
 		}
 	}
 	
@@ -107,11 +140,9 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
-//		final DefaultTransactionalQueryBuilder context = ClassUtils.checkAndCast(query, DefaultTransactionalQueryBuilder.class);
-//		final Branch branch = branchManager.getBranch(context.getBranchPath());
-//		context.executeWith(new MultiIndexSearchExecutor(new MultiIndexSearchProcessor(admin().mappings().mapper()), branch));
-//		context.executeWith(new AggregatingBranchSearchExecutor(new AggregationSearchResponseProcessor(admin().mappings().mapper()), branchManager));
-		return this.index.search(query, type);
+		final DefaultTransactionalQueryBuilder context = ClassUtils.checkAndCast(query, DefaultTransactionalQueryBuilder.class);
+		context.executeWith(new BranchAwareSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()), branchManager));
+		return this.index.search(context, type);
 	}
 	
 	private <T> String getType(Class<T> type) {
