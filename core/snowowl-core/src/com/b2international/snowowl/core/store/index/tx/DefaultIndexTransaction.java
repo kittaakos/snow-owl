@@ -40,6 +40,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	
 	@Override
 	public void add(long storageKey, Component revision) {
+		revision.setCommitId(commitId);
 		revision.setStorageKey(storageKey);
 		revision.setVisibleIns(Collections.singleton(new VisibleIn(branchPath, commitTimestamp)));
 		index.addRevision(branchPath, revision);
