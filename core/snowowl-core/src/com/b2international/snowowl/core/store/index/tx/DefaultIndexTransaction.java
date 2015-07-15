@@ -17,6 +17,8 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collections;
+
 import com.b2international.snowowl.core.terminology.Component;
 
 /**
@@ -38,17 +40,14 @@ class DefaultIndexTransaction implements IndexTransaction {
 	
 	@Override
 	public void add(long storageKey, Component revision) {
-		revision.setCommitId(commitId);
-		revision.setCommitTimestamp(commitTimestamp);
 		revision.setStorageKey(storageKey);
+		revision.setVisibleIns(Collections.singleton(new VisibleIn(branchPath, commitTimestamp)));
 		index.addRevision(branchPath, revision);
 	}
 	
 	@Override
 	public <T extends Component> void delete(long storageKey, Class<T> type) {
-		final T revision = index.loadRevision(type, branchPath, storageKey);
-		revision.setDeleted(true);
-		index.addRevision(branchPath, revision);
+		throw new UnsupportedOperationException("Implement tx deletion");
 	}
 	
 	@Override
