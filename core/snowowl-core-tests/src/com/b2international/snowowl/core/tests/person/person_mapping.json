@@ -3,16 +3,23 @@
 		"commitId" : {
 			"type" : "long"
 		},
-		"commitTimestamp" : {
-			"type" : "long"
-		},
 		"storageKey" : {
 			"type": "long"		
 		},
-		"deleted" : {
-			"type" : "boolean"
+		"visibleIns" : {
+			"properties" : {
+				"branchPath" : {
+					"type" : "string",
+					"index" : "not_analyzed"
+				},
+				"from" : {
+					"type" : "long"
+				},
+				"to" : {
+					"type" : "long"
+				}
+			}
 		},
-		
 		"id" : {
 			"type" : "long"
 		},
