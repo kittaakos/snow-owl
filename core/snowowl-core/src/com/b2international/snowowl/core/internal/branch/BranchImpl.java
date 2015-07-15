@@ -25,7 +25,6 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMergeException;
-import com.b2international.snowowl.core.store.index.Mapping;
 
 /**
  * @since 4.1

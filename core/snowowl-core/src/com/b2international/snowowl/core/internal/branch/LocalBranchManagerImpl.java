@@ -19,9 +19,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.store.Store;
 
 /**
+ * TODO test class, move to test commons???
  * @since 5.0
  */
 public class LocalBranchManagerImpl extends BranchManagerImpl {
@@ -35,10 +37,10 @@ public class LocalBranchManagerImpl extends BranchManagerImpl {
 
 	@Override
 	protected void initMainBranch(InternalBranch main) {
-		InternalBranch mainBranch = (InternalBranch) getMainBranch();
-		if (mainBranch != null) {
+		try {
+			final InternalBranch mainBranch = (InternalBranch) getMainBranch();
 			super.initMainBranch(mainBranch);
-		} else {
+		} catch (NotFoundException e) {
 			super.initMainBranch(main);
 		}
 	}

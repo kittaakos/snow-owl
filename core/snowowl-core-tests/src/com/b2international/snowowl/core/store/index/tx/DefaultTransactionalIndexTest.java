@@ -16,7 +16,6 @@
 package com.b2international.snowowl.core.store.index.tx;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -28,12 +27,14 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
+import com.b2international.snowowl.core.internal.branch.InternalBranch;
+import com.b2international.snowowl.core.internal.branch.VisibleInBranchManagerImpl;
+import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
+import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.core.terminology.Component;
 import com.b2international.snowowl.core.tests.ESRule;
 import com.b2international.snowowl.core.tests.person.Person;
@@ -56,7 +57,8 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
 	private Branch main;
 	private ObjectMapper mapper;
-	private BranchManager manager = new MockBranchManager();
+	private Store<InternalBranch> store = new MemStore<>(InternalBranch.class);
+	private VisibleInBranchManagerImpl manager;
 	private TransactionalIndex txIndex;
 
 	private Person person1_2015;
@@ -66,11 +68,14 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	@Before
 	public void givenTransactionalIndex() {
 		this.mapper = new DefaultObjectMapper();
+		this.manager = new VisibleInBranchManagerImpl(store, clock);
 		this.main = manager.getMainBranch();
 		
 		this.txIndex = createTransactionalIndex();
 		this.txIndex.admin().delete();
 		this.txIndex.admin().create();
+		
+		this.manager.setIndex(txIndex);
 		
 		this.person1_2015 = createPerson1();
 		this.person1_YobChanged = createPerson1();
@@ -111,7 +116,6 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		assertEquals(person1_YobChanged, rev);
 	}
 	
-	@Ignore
 	@Test
 	public void whenCommittingFirstRevisionOnMAIN_AndCreatingEmptyBranch_ThenQueryOnBranchShouldReturnTheRevisionFromMAIN() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
@@ -121,7 +125,6 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		assertEquals(person1_2015, rev);
 	}
 
-	@Ignore
 	@Test
 	public void whenCommittingSecondRevisionOnBranch_ThenQueryOnBranchShouldReturnRevisionOnBranch() throws Exception {
 		whenCommittingFirstRevisionOnMAIN_ThenItShouldBeAvailableInMAINIndex();
@@ -142,7 +145,6 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 		assertEquals(person1_YobChanged, personBranch);
 	}
 	
-	@Ignore
 	@Test
 	public void whenCommittingOnBranchAndOnMain_ThenQueriesShouldReturnRespectiveVersions() throws Exception {
 		// execute commit on Branch A
@@ -238,7 +240,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 			public void commit(String commitMessage) {
 				original.commit(commitMessage);
 				// make commit available in the branch as timestamp
-				when(branch.headTimestamp()).thenReturn(commitTimestamp);
+				manager.handleCommit(branch, commitTimestamp);
 			}
 
 			@Override

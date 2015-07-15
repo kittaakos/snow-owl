@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.index.query.FilterBuilders;
@@ -53,9 +54,9 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 
-	private BulkIndex index;
-
-	private BranchManager branchManager;
+	private final BulkIndex index;
+	private final BranchManager branchManager;
+	private final AtomicInteger internalBulks = new AtomicInteger(0);
 
 	public DefaultTransactionalIndex(BulkIndex index, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
@@ -102,6 +103,13 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), or);
 	}
 
+	private Map<String, Object> createUpdateAllRevisionScriptParams(int commitId, String branch, long commitTimestamp) {
+		final Map<String, Object> params = newHashMap();
+		params.put(Revision.COMMIT_ID, commitId);
+		params.put("newVisibleInEntry", admin().mappings().mapper().convertValue(new VisibleIn(branch, commitTimestamp), Map.class));
+		return params;
+	}
+	
 	private Map<String, Object> createUpdateRevisionScriptParams(int commitId, String branchPath, long commitTimestamp) {
 		final Map<String, Object> params = newHashMap();
 		// TODO remove after bulk index refactor
@@ -109,6 +117,19 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 		params.put("branchPath", branchPath);
 		params.put("commitTimestamp", commitTimestamp);
 		return params;
+	}
+	
+	@Override
+	public void updateAllRevisions(String parentBranch, String childBranch, long commitTimestamp) {
+		final int bulkId = internalBulks.decrementAndGet();
+		index.create(bulkId);
+		final Map<String, Object> params = createUpdateAllRevisionScriptParams(bulkId, childBranch, commitTimestamp);
+		final Iterator<SearchHit> scan = ((InternalIndex) index).scan(VisibleIn.createVisibleFromQuery(parentBranch, commitTimestamp));
+		while (scan.hasNext()) {
+			final SearchHit next = scan.next();
+			index.updateByScript(next.getType(), next.getId(), Revision.UPDATE_VISIBLE_IN_ADD_SCRIPT, params);
+		}
+		index.flush(bulkId);
 	}
 
 	@Override
@@ -118,8 +139,6 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public void commit(int commitId, long commitTimestamp, String branchPath, String commitMessage) {
-//		final IndexCommit commit = new IndexCommit(commitId, commitTimestamp, branchPath, commitMessage);
-//		this.index.put(String.valueOf(commitId), commit);
 		this.index.flush(commitId);
 		LOG.info("Committed transaction '{}' on '{}' with message '{}'", commitId, branchPath, commitMessage);
 	}

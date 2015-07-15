@@ -16,10 +16,6 @@
 package com.b2international.snowowl.core.store.query.req;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.elasticsearch.index.query.FilterBuilders.andFilter;
-import static org.elasticsearch.index.query.FilterBuilders.nestedFilter;
-import static org.elasticsearch.index.query.FilterBuilders.rangeFilter;
-import static org.elasticsearch.index.query.FilterBuilders.termFilter;
 
 import org.elasticsearch.index.query.FilterBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -29,6 +25,7 @@ import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchManager;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalQueryBuilder;
+import com.b2international.snowowl.core.store.index.tx.VisibleIn;
 import com.b2international.snowowl.core.store.query.DefaultQueryBuilder;
 
 /**
@@ -46,16 +43,12 @@ public class BranchAwareSearchExecutor extends DefaultSearchExecutor {
 	@Override
 	protected QueryBuilder getQuery(DefaultQueryBuilder builder) {
 		final DefaultTransactionalQueryBuilder qb = ClassUtils.checkAndCast(builder, DefaultTransactionalQueryBuilder.class);
-		final FilterBuilder branchFilter = branchFilter(qb.getBranchPath());
+		final String branchPath = qb.getBranchPath();
+		final Branch branch = branchManager.getBranch(branchPath);
+		final FilterBuilder branchFilter = VisibleIn.createVisibleFromFilter(branchPath, branch.headTimestamp());
 		return QueryBuilders.filteredQuery(super.getQuery(qb), branchFilter);
 	}
 
-	private FilterBuilder branchFilter(String branchPath) {
-		final Branch branch = branchManager.getBranch(branchPath);
-		final long head = branch.headTimestamp();
-		return nestedFilter("visibleIns", andFilter(termFilter("visibleIns.branchPath", branchPath), rangeFilter("visibleIns.from").lte(head), rangeFilter("visibleIns.to").gt(head)));
-	}
-	
 //	private FilterBuilder branchFilter(String branchPath) {
 //		final String[] segments = branchPath.split(Branch.SEPARATOR);
 //		if (/*!branchOnly && */(segments.length > 1 /*|| additionalFilter != null*/)) {
