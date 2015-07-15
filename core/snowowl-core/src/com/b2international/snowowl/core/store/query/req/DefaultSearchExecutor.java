@@ -60,6 +60,9 @@ public class DefaultSearchExecutor implements SearchExecutor {
 	@Override
 	public <T> Iterable<T> execute(SearchRequestBuilder req, AfterWhereBuilder builder, Class<T> resultType) {
 		buildRequest(req, builder);
+		if (resultType == String.class) {
+			req.setFetchSource(false);
+		}
 		// TODO async responses, async response processing
 		final SearchResponse response = executeRequest(req);
 		return processor.process(response, resultType);
