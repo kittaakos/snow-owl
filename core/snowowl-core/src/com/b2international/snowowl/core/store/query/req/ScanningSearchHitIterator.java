@@ -31,8 +31,6 @@ import com.google.common.collect.AbstractIterator;
 
 /**
  * Elasticsearch {@link SearchHit search hit} iterator implementation backed by a scan type search.
- * 
- * @author zstorok
  */
 public class ScanningSearchHitIterator extends AbstractIterator<SearchHit> {
 
