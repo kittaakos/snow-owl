@@ -17,6 +17,9 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * @since 5.0
  */
@@ -30,7 +33,8 @@ public final class VisibleIn {
 		this(branchPath, from, Long.MAX_VALUE);
 	}
 	
-	VisibleIn(String branchPath, long from, long to) {
+	@JsonCreator
+	VisibleIn(@JsonProperty("branchPath") String branchPath, @JsonProperty("from") long from, @JsonProperty("to") long to) {
 		this.branchPath = branchPath;
 		this.from = from;
 		this.to = to;
