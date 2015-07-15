@@ -27,13 +27,22 @@ import org.elasticsearch.client.Client;
 public interface InternalIndex extends Index {
 
 	Client client();
-	
+
+	/**
+	 * @param type
+	 *            - the type of the document
+	 * @param key
+	 *            - the unique identifier of the document, may be <code>null</code>
+	 * @param object
+	 *            - the document object
+	 * @return
+	 */
 	IndexRequestBuilder prepareIndex(String type, String key, Object object);
 
 	IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, String key, Object object);
-	
+
 	DeleteRequestBuilder prepareDelete(String type, String key);
-	
+
 	<T> String getType(Class<T> type);
 
 }

@@ -15,6 +15,12 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
+import static com.google.common.collect.Sets.newHashSet;
+
+import java.util.Collection;
+
+import com.google.common.collect.ImmutableList;
+
 
 /**
  * @since 5.0
@@ -22,43 +28,35 @@ package com.b2international.snowowl.core.store.index.tx;
 public abstract class Revision {
 
 	public static final String STORAGE_KEY = "storageKey";
-	public static final String DELETED = "deleted";
-	
-	private long storageKey;
+	// TODO remove commitId
+	public static final String COMMIT_ID = "commitId";
+
 	private int commitId;
-	private long commitTimestamp;
-	private boolean deleted = false;
-	
-	protected void setCommitId(int commitId) {
-		this.commitId = commitId;
-	}
-	
-	protected void setCommitTimestamp(long commitTimestamp) {
-		this.commitTimestamp = commitTimestamp;
-	}
-	
-	protected void setDeleted(boolean deleted) {
-		this.deleted = deleted;
-	}
+	private long storageKey;
+	private Collection<VisibleIn> visibleIns = newHashSet();
 	
 	protected void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
 	}
 	
+	protected void setCommitId(int commitId) {
+		this.commitId = commitId;
+	}
+	
+	protected void setVisibleIns(Collection<VisibleIn> visibleIns) {
+		this.visibleIns = visibleIns;
+	}
+	
 	public long getStorageKey() {
 		return storageKey;
 	}
-
+	
+	public Collection<VisibleIn> getVisibleIns() {
+		return ImmutableList.copyOf(visibleIns);
+	}
+	
 	public int getCommitId() {
 		return commitId;
 	}
-	
-	public long getCommitTimestamp() {
-		return commitTimestamp;
-	}
-	
-	public boolean isDeleted() {
-		return deleted;
-	}
-	
+
 }

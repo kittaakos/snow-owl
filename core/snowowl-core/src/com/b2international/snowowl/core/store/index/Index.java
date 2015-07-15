@@ -88,6 +88,13 @@ public interface Index extends MappingProvider, Searchable, Administrable<IndexA
 	<T> void put(String key, T object);
 
 	/**
+	 * Put an object into the index with an index generated random identifier.
+	 * 
+	 * @param object
+	 */
+	<T> void put(T object);
+
+	/**
 	 * Remove a document from the index from the given types with the given id.
 	 * 
 	 * @param type

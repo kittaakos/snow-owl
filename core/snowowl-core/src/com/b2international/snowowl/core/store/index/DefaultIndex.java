@@ -72,6 +72,11 @@ public class DefaultIndex implements InternalIndex {
 	}
 	
 	@Override
+	public <T> void put(T object) {
+		prepareIndex(getType(object.getClass()), null, object).setRefresh(true).get();
+	}
+	
+	@Override
 	public <T> void put(String key, T object) {
 		put(getType(object.getClass()), key, object);
 	}
@@ -115,7 +120,11 @@ public class DefaultIndex implements InternalIndex {
 	@Override
 	public IndexRequestBuilder prepareIndex(String type, String key, Object object) {
 		final Map<String, Object> map = toMap(object);
-		return this.client.prepareIndex(index, type, key).setSource(map);
+		if (key != null) {
+			return this.client.prepareIndex(index, type, key).setSource(map);
+		} else {
+			return this.client.prepareIndex(index, type).setSource(map);
+		}
 	}
 
 	@Override

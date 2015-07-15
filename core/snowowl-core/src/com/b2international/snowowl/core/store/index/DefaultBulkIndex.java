@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
-import com.b2international.snowowl.core.store.index.tx.IndexCommit;
+import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.google.common.base.Stopwatch;
@@ -83,23 +83,28 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	}
 	
 	@Override
+	public <T> void put(T object) {
+		bulkIndex(prepareIndex(getType(object.getClass()), null, object));
+	}
+	
+	@Override
 	public <T> void put(String key, T object) {
-		put(index.getType(object.getClass()), key, object);
+		put(getType(object.getClass()), key, object);
 	}
 	
 	@Override
 	public void put(String type, String key, Object object) {
-		bulkIndex(index.prepareIndex(type, key, object));
+		bulkIndex(prepareIndex(type, key, object));
 	}
 
 	@Override
 	public <T> void putWithParent(String parentKey, String key, T object) {
-		putWithParent(index.getType(object.getClass()), parentKey, key, object);
+		putWithParent(getType(object.getClass()), parentKey, key, object);
 	}
 	
 	@Override
 	public void putWithParent(String type, String parentKey, String key, Object object) {
-		bulkIndex(index.prepareIndexWithParent(type, parentKey, key, object));
+		bulkIndex(prepareIndexWithParent(type, parentKey, key, object));
 	}
 	
 	@Override
@@ -130,8 +135,8 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	private void bulkIndex(final IndexRequestBuilder req) {
 		final Map<String, Object> source = req.request().sourceAsMap();
 		// TODO remove this limitation somehow
-		checkArgument(source.containsKey(IndexCommit.COMMIT_ID_FIELD), "BulkIndex cannot be used without index transaction support, use it via TransactionalIndex");
-		final int bulkId = (int) source.get(IndexCommit.COMMIT_ID_FIELD);
+		checkArgument(source.containsKey(Revision.COMMIT_ID), "BulkIndex cannot be used without index transaction support, use it via TransactionalIndex");
+		final int bulkId = (int) source.get(Revision.COMMIT_ID);
 		getBulkRequest(bulkId).add(req);
 	}
 	
@@ -146,12 +151,12 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public <T> boolean remove(Class<T> type, String key) {
-		return remove(index.getType(type), key);
+		return remove(getType(type), key);
 	}
 	
 	@Override
 	public boolean remove(String type, String key) {
-		return bulkDelete(index.prepareDelete(type, key));
+		return bulkDelete(prepareDelete(type, key));
 	}
 	
 	@Override
@@ -161,7 +166,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public void create(int bulkId) {
-		activeBulks.putIfAbsent(bulkId, index.client().prepareBulk());
+		activeBulks.putIfAbsent(bulkId, client().prepareBulk());
 	}
 	
 	@Override
