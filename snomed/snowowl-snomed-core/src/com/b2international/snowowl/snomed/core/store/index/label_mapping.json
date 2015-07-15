@@ -1,13 +1,22 @@
 {
     "properties": {
-        "deleted": {
-            "type": "boolean"
-        },
 		"commitId" : {
 			"type" : "long"
 		},
-		"commitTimestamp" : {
-			"type" : "long"
+		"visibleIns" : {
+			"type" : "nested",
+			"properties" : {
+				"branchPath" : {
+					"type" : "string",
+					"index" : "not_analyzed"
+				},
+				"from" : {
+					"type" : "long"
+				},
+				"to" : {
+					"type" : "long"
+				}
+			}
 		},
         "conceptId": {
             "type": "string",

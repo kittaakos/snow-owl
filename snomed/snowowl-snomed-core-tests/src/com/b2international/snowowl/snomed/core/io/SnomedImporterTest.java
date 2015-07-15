@@ -16,7 +16,6 @@
 package com.b2international.snowowl.snomed.core.io;
 
 import static com.google.common.base.Preconditions.checkState;
-import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,8 +44,8 @@ import org.slf4j.Logger;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.internal.branch.IndexBranchManagerImpl;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
+import com.b2international.snowowl.core.internal.branch.VisibleInBranchManagerImpl;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
@@ -55,7 +53,6 @@ import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexStore;
 import com.b2international.snowowl.core.store.index.Mappings;
-import com.b2international.snowowl.core.store.index.MultiIndex;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.IndexTransaction;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
@@ -97,27 +94,27 @@ public class SnomedImporterTest {
 	public final TemporaryDirectory tmpDir = new TemporaryDirectory("import");
 	
 	private Store<InternalBranch> branchStore;
-	private IndexBranchManagerImpl branching;
+	private VisibleInBranchManagerImpl branching;
 	
 	private final AtomicLong clock = new AtomicLong(0L);
 	private final AtomicInteger commitIdProvider = new AtomicInteger(0);
-	private ObjectMapper mapper;
+	private ObjectMapper mapper = new DefaultObjectMapper();
 	private Index index;
+	private TransactionalIndex txIndex;
 
 	private static final boolean debug = false;
 	
 	@Before
 	public void givenIndex() throws Exception {
-		// delete stuff before import
-		rule.client().admin().indices().prepareDelete("snomed_ct*").get();
-		
-		mapper = new DefaultObjectMapper();
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
-		this.index = new DefaultIndex(rule.client(), "snomed_ct", new Mappings(mapper));
+		this.index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
+		this.index.admin().delete();
 		this.index.admin().create();
 		this.branchStore = new IndexStore<>(index, InternalBranch.class);
-		this.branching = new IndexBranchManagerImpl(branchStore, clock.incrementAndGet(), "snomed_ct", rule.client(), Mappings.of(mapper, Concept.class), settings, clock);
+		this.branching = new VisibleInBranchManagerImpl(branchStore, clock);
+		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), branching);
+		this.branching.setIndex(txIndex);
 	}
 	
 	@Test
@@ -192,13 +189,9 @@ public class SnomedImporterTest {
 		}
 		
 		// few assertions
-		final SnomedBrowser browser20020131 = new SnomedBrowser(createTransactionalIndex("MAIN/20020131"));
-		final SnomedBrowser browser20020731 = new SnomedBrowser(createTransactionalIndex("MAIN/20020731"));
-		final SnomedBrowser browser20030131 = new SnomedBrowser(createTransactionalIndex("MAIN/20030131"));
-		final SnomedBrowser browser20050131 = new SnomedBrowser(createTransactionalIndex("MAIN/20050131"));
-		final SnomedBrowser browser20110131 = new SnomedBrowser(createTransactionalIndex("MAIN/20110131"));
+		final SnomedBrowser browser = new SnomedBrowser(txIndex);
 		
-		final Concept concept20020131 = browser20020131.getConcept("MAIN/20020131", "118225008");
+		final Concept concept20020131 = browser.getConcept("MAIN/20020131", "118225008");
 		
 		assertTrue(concept20020131.isActive());
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
@@ -208,7 +201,7 @@ public class SnomedImporterTest {
 		assertThat(concept20020131.getParentIds()).hasSize(1);
 		assertThat(concept20020131.getAncestorIds()).hasSize(4);
 		
-		final Concept concept20050131 = browser20050131.getConcept("MAIN/20050131", "118225008");
+		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
 		assertFalse(concept20050131.isActive());
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
 		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);
@@ -217,16 +210,16 @@ public class SnomedImporterTest {
 		assertThat(concept20050131.getAncestorIds()).hasSize(0);
 		
 		// Name space concept, assert description and relationship numbers
-		final Concept namespace20020731 = browser20020731.getConcept("MAIN/20020731", "370136006");
+		final Concept namespace20020731 = browser.getConcept("MAIN/20020731", "370136006");
 		assertThat(namespace20020731.getDescriptions()).hasSize(2);
 		assertThat(namespace20020731.getRelationshipGroups()).hasSize(1);
 		assertThat(namespace20020731.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
-		final Concept namespace20030131 = browser20030131.getConcept("MAIN/20030131", "370136006");
+		final Concept namespace20030131 = browser.getConcept("MAIN/20030131", "370136006");
 		assertThat(namespace20030131.getDescriptions()).hasSize(3);
 		assertThat(namespace20030131.getRelationshipGroups()).hasSize(1);
 		final List<Relationship> relationships = namespace20030131.getRelationshipGroups().get(0).getRelationships();
 		assertThat(relationships).hasSize(1);
-		final Concept namespace20110131 = browser20110131.getConcept("MAIN/20110131", "370136006");
+		final Concept namespace20110131 = browser.getConcept("MAIN/20110131", "370136006");
 		assertThat(namespace20110131.getDescriptions()).hasSize(3);
 		assertThat(namespace20110131.getRelationshipGroups()).hasSize(1);
 		final List<Relationship> namespaceRelationships20110131 = namespace20110131.getRelationshipGroups().get(0).getRelationships();
@@ -316,10 +309,11 @@ public class SnomedImporterTest {
 		}
 	}
 	
-	// test utilities
+	private IndexTransaction openTransaction(final String branch) {
+		return openTransaction(branching.getBranch(branch));
+	}
 	
 	private IndexTransaction openTransaction(final Branch branch) {
-		final TransactionalIndex txIndex = createTransactionalIndex(branch);
 		final int commitId = commitIdProvider.incrementAndGet();
 		final long commitTimestamp = clock.incrementAndGet();
 		final IndexTransaction original = txIndex.transaction(commitId, commitTimestamp, branch.path());
@@ -351,15 +345,6 @@ public class SnomedImporterTest {
 	
 	private Branch createBranch(String parent, String name) {
 		return branching.getBranch(parent).createChild(name);
-	}
-	
-	private TransactionalIndex createTransactionalIndex(String path) {
-		return createTransactionalIndex(branching.getBranch(path));
-	}
-	
-	private TransactionalIndex createTransactionalIndex(Branch branch) {
-		final LinkedList<String> indexes = newLinkedList(branch.metadata().get(IndexBranchManagerImpl.BRANCH_INDEXES, List.class));
-		return new DefaultTransactionalIndex(new DefaultBulkIndex(new MultiIndex(rule.client(), Mappings.of(mapper, Concept.class), null, indexes)), branching);
 	}
 	
 }

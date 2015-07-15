@@ -45,7 +45,7 @@ public abstract class Revision {
 		this.commitId = commitId;
 	}
 	
-	protected void setVisibleIns(Collection<VisibleIn> visibleIns) {
+	public void setVisibleIns(Collection<VisibleIn> visibleIns) {
 		this.visibleIns = visibleIns;
 	}
 	

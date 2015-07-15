@@ -23,6 +23,9 @@ import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
 
 /**
+ * TODO remove the need for index, instead convert this to listenable branch manager with events and index should listen on branch creation attempts
+ * to initialize revisions
+ * 
  * @since 5.0
  */
 public class VisibleInBranchManagerImpl extends LocalBranchManagerImpl {
@@ -32,11 +35,11 @@ public class VisibleInBranchManagerImpl extends LocalBranchManagerImpl {
 	public VisibleInBranchManagerImpl(Store<InternalBranch> branchStore, AtomicLong clock) {
 		super(branchStore, clock);
 	}
-	
+
 	public void setIndex(TransactionalIndex index) {
 		this.index = index;
 	}
-	
+
 	@Override
 	protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
 		final String branchPath = parent.path().concat(Branch.SEPARATOR).concat(name);
