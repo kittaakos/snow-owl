@@ -1,6 +1,10 @@
 package com.b2international.snowowl.core.tests;
 
+import java.util.UUID;
+
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.settings.ImmutableSettings;
+import org.elasticsearch.common.settings.ImmutableSettings.Builder;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeBuilder;
 import org.junit.rules.ExternalResource;
@@ -17,7 +21,15 @@ public class ESRule extends ExternalResource {
 	
 	@Override
 	protected void before() throws Throwable {
-		node = NodeBuilder.nodeBuilder().local(true).node();
+		final Builder settings = ImmutableSettings.builder();
+		settings.put("script.engine.groovy.inline.aggs", "on");
+		settings.put("script.engine.groovy.inline.mapping", "on");
+		settings.put("script.engine.groovy.inline.search", "on");
+		settings.put("script.engine.groovy.inline.update", "on");
+		settings.put("script.engine.groovy.inline.plugin", "on");
+		settings.put("script.inline", "on");
+		settings.put("script.indexed", "on");
+		node = NodeBuilder.nodeBuilder().settings(settings.build()).clusterName(UUID.randomUUID().toString()).local(true).node();
 	}
 	
 	@Override
