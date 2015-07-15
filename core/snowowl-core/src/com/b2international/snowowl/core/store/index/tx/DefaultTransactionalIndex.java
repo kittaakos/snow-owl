@@ -16,24 +16,26 @@
 package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.update.UpdateRequestBuilder;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.FilterBuilders;
+import org.elasticsearch.index.query.OrFilterBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.script.ScriptService.ScriptType;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.commons.exceptions.FormattedRuntimeException;
 import com.b2international.snowowl.core.branch.BranchManager;
-import com.b2international.snowowl.core.exceptions.NotFoundException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.BulkIndex;
-import com.b2international.snowowl.core.store.index.Index;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
 import com.b2international.snowowl.core.store.index.InternalIndex;
 import com.b2international.snowowl.core.store.index.MappingStrategy;
@@ -41,29 +43,22 @@ import com.b2international.snowowl.core.store.query.Expressions;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.req.BranchAwareSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
-import com.b2international.snowowl.core.store.query.req.ScanningSearchHitIterator;
 import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.Iterables;
 
 /**
- * Adds transaction support to an existing {@link Index} using a combination of components with revision properties and commit groups, the index can
- * act as a transactional store.
- * 
  * @since 5.0
  */
 public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	private static final Logger LOG = Loggers.REPOSITORY.log();
 
-	private static final String UPDATE_VISIBLE_IN_TO_SCRIPT = "ctx._source.visibleIns.find{it.branchPath == branchPath}.to = commitTimestamp";
-	
 	private BulkIndex index;
 
 	private BranchManager branchManager;
 
 	public DefaultTransactionalIndex(BulkIndex index, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
-//		this.index.admin().mappings().addMapping(IndexCommit.class);
 		this.branchManager = checkNotNull(branchManager, "branchManager");
 	}
 
@@ -76,8 +71,7 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 					.where(Expressions.exactMatch(Revision.STORAGE_KEY, storageKey))
 					.limit(1), type);
 			if (Iterables.isEmpty(revisions)) {
-				// TODO add branchPath to exception message
-				throw new NotFoundException(getType(type), String.valueOf(storageKey));
+				throw new RevisionNotFoundException(branchPath, getType(type), String.valueOf(storageKey));
 			}
 			return Iterables.getFirst(revisions, null);
 		} catch (ElasticsearchException e) {
@@ -86,24 +80,37 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 	
 	@Override
-	public <T extends Revision> void updateRevision(Class<T> type, long storageKey, String branchPath, long commitTimestamp) {
-		try {
-			final InternalIndex internalIndex = (InternalIndex)index;
-			final Client client = internalIndex.client();
-			Iterator<SearchHit> hitIterator = new ScanningSearchHitIterator(client, QueryBuilders.termQuery(Revision.STORAGE_KEY, storageKey), index.name(), 5000);
-			while (hitIterator.hasNext()) {
-				SearchHit next = hitIterator.next();
-				final UpdateRequestBuilder update = client.prepareUpdate(index.name(), internalIndex.getType(type), next.getId());
-				update.addScriptParam("branchPath", branchPath);
-				update.addScriptParam("commitTimestamp", commitTimestamp);
-				update.setScript(UPDATE_VISIBLE_IN_TO_SCRIPT, ScriptType.INLINE);
-				update.get();
-			}
-		} catch (NotFoundException e) {
-			// ignore, the revision may not exists, skip update
-		}
+	public <T extends Revision> void updateRevision(int commitId, Class<T> type, long storageKey, String branchPath, long commitTimestamp) {
+		updateRevisions(commitId, type, Collections.singleton(storageKey), branchPath, commitTimestamp);
 	}
 	
+	@Override
+	public <T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
+		final Map<String, Object> scriptParams = createUpdateRevisionScriptParams(commitId, branchPath, commitTimestamp);
+		final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(storageKeys));
+		while (hitIterator.hasNext()) {
+			final SearchHit next = hitIterator.next();
+			index.updateByScript(type, next.getId(), Revision.UPDATE_VISIBLE_IN_TO_SCRIPT, scriptParams);
+		}		
+	}
+	
+	private QueryBuilder createStorageKeyFilter(Collection<Long> storageKeys) {
+		final OrFilterBuilder or = FilterBuilders.orFilter();
+		for (Long storageKey : storageKeys) {
+			or.add(FilterBuilders.termFilter(Revision.STORAGE_KEY, storageKey));
+		}
+		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), or);
+	}
+
+	private Map<String, Object> createUpdateRevisionScriptParams(int commitId, String branchPath, long commitTimestamp) {
+		final Map<String, Object> params = newHashMap();
+		// TODO remove after bulk index refactor
+		params.put(Revision.COMMIT_ID, commitId);
+		params.put("branchPath", branchPath);
+		params.put("commitTimestamp", commitTimestamp);
+		return params;
+	}
+
 	@Override
 	public void addRevision(String branchPath, Component revision) {
 		this.index.put(revision);

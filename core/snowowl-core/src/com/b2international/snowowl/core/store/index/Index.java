@@ -95,6 +95,26 @@ public interface Index extends MappingProvider, Searchable, Administrable<IndexA
 	<T> void put(T object);
 
 	/**
+	 * Update a stored document with a script.
+	 * 
+	 * @param type
+	 * @param key
+	 * @param script
+	 * @param params
+	 */
+	<T> void updateByScript(Class<T> type, String key, String script, Map<String, Object> params);
+	
+	/**
+	 * Update a stored document with a script.
+	 * 
+	 * @param type
+	 * @param key
+	 * @param script
+	 * @param params
+	 */
+	void updateByScript(String type, String key, String script, Map<String, Object> params);
+
+	/**
 	 * Remove a document from the index from the given types with the given id.
 	 * 
 	 * @param type
@@ -115,5 +135,6 @@ public interface Index extends MappingProvider, Searchable, Administrable<IndexA
 	 * @return - <code>true</code> if the document was found and removed, <code>false</code> otherwise
 	 */
 	<T> boolean remove(Class<T> type, String key);
+
 
 }

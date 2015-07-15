@@ -15,9 +15,15 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import java.util.Iterator;
+import java.util.Map;
+
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
 
 /**
  * TODO move to internal package
@@ -43,6 +49,11 @@ public interface InternalIndex extends Index {
 
 	DeleteRequestBuilder prepareDelete(String type, String key);
 
+	UpdateRequestBuilder prepareUpdateByScript(String type, String key, String script, Map<String, Object> params);
+	
 	<T> String getType(Class<T> type);
+
+	Iterator<SearchHit> scan(QueryBuilder queryBuilder);
+
 
 }

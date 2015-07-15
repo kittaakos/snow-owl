@@ -40,8 +40,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	
 	@Override
 	public void add(long storageKey, Component revision) {
-		// update current revision of document with storageKey
-		index.updateRevision(revision.getClass(), storageKey, branchPath, commitTimestamp);
+		index.updateRevision(commitId, revision.getClass(), storageKey, branchPath, commitTimestamp);
 		revision.setCommitId(commitId);
 		revision.setStorageKey(storageKey);
 		revision.setVisibleIns(Collections.singleton(new VisibleIn(branchPath, commitTimestamp)));
@@ -50,7 +49,8 @@ class DefaultIndexTransaction implements IndexTransaction {
 	
 	@Override
 	public <T extends Component> void delete(long storageKey, Class<T> type) {
-		throw new UnsupportedOperationException("Implement tx deletion");
+		// update the current revision to be unavailable after this commit by setting the VisibleIn.to to the commitTimestamp
+		index.updateRevision(commitId, type, storageKey, branchPath, commitTimestamp);
 	}
 	
 	@Override

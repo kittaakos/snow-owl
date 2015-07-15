@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
+import java.util.Collection;
+
 import com.b2international.snowowl.core.store.Searchable;
 import com.b2international.snowowl.core.store.index.Administrable;
 import com.b2international.snowowl.core.store.index.IndexAdmin;
@@ -72,15 +74,17 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 */
 	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
 
+	<T extends Revision> void updateRevision(int commitId, Class<T> type, long storageKeys, String branchPath, long commitTimestamp);
+	
 	/**
-	 * Update a revision's {@link VisibleIn} entry for the given branchPath with the given commitTimestamp to indicate that the revision is not the
-	 * latest revision.
+	 * Update a set of revision's {@link VisibleIn} entries for the given branchPath with the given commitTimestamp to indicate that a newer revision
+	 * is visible from that branch.
 	 * 
 	 * @param type
-	 * @param storageKey
+	 * @param storageKeys
 	 * @param branchPath
 	 * @param commitTimestamp
-	 */
-	<T extends Revision> void updateRevision(Class<T> type, long storageKey, String branchPath, long commitTimestamp);
+	 */	
+	<T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp);
 
 }

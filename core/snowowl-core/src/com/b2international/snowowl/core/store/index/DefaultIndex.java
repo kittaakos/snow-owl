@@ -17,13 +17,17 @@ package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.script.ScriptService.ScriptType;
+import org.elasticsearch.search.SearchHit;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.store.query.Query;
@@ -32,6 +36,7 @@ import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.b2international.snowowl.core.store.query.Query.SearchContextBuilder;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
+import com.b2international.snowowl.core.store.query.req.ScanningSearchHitIterator;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
 
 /**
@@ -108,6 +113,21 @@ public class DefaultIndex implements InternalIndex {
 	}
 
 	@Override
+	public <T> void updateByScript(Class<T> type, String key, String script, Map<String, Object> params) {
+		updateByScript(getType(type), key, script, params);
+	}
+	
+	@Override
+	public void updateByScript(String type, String key, String script, Map<String, Object> params) {
+		prepareUpdateByScript(type, key, script, params).setRefresh(true).get();
+	}
+
+	@Override
+	public UpdateRequestBuilder prepareUpdateByScript(String type, String key, String script, Map<String, Object> params) {
+		return this.client.prepareUpdate(index, type, key).setScriptParams(params).setScript(script, ScriptType.INLINE);
+	}
+	
+	@Override
 	public <T> boolean remove(Class<T> type, String key) {
 		return remove(getType(type), key);
 	}
@@ -173,6 +193,11 @@ public class DefaultIndex implements InternalIndex {
 			executor = new DefaultSearchExecutor(new DefaultSearchResponseProcessor(admin().mappings().mapper()));
 		}
 		return executor;
+	}
+	
+	@Override
+	public Iterator<SearchHit> scan(org.elasticsearch.index.query.QueryBuilder queryBuilder) {
+		return new ScanningSearchHitIterator(client, queryBuilder, index, 5000);
 	}
 	
 	@Override

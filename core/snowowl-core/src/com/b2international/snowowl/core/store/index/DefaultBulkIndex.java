@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
@@ -26,8 +27,10 @@ import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
+import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.collect.MapMaker;
+import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
 import com.b2international.commons.ClassUtils;
@@ -132,16 +135,38 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		return index.prepareIndexWithParent(type, parentKey, key, object);
 	}
 	
+	@Override
+	public <T> void updateByScript(Class<T> type, String key, String script, Map<String, Object> params) {
+		updateByScript(getType(type), key, script, params);
+	}
+	
+	@Override
+	public void updateByScript(String type, String key, String script, Map<String, Object> params) {
+		bulkUpdate(prepareUpdateByScript(type, key, script, params));
+	}
+	
+	@Override
+	public UpdateRequestBuilder prepareUpdateByScript(String type, String key, String script, Map<String, Object> params) {
+		return index.prepareUpdateByScript(type, key, script, params);
+	}
+	
 	private void bulkIndex(final IndexRequestBuilder req) {
 		final Map<String, Object> source = req.request().sourceAsMap();
 		// TODO remove this limitation somehow
-		checkArgument(source.containsKey(Revision.COMMIT_ID), "BulkIndex cannot be used without index transaction support, use it via TransactionalIndex");
+		checkArgument(source.containsKey(Revision.COMMIT_ID), "BulkIndex cannot be used without transaction support, use it via TransactionalIndex");
 		final int bulkId = (int) source.get(Revision.COMMIT_ID);
 		getBulkRequest(bulkId).add(req);
 	}
 	
 	private boolean bulkDelete(final DeleteRequestBuilder req) {
 		throw new UnsupportedOperationException("TODO implement how to get the commit identifier"); 
+	}
+	
+	private void bulkUpdate(UpdateRequestBuilder req) {
+		final Map<String, Object> params = req.request().scriptParams();
+		checkArgument(params.containsKey(Revision.COMMIT_ID), "BulkUpdate cannot be used without transaction support, use it via TransactionalIndex");
+		final int commitId = (int) params.get(Revision.COMMIT_ID);
+		getBulkRequest(commitId).add(req);
 	}
 	
 	@Override
@@ -162,6 +187,11 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	@Override
 	public <T> Iterable<T> search(AfterWhereBuilder query, Class<T> type) {
 		return index.search(query, type);
+	}
+	
+	@Override
+	public Iterator<SearchHit> scan(org.elasticsearch.index.query.QueryBuilder queryBuilder) {
+		return index.scan(queryBuilder);
 	}
 	
 	@Override

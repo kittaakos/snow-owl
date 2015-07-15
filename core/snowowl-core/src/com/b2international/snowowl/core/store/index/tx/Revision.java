@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
  */
 public abstract class Revision {
 
+	static final String UPDATE_VISIBLE_IN_TO_SCRIPT = "ctx._source.visibleIns.find{it.branchPath == branchPath}.to = commitTimestamp";
 	public static final String STORAGE_KEY = "storageKey";
 	// TODO remove commitId
 	public static final String COMMIT_ID = "commitId";

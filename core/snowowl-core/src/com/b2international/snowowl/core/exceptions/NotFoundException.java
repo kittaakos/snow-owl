@@ -36,11 +36,11 @@ public class NotFoundException extends ApiException {
 	 *            the unique key of the item which was not found (may not be {@code null})
 	 */
 	public NotFoundException(final String type, final String key) {
-		super("%s with identifier '%s' could not be found.", type, key);
+		super("%s with identifier '%s' could not be found", type, key);
 		this.type = type;
 		this.key = key;
 	}
-
+	
 	/**
 	 * Returns the type of the item which was not found.
 	 * 
