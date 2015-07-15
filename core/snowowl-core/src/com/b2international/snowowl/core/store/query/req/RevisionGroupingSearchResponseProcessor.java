@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * 
  * @since 5.0
  */
+@Deprecated
 public class RevisionGroupingSearchResponseProcessor implements SearchResponseProcessor {
 
 	private ObjectMapper mapper;
@@ -37,13 +38,13 @@ public class RevisionGroupingSearchResponseProcessor implements SearchResponsePr
 			final long storageKey = storageKeyAsNumber.longValue();
 			if (!latestRevisions.containsKey(storageKey) && !deletedStorageKeys.contains(storageKey)) {
 				// if the revision is a deleted one then add it to the deleted ones, so older revisions will be completely skipped
-				final boolean deleted = (boolean) source.get(Revision.DELETED);
-				if (deleted) {
-					deletedStorageKeys.add(storageKey);
-				} else {
+//				final boolean deleted = (boolean) source.get(Revision.DELETED);
+//				if (deleted) {
+//					deletedStorageKeys.add(storageKey);
+//				} else {
 					// if not deleted, and the latest revision, add it to the result
 					latestRevisions.put(storageKey, mapper.convertValue(source, resultType));
-				}
+//				}
 			}
 			
 		}

@@ -23,7 +23,6 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.tophits.TopHits;
 
-import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 
@@ -31,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 /**
  * @since 5.0
  */
+@Deprecated
 public class AggregationSearchResponseProcessor implements SearchResponseProcessor {
 
 	private ObjectMapper mapper;
@@ -47,10 +47,10 @@ public class AggregationSearchResponseProcessor implements SearchResponseProcess
 			final TopHits topHits = bucket.getAggregations().get(AggregatingBranchSearchExecutor.TOP_HIT_DOCS_AGG);
 			final Long storageKey = Long.valueOf(bucket.getKey());
 			final Map<String, Object> source = topHits.getHits().hits()[0].getSource();
-			final boolean deleted = (boolean) source.get(Revision.DELETED);
-			if (!deleted) {
+//			final boolean deleted = (boolean) source.get(Revision.DELETED);
+//			if (!deleted) {
 				latestRevisions.put(storageKey, mapper.convertValue(source, resultType));
-			}
+//			}
 		}
 		return ImmutableList.copyOf(latestRevisions.values());
 	}

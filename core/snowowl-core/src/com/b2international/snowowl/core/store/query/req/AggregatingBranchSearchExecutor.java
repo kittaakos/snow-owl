@@ -33,6 +33,7 @@ import com.b2international.snowowl.core.store.query.SortBy.SortByField;
 /**
  * @since 5.0
  */
+@Deprecated
 public class AggregatingBranchSearchExecutor extends BranchAwareSearchExecutor {
 
 	public static final String STORAGE_KEY_GROUPING_AGG = "storageKeyAggregation";

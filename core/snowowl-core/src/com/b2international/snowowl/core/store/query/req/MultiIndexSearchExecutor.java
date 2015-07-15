@@ -41,6 +41,7 @@ import com.google.common.collect.Maps;
 /**
  * @since 5.0
  */
+@Deprecated
 public class MultiIndexSearchExecutor extends DefaultSearchExecutor {
 
 	private List<String> indexes;

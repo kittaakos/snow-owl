@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * @since 5.0
  */
+@Deprecated
 @Mapping(type = "commit", mapping = "commit_mapping.json")
 public class IndexCommit {
 	

@@ -26,6 +26,7 @@ import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 /**
  * @since 5.0
  */
+@Deprecated
 public class NegatingSearchExecutor extends DefaultSearchExecutor {
 
 	public NegatingSearchExecutor(SearchResponseProcessor processor) {
