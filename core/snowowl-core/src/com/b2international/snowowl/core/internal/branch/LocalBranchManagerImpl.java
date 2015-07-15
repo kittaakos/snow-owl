@@ -13,25 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.core.io;
+package com.b2international.snowowl.core.internal.branch;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.branch.Branch;
-import com.b2international.snowowl.core.internal.branch.BranchImpl;
-import com.b2international.snowowl.core.internal.branch.BranchManagerImpl;
-import com.b2international.snowowl.core.internal.branch.InternalBranch;
 import com.b2international.snowowl.core.store.Store;
 
 /**
  * @since 5.0
  */
-class LocalBranchManagerImpl extends BranchManagerImpl {
+public class LocalBranchManagerImpl extends BranchManagerImpl {
 
 	private AtomicLong clock;
 
-	LocalBranchManagerImpl(Store<InternalBranch> branchStore, AtomicLong clock) {
+	public LocalBranchManagerImpl(Store<InternalBranch> branchStore, AtomicLong clock) {
 		super(branchStore, clock.incrementAndGet());
 		this.clock = clock;
 	}
