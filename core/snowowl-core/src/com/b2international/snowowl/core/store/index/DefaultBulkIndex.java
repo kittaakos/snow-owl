@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkProcessor;
 import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
@@ -208,7 +209,15 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 			
 			@Override
 			public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
-				LOG.info("Processed bulk request of {} requests in {}", response.getItems().length, response.getTook());
+				if (response.hasFailures()) {
+					for (BulkItemResponse item : response.getItems()) {
+						if (item.getFailureMessage() != null) {
+							System.out.println(item.getFailureMessage());
+						}
+					}
+				} else {
+					LOG.info("Processed bulk request of {} requests in {}", response.getItems().length, response.getTook());
+				}
 			}
 		})
 		.setBulkActions(BULK_THRESHOLD)
@@ -231,6 +240,16 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	@Override
+	public void deleteScript(String lang, String key) {
+		index.deleteScript(lang, key);
+	}
+	
+	@Override
+	public void putScript(String lang, String key, String source) {
+		index.putScript(lang, key, source);
 	}
 	
 	private BulkProcessor getBulkProcessor(int bulkId) {

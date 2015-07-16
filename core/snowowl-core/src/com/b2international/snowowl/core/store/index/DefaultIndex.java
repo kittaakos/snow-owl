@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.store.index;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -123,8 +124,8 @@ public class DefaultIndex implements InternalIndex {
 	}
 
 	@Override
-	public UpdateRequestBuilder prepareUpdateByScript(String type, String key, String script, Map<String, Object> params) {
-		return this.client.prepareUpdate(index, type, key).setScriptParams(params).setScript(script, ScriptType.INLINE);
+	public UpdateRequestBuilder prepareUpdateByScript(String type, String key, String scriptKey, Map<String, Object> params) {
+		return this.client.prepareUpdate(index, type, key).setScriptParams(params).setScript(scriptKey, ScriptType.INDEXED);
 	}
 	
 	@Override
@@ -203,6 +204,18 @@ public class DefaultIndex implements InternalIndex {
 	@Override
 	public Client client() {
 		return client;
+	}
+	
+	@Override
+	public void putScript(String lang, String key, String source) {
+		final Map<String, Object> json = newHashMap();
+		json.put("script", source);
+		client.preparePutIndexedScript().setScriptLang(lang).setId(key).setSource(json).get();
+	}
+	
+	@Override
+	public void deleteScript(String lang, String key) {
+		client.prepareDeleteIndexedScript(lang, key).get();
 	}
 	
 }

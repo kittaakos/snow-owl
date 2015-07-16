@@ -24,7 +24,7 @@ import com.b2international.snowowl.core.store.Searchable;
  * 
  * @since 5.0
  */
-public interface Index extends MappingProvider, Searchable, Administrable<IndexAdmin> {
+public interface Index extends MappingProvider, Searchable, Administrable<IndexAdmin>, Scripts {
 
 	/**
 	 * Returns the name of the index.
