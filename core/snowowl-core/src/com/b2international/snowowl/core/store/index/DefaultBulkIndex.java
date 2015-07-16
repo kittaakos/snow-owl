@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.ListenableActionFuture;
+import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
@@ -233,6 +234,11 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 							@Override
 							public void onResponse(BulkResponse response) {
 								LOG.info("Processed bulk request of {} in {}", response.getItems().length, response.getTook());
+								for (BulkItemResponse resp : response.getItems()) {
+									if (resp.getFailureMessage() != null) {
+										System.out.println(resp.getFailureMessage());
+									}
+								}
 								pendingBulks.remove(bulkId, future);
 							}
 							
