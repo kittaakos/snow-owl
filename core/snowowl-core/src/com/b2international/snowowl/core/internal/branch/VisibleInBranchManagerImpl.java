@@ -42,8 +42,8 @@ public class VisibleInBranchManagerImpl extends LocalBranchManagerImpl {
 
 	@Override
 	protected InternalBranch reopen(InternalBranch parent, String name, Metadata metadata) {
-		final String branchPath = parent.path().concat(Branch.SEPARATOR).concat(name);
-		this.index.updateAllRevisions(parent.path(), branchPath, parent.headTimestamp());
+		final String childBranchPath = parent.path().concat(Branch.SEPARATOR).concat(name);
+		this.index.updateAllRevisions(parent.path(), childBranchPath, parent.headTimestamp());
 		return super.reopen(parent, name, metadata);
 	}
 
