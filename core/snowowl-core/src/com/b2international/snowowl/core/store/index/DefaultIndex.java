@@ -197,7 +197,7 @@ public class DefaultIndex implements InternalIndex {
 	
 	@Override
 	public Iterator<SearchHit> scan(org.elasticsearch.index.query.QueryBuilder queryBuilder) {
-		return new ScanningSearchHitIterator(client, queryBuilder, index, 5000);
+		return new ScanningSearchHitIterator(client, queryBuilder, index, 15000);
 	}
 	
 	@Override
