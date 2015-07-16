@@ -61,6 +61,8 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	public DefaultTransactionalIndex(BulkIndex index, BranchManager branchManager) {
 		this.index = checkNotNull(index, "index");
 		this.branchManager = checkNotNull(branchManager, "branchManager");
+		this.index.putScript("groovy", Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT);
+		this.index.putScript("groovy", Revision.BRANCH_CREATE_TAG_SCRIPT_KEY, Revision.BRANCH_CREATE_TAG_SCRIPT);
 	}
 
 	@Override
@@ -88,25 +90,26 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	@Override
 	public <T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
 		final Map<String, Object> scriptParams = createUpdateRevisionScriptParams(commitId, branchPath, commitTimestamp);
-		final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(storageKeys));
+		final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(storageKeys, branchPath, commitTimestamp));
 		while (hitIterator.hasNext()) {
 			final SearchHit next = hitIterator.next();
-			index.updateByScript(type, next.getId(), Revision.UPDATE_VISIBLE_IN_TO_SCRIPT, scriptParams);
+			index.updateByScript(type, next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
 		}		
 	}
 	
-	private QueryBuilder createStorageKeyFilter(Collection<Long> storageKeys) {
+	private QueryBuilder createStorageKeyFilter(Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
 		final OrFilterBuilder or = FilterBuilders.orFilter();
 		for (Long storageKey : storageKeys) {
 			or.add(FilterBuilders.termFilter(Revision.STORAGE_KEY, storageKey));
 		}
-		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), or);
+		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.andFilter(or, VisibleIn.createVisibleFromFilter(branchPath, commitTimestamp)));
 	}
 
-	private Map<String, Object> createUpdateAllRevisionScriptParams(int commitId, String branch, long commitTimestamp) {
+	private Map<String, Object> createUpdateAllRevisionScriptParams(int commitId, String parent, String child) {
 		final Map<String, Object> params = newHashMap();
 		params.put(Revision.COMMIT_ID, commitId);
-		params.put("newVisibleInEntry", admin().mappings().mapper().convertValue(new VisibleIn(branch, commitTimestamp), Map.class));
+		params.put("parent", parent);
+		params.put("child", child);
 		return params;
 	}
 	
@@ -120,14 +123,14 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 	
 	@Override
-	public void updateAllRevisions(String parentBranch, String childBranch, long commitTimestamp) {
+	public void updateAllRevisions(String parentBranch, String childBranch) {
 		final int bulkId = internalBulks.decrementAndGet();
 		index.create(bulkId);
-		final Map<String, Object> params = createUpdateAllRevisionScriptParams(bulkId, childBranch, commitTimestamp);
-		final Iterator<SearchHit> scan = ((InternalIndex) index).scan(VisibleIn.createVisibleFromQuery(parentBranch, commitTimestamp));
+		final Map<String, Object> params = createUpdateAllRevisionScriptParams(bulkId, parentBranch, childBranch);
+		final Iterator<SearchHit> scan = ((InternalIndex) index).scan(VisibleIn.createVisibleFromQuery(parentBranch, branchManager.getBranch(parentBranch).headTimestamp()));
 		while (scan.hasNext()) {
 			final SearchHit next = scan.next();
-			index.updateByScript(next.getType(), next.getId(), Revision.UPDATE_VISIBLE_IN_ADD_SCRIPT, params);
+			index.updateByScript(next.getType(), next.getId(), Revision.BRANCH_CREATE_TAG_SCRIPT_KEY, params);
 		}
 		index.flush(bulkId);
 	}

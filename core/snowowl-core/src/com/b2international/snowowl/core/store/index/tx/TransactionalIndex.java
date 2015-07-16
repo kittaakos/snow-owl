@@ -94,6 +94,6 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 * @param childBranch
 	 * @param commitTimestamp
 	 */
-	void updateAllRevisions(String parentBranch, String childBranch, long commitTimestamp);
+	void updateAllRevisions(String parentBranch, String childBranch);
 
 }
