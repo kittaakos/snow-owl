@@ -20,30 +20,28 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.ListenableActionFuture;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkProcessor;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteRequestBuilder;
 import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.collect.MapMaker;
+import org.elasticsearch.common.unit.ByteSizeUnit;
+import org.elasticsearch.common.unit.ByteSizeValue;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
 import com.b2international.commons.ClassUtils;
-import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 
 /**
  * @since 5.0
@@ -51,10 +49,9 @@ import com.google.common.collect.Multimaps;
 public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 
 	private static final Logger LOG = Loggers.REPOSITORY.log();
-	private static final int BULK_THRESHOLD = 10000;
+	private static final int BULK_THRESHOLD = 5000;
 	
-	private final ConcurrentMap<Integer, BulkRequestBuilder> activeBulks = new MapMaker().makeMap();
-	private final Multimap<Integer, ListenableActionFuture<BulkResponse>> pendingBulks = Multimaps.synchronizedMultimap(HashMultimap.<Integer, ListenableActionFuture<BulkResponse>>create());
+	private final ConcurrentMap<Integer, BulkProcessor> activeBulkProcessors = new MapMaker().makeMap();
 	private InternalIndex index;
 
 	public DefaultBulkIndex(Index index) {
@@ -156,7 +153,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		// TODO remove this limitation somehow
 		checkArgument(source.containsKey(Revision.COMMIT_ID), "BulkIndex cannot be used without transaction support, use it via TransactionalIndex");
 		final int bulkId = (int) source.get(Revision.COMMIT_ID);
-		getBulkRequest(bulkId).add(req);
+		getBulkProcessor(bulkId).add(req.request());
 	}
 	
 	private boolean bulkDelete(final DeleteRequestBuilder req) {
@@ -167,7 +164,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		final Map<String, Object> params = req.request().scriptParams();
 		checkArgument(params.containsKey(Revision.COMMIT_ID), "BulkUpdate cannot be used without transaction support, use it via TransactionalIndex");
 		final int commitId = (int) params.get(Revision.COMMIT_ID);
-		getBulkRequest(commitId).add(req);
+		getBulkProcessor(commitId).add(req.request());
 	}
 	
 	@Override
@@ -197,61 +194,47 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public void create(int bulkId) {
-		activeBulks.putIfAbsent(bulkId, client().prepareBulk());
+		final BulkProcessor processor = BulkProcessor.builder(index.client(), new BulkProcessor.Listener() {
+			
+			@Override
+			public void beforeBulk(long executionId, BulkRequest request) {
+				LOG.info("Executing bulk request of {}", request.requests().size());
+			}
+			
+			@Override
+			public void afterBulk(long executionId, BulkRequest request, Throwable failure) {
+				LOG.error("Failed to process bulk request", failure);
+			}
+			
+			@Override
+			public void afterBulk(long executionId, BulkRequest request, BulkResponse response) {
+				LOG.info("Processed bulk request of {} requests in {}", response.getItems().length, response.getTook());
+			}
+		})
+		.setBulkActions(BULK_THRESHOLD)
+		.setBulkSize(new ByteSizeValue(512L, ByteSizeUnit.MB))
+		.setConcurrentRequests(2)
+		.setFlushInterval(new TimeValue(5, TimeUnit.SECONDS)).build();
+		activeBulkProcessors.putIfAbsent(bulkId, processor);
 	}
 	
 	@Override
 	public void flush(int bulkId) {
-		executeBulk(bulkId, true);
-		// wait for all currently registered pending bulks
 		try {
-			do {
-				Thread.sleep(200);
-			} while(pendingBulks.containsKey(bulkId));
+			boolean allBulkCompleted = getBulkProcessor(bulkId).awaitClose(30, TimeUnit.SECONDS);
+			if (!allBulkCompleted) {
+				System.out.println("There are remaining unprocessed bulk requests after 30 seconds of bulk processor close");
+			}
 			final Stopwatch watch = Stopwatch.createStarted();
 			client().admin().indices().prepareRefresh(name()).get();
 			LOG.info("Refresh index '{}' in {}", name(), watch);
 		} catch (InterruptedException e) {
-			throw new SnowOwlException("Failed to wait for pending bulk flush", e);
+			e.printStackTrace();
 		}
 	}
 	
-	private BulkRequestBuilder getBulkRequest(int bulkId) {
-		executeBulk(bulkId, false);
-		return activeBulks.get(bulkId);
-	}
-
-	private void executeBulk(final int bulkId, final boolean force) {
-		checkArgument(activeBulks.containsKey(bulkId), "Create a bulk before using this kind of index");
-		final BulkRequestBuilder req = activeBulks.get(bulkId);
-		if (req.numberOfActions() >= BULK_THRESHOLD || force) {
-			synchronized (req) {
-				if (req.numberOfActions() >= BULK_THRESHOLD || force) {
-					if (activeBulks.replace(bulkId, req, index.client().prepareBulk())) {
-						final ListenableActionFuture<BulkResponse> future = req.execute();
-						pendingBulks.put(bulkId, future);
-						future.addListener(new ActionListener<BulkResponse>() {
-							@Override
-							public void onResponse(BulkResponse response) {
-								LOG.info("Processed bulk request of {} in {}", response.getItems().length, response.getTook());
-								for (BulkItemResponse resp : response.getItems()) {
-									if (resp.getFailureMessage() != null) {
-										System.out.println(resp.getFailureMessage());
-									}
-								}
-								pendingBulks.remove(bulkId, future);
-							}
-							
-							@Override
-							public void onFailure(Throwable e) {
-								// FIXME handle failure
-								pendingBulks.remove(bulkId, future);
-							}
-						});
-					}
-				}
-			}		
-		}
+	private BulkProcessor getBulkProcessor(int bulkId) {
+		return activeBulkProcessors.get(bulkId);
 	}
 
 }
