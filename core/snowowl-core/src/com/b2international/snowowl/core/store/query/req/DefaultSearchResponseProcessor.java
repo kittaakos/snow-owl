@@ -18,11 +18,13 @@ package com.b2international.snowowl.core.store.query.req;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Lists.newArrayListWithExpectedSize;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -45,7 +47,11 @@ public class DefaultSearchResponseProcessor implements SearchResponseProcessor {
 			if (String.class == resultType) {
 				result.add((T) hit.getId());
 			} else {
-				result.add(mapper.convertValue(hit.getSource(), resultType));
+				try {
+					result.add(mapper.readValue(hit.getSourceRef().toBytes(), resultType));
+				} catch (IOException e) {
+					throw new SnowOwlException("Failed to deserialize response to %s", resultType, e);
+				}
 			}
 		}
 		return result;

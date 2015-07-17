@@ -32,19 +32,12 @@ public abstract class Revision {
 	public static final String BRANCH_CREATE_TAG_SCRIPT_KEY = "branchCreateTagScript";
 	public static final String BRANCH_CREATE_TAG_SCRIPT = "def parentTime = ctx._source.visibleIns.find{it.branchPath == parent}.from;ctx._source.visibleIns += [branchPath: child,from: parentTime,to:Long.MAX_VALUE]";
 	public static final String STORAGE_KEY = "storageKey";
-	// TODO remove commitId
-	public static final String COMMIT_ID = "commitId";
 
-	private int commitId;
 	private long storageKey;
 	private Collection<VisibleIn> visibleIns = newHashSet();
 	
-	protected void setStorageKey(long storageKey) {
+	public void setStorageKey(long storageKey) {
 		this.storageKey = storageKey;
-	}
-	
-	protected void setCommitId(int commitId) {
-		this.commitId = commitId;
 	}
 	
 	public void setVisibleIns(Collection<VisibleIn> visibleIns) {
@@ -59,8 +52,4 @@ public abstract class Revision {
 		return ImmutableList.copyOf(visibleIns);
 	}
 	
-	public int getCommitId() {
-		return commitId;
-	}
-
 }

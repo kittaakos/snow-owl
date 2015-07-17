@@ -19,8 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Maps.newHashMap;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -83,18 +83,18 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	}
 	
 	@Override
-	public <T extends Revision> void updateRevision(int commitId, Class<T> type, long storageKey, String branchPath, long commitTimestamp) {
-		updateRevisions(commitId, type, Collections.singleton(storageKey), branchPath, commitTimestamp);
-	}
-	
-	@Override
-	public <T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
+	public <T extends Revision> void updateRevisions(int commitId, String type, Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
+		LOG.info("Updating revision visibilities on {} revisions to {} on branch {}", storageKeys.size(), commitTimestamp, branchPath);
 		final Map<String, Object> scriptParams = createUpdateRevisionScriptParams(branchPath, commitTimestamp);
-		final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(storageKeys, branchPath, commitTimestamp));
-		while (hitIterator.hasNext()) {
-			final SearchHit next = hitIterator.next();
-			index.updateByScript(commitId, getType(type), next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
-		}		
+		final Iterable<List<Long>> partitions = Iterables.partition(storageKeys, 10000);
+		for (List<Long> partition : partitions) {
+			final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(partition, branchPath, commitTimestamp));
+			while (hitIterator.hasNext()) {
+				final SearchHit next = hitIterator.next();
+				System.out.println("Update doc: " + next.getId());
+				index.updateByScript(commitId, type, next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
+			}
+		}
 	}
 	
 	private QueryBuilder createStorageKeyFilter(Collection<Long> storageKeys, String branchPath, long commitTimestamp) {

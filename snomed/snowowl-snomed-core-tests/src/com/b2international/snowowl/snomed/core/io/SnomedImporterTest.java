@@ -19,8 +19,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -91,6 +89,7 @@ public class SnomedImporterTest {
 	private static final String SETTINGS_FILE = "snomed_settings.json";
 	
 	@Rule
+//	public final ESTransportClientRule rule = new ESTransportClientRule("trinity", "trinity", 9300);
 	public final ESLocalNodeRule rule = new ESLocalNodeRule();
 
 	@Rule
@@ -109,6 +108,7 @@ public class SnomedImporterTest {
 	
 	@Before
 	public void givenIndex() throws Exception {
+//		rule.client().admin().indices().prepareDelete("snomed_ct*").get();
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
 		this.index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
@@ -201,7 +201,7 @@ public class SnomedImporterTest {
 		
 		final Concept concept20020131 = browser.getConcept("MAIN/20020131", "118225008");
 		
-		assertTrue(concept20020131.isActive());
+		assertThat(concept20020131.isActive()).isTrue();
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
 		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);
 		assertThat(concept20020131.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
@@ -210,7 +210,8 @@ public class SnomedImporterTest {
 		assertThat(concept20020131.getAncestorIds()).hasSize(4);
 		
 		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
-		assertFalse(concept20050131.isActive());
+		System.out.println(concept20050131);
+		assertThat(concept20050131.isActive()).isFalse();
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
 		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);
 		assertThat(concept20020131.getRelationshipGroups().get(0).getRelationships()).hasSize(1);
@@ -240,6 +241,7 @@ public class SnomedImporterTest {
 		assertThat(concept300577008_20020131.getAncestorIds()).containsOnly("138875005", "72670004", "118225008", "118222006", "250171008", "246188002");
 		assertThat(concept300577008_20030131.getAncestorIds()).containsOnly("138875005", "250171008", "246188002");
 		assertThat(concept300577008_20040131.getAncestorIds()).containsOnly("138875005", "404684003", "250171008");
+//		assertThat(browser.getDescendants("MAIN", "404684003", 0, 102217)).hasSize(102217);
 	}
 	
 	private Collection<String> getDescendants(DirectedGraph<String, RelationshipEdge> graph, String source,

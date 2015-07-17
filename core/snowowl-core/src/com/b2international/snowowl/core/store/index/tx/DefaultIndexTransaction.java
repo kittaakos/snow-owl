@@ -17,9 +17,12 @@ package com.b2international.snowowl.core.store.index.tx;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Collections;
 
 import com.b2international.snowowl.core.terminology.Component;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 /**
  * @since 5.0
@@ -30,6 +33,7 @@ class DefaultIndexTransaction implements IndexTransaction {
 	private int commitId;
 	private long commitTimestamp;
 	private String branchPath;
+	private Multimap<String, Long> deletedStorageKeyByType = HashMultimap.create();
 
 	public DefaultIndexTransaction(TransactionalIndex index, int commitId, long commitTimestamp, String branchPath) {
 		this.commitId = commitId;
@@ -41,7 +45,6 @@ class DefaultIndexTransaction implements IndexTransaction {
 	@Override
 	public void add(long storageKey, Component revision) {
 		delete(storageKey, revision.getClass());
-		revision.setCommitId(commitId);
 		revision.setStorageKey(storageKey);
 		revision.setVisibleIns(Collections.singleton(new VisibleIn(branchPath, commitTimestamp)));
 		index.addRevision(commitId, revision);
@@ -49,12 +52,16 @@ class DefaultIndexTransaction implements IndexTransaction {
 	
 	@Override
 	public <T extends Component> void delete(long storageKey, Class<T> type) {
-		// update the current revision to be unavailable after this commit by setting the VisibleIn.to to the commitTimestamp
-		index.updateRevision(commitId, type, storageKey, branchPath, commitTimestamp);
+		final String typeName = index.mapping(type).getType();
+		deletedStorageKeyByType.put(typeName, storageKey);
 	}
 	
 	@Override
 	public void commit(String commitMessage) {
+		for (String type : deletedStorageKeyByType.keySet()) {
+			final Collection<Long> storageKeys = deletedStorageKeyByType.get(type);
+			this.index.updateRevisions(commitId, type, storageKeys, branchPath, commitTimestamp);
+		}
 		this.index.commit(commitId, commitTimestamp, branchPath, commitMessage);
 	}
 	

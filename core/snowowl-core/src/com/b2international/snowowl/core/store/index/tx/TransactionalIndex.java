@@ -74,8 +74,6 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 */
 	IndexTransaction transaction(int commitId, long commitTimestamp, String branchPath);
 
-	<T extends Revision> void updateRevision(int commitId, Class<T> type, long storageKeys, String branchPath, long commitTimestamp);
-
 	/**
 	 * Update a set of revision's {@link VisibleIn} entries for the given branchPath with the given commitTimestamp to indicate that a newer revision
 	 * is visible from that branch.
@@ -85,7 +83,7 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	 * @param branchPath
 	 * @param commitTimestamp
 	 */
-	<T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp);
+	<T extends Revision> void updateRevisions(int commitId, String type, Collection<Long> storageKeys, String branchPath, long commitTimestamp);
 
 	/**
 	 * Updates ALL visible revision's VisibleIn entries from parent with a new entry of childBranch and commitTimestamp.
