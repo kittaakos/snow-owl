@@ -66,31 +66,40 @@ public class SnomedQueryTest {
 	public void givenIndex() throws Exception {
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
-		this.index = new DefaultIndex(rule.client(), "snomed_ct", new Mappings(mapper));
+		this.index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
 		this.branchStore = new IndexStore<>(index, InternalBranch.class);
 		this.branching = new VisibleInBranchManagerImpl(branchStore, clock);
 		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), branching);
 		this.browser = new SnomedBrowser(txIndex);
 		this.branching.setIndex(txIndex);
 	}
-	
+
 	@Test
 	public void queryChildrenOfRootOnMAIN() throws Exception {
 		final String branch = "MAIN";
 		final Stopwatch watch = Stopwatch.createStarted();
-		final Iterable<Concept> result = browser.getChildren(branch, "138875005");
+		final Iterable<Concept> result = browser.getChildren(branch, "138875005", 0, 19);
 		System.out.println("RootChildren took: " + watch);
 		assertThat(result).hasSize(19);
 	}
 	
 	@Ignore
 	@Test
-	public void queryChildrenOfClinicalFindingOnMAIN() throws Exception {
+	public void queryDescendantsOfClinicalFindingOnMAIN() throws Exception {
 		final String branch = "MAIN";
 		final Stopwatch watch = Stopwatch.createStarted();
-		final Iterable<Concept> result = browser.getDescendants(branch, "404684003");
+		final Iterable<Concept> result = browser.getDescendants(branch, "404684003", 0, 113338);
 		System.out.println("ClinicalFinding Descendants took: " + watch);
-		assertThat(result).hasSize(102217);
+		assertThat(result).hasSize(113338);
+	}
+	
+	@Test
+	public void queryChildrenOfAssessmentScalesOnMAIN() throws Exception {
+		final String branch = "MAIN";
+		final Stopwatch watch = Stopwatch.createStarted();
+		final Iterable<Concept> result = browser.getChildren(branch, "273249006", 0, 909);
+		System.out.println("Assessment Scales Children took: " + watch);
+		assertThat(result).hasSize(909);
 	}
 	
 }
