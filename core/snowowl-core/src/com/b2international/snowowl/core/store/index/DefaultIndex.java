@@ -31,6 +31,7 @@ import org.elasticsearch.script.ScriptService.ScriptType;
 import org.elasticsearch.search.SearchHit;
 
 import com.b2international.commons.ClassUtils;
+import com.b2international.snowowl.core.exceptions.SnowOwlException;
 import com.b2international.snowowl.core.store.query.Query;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
@@ -39,6 +40,7 @@ import com.b2international.snowowl.core.store.query.req.DefaultSearchExecutor;
 import com.b2international.snowowl.core.store.query.req.DefaultSearchResponseProcessor;
 import com.b2international.snowowl.core.store.query.req.ScanningSearchHitIterator;
 import com.b2international.snowowl.core.store.query.req.SearchExecutor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
  * General purpose index service implementation on top of Elasticsearch library.
@@ -92,9 +94,12 @@ public class DefaultIndex implements InternalIndex {
 		prepareIndex(type, key, object).setRefresh(true).get();
 	}
 
-	@SuppressWarnings("unchecked")
-	private Map<String, Object> toMap(Object object) {
-		return admin().mappings().mapper().convertValue(object, Map.class);
+	private byte[] toJSON(Object object) {
+		try {
+			return admin().mappings().mapper().writeValueAsBytes(object);
+		} catch (JsonProcessingException e) {
+			throw new SnowOwlException("Failed to serialized object", object, e);
+		}
 	}
 
 	@Override
@@ -109,8 +114,7 @@ public class DefaultIndex implements InternalIndex {
 
 	@Override
 	public IndexRequestBuilder prepareIndexWithParent(String type, String parentKey, String key, Object object) {
-		final Map<String, Object> map = toMap(object);
-		return this.client.prepareIndex(index, type, key).setParent(parentKey).setSource(map);
+		return this.client.prepareIndex(index, type, key).setParent(parentKey).setSource(toJSON(object));
 	}
 
 	@Override
@@ -140,11 +144,10 @@ public class DefaultIndex implements InternalIndex {
 	
 	@Override
 	public IndexRequestBuilder prepareIndex(String type, String key, Object object) {
-		final Map<String, Object> map = toMap(object);
 		if (key != null) {
-			return this.client.prepareIndex(index, type, key).setSource(map);
+			return this.client.prepareIndex(index, type, key).setSource(toJSON(object));
 		} else {
-			return this.client.prepareIndex(index, type).setSource(map);
+			return this.client.prepareIndex(index, type).setSource(toJSON(object));
 		}
 	}
 
