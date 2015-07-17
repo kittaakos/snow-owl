@@ -131,6 +131,7 @@ public class SnomedEffectiveTimeImporter {
 			checkNotNull(concept != null, "Concept '%s' should exists at this point", id);
 			computeParents(concept);
 			tx.add(concept.getStorageKey(), concept);
+			LATEST_CONCEPT_REVISION_MAP.put(concept.getId(), concept);
 		}
 	}
 
