@@ -210,7 +210,6 @@ public class SnomedImporterTest {
 		assertThat(concept20020131.getAncestorIds()).hasSize(4);
 		
 		final Concept concept20050131 = browser.getConcept("MAIN/20050131", "118225008");
-		System.out.println(concept20050131);
 		assertThat(concept20050131.isActive()).isFalse();
 		assertThat(concept20020131.getDescriptions()).hasSize(2);
 		assertThat(concept20020131.getRelationshipGroups()).hasSize(1);

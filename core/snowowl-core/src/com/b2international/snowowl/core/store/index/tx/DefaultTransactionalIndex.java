@@ -91,7 +91,6 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 			final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(partition, branchPath, commitTimestamp));
 			while (hitIterator.hasNext()) {
 				final SearchHit next = hitIterator.next();
-				System.out.println("Update doc: " + next.getId());
 				index.updateByScript(commitId, type, next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
 			}
 		}
