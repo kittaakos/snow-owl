@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.module.afterburner.AfterburnerModule;
 
 /**
  * @since 5.0
@@ -43,6 +44,7 @@ public class DefaultObjectMapper extends ObjectMapper {
 		setVisibility(PropertyAccessor.CREATOR, Visibility.NON_PRIVATE);
 		disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 		initMixinAnnotations();
+		registerModule(new AfterburnerModule());
 	}
 	
 	private void initMixinAnnotations() {
