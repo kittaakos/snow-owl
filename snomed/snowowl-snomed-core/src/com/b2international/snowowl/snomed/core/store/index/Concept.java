@@ -161,7 +161,8 @@ public class Concept extends SnomedComponent {
 	
 	@Override
 	public String toString() {
-		return String.format("Concept[id=%s, storageKey=%s, active=%s, effectiveTime=%s, term=%s]", getId(), getStorageKey(), isActive(), EffectiveTimes.format(getEffectiveTime()), getDescriptions().get(0).getTerm());
+		final String label = getDescriptions().isEmpty() ? "No description" : getDescriptions().get(0).getTerm(); 
+		return String.format("Concept[id=%s, storageKey=%s, active=%s, effectiveTime=%s, term=%s]", getId(), getStorageKey(), isActive(), EffectiveTimes.format(getEffectiveTime()), label);
 	}
 
 }
