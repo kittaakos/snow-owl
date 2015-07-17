@@ -68,12 +68,14 @@ public class SnomedEffectiveTimeImporter {
 	private Multimap<String, String[]> conceptRelationships;
 
 	private DirectedGraph<String, RelationshipEdge> graph;
+	private Collection<String> parentageConceptChanges;
 	
-	public SnomedEffectiveTimeImporter(DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, File concepts, File descriptions, File relationships) {
+	public SnomedEffectiveTimeImporter(DirectedGraph<String, RelationshipEdge> graph, final IndexTransaction tx, File concepts, File descriptions, File relationships, Collection<String> parentageConceptChanges) {
 		this.graph = graph;
 		this.tx = tx;
 		final Stopwatch watch = Stopwatch.createStarted();
 		this.concepts = concepts;
+		this.parentageConceptChanges = parentageConceptChanges;
 		final Collection<String[]> descriptionLines = readLines(descriptions);
 		final Collection<String[]> relationshipLines = readLines(relationships);
 		this.conceptDescriptions = HashMultimap.create(Multimaps.index(descriptionLines, new Function<String[], String>() {
@@ -113,8 +115,22 @@ public class SnomedEffectiveTimeImporter {
 		try {
 			processConcepts();
 			processRemainingComponents();
+			processParentageConceptChanges();
 		} catch (Exception e) {
 			throw new SnowOwlException("Failed to process effective time", e);
+		}
+	}
+
+	private void processParentageConceptChanges() {
+		if (parentageConceptChanges.isEmpty()) {
+			return;
+		}
+		LOG.info("Processing {} number of concepts due to parentage change", parentageConceptChanges.size());
+		for (String id : parentageConceptChanges) {
+			final Concept concept = LATEST_CONCEPT_REVISION_MAP.get(id);
+			checkNotNull(concept != null, "Concept '%s' should exists at this point", id);
+			computeParents(concept);
+			tx.add(concept.getStorageKey(), concept);
 		}
 	}
 
@@ -132,6 +148,7 @@ public class SnomedEffectiveTimeImporter {
 			
 			LATEST_CONCEPT_REVISION_MAP.put(concept.getId(), concept);
 			tx.add(concept.getStorageKey(), concept);
+			parentageConceptChanges.remove(concept.getId());
 		}
 	}
 
@@ -180,6 +197,7 @@ public class SnomedEffectiveTimeImporter {
 				long storageKey = STORAGEKEY_MAP.get(conceptId);
 				LATEST_CONCEPT_REVISION_MAP.put(conceptId, concept);
 				tx.add(storageKey, concept);
+				parentageConceptChanges.remove(conceptId);
 				return true;
 			}
 

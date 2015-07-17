@@ -25,6 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.elasticsearch.common.base.Stopwatch;
 import org.jgrapht.DirectedGraph;
+import org.jgrapht.Graphs;
 import org.jgrapht.experimental.dag.DirectedAcyclicGraph;
 import org.jgrapht.graph.DefaultEdge;
 import org.junit.After;
@@ -62,6 +64,7 @@ import com.b2international.snowowl.snomed.core.store.index.Relationship;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Ordering;
+import com.google.common.collect.Sets;
 import com.google.common.io.FileWriteMode;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
@@ -137,9 +140,9 @@ public class SnomedImporterTest {
 			final File concepts = conceptFilesByEffectiveTime.get(et);
 			final File descriptions = descriptionFilesByEffectiveTime.get(et);
 			final File relationships = relationshipFilesByEffectiveTime.get(et);
-			
-			final Stopwatch watch = Stopwatch.createStarted();
+			final Collection<String> parentageChanges = newHashSet();
 			if (relationships != null) {
+				final Stopwatch watch = Stopwatch.createStarted();
 				LOG.info("Building taxonomy from relationships of {}", et);
 				Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Boolean>() {
 					@Override
@@ -155,6 +158,8 @@ public class SnomedImporterTest {
 							graph.addVertex(target);
 							// check if relationship is already in the graph
 							if (graph.containsEdge(source, target) && !relationshipActive) {
+								// before removing the edge, compute all predecessors aka children
+								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
 								final RelationshipEdge edge = graph.removeEdge(source, target);
 								if (debug) {
 									System.out.println("ISA removed from graph: " + edge);
@@ -162,6 +167,7 @@ public class SnomedImporterTest {
 							} else if (!graph.containsEdge(source, target) && relationshipActive) {
 								final RelationshipEdge edge = new RelationshipEdge(relationshipId);
 								checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
+								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
 								if (debug) {
 									System.out.println("ISA added to graph: " + edge);
 								}
@@ -181,11 +187,13 @@ public class SnomedImporterTest {
 			}
 			
 			// pass taxonomy to effective time importer
-			new SnomedEffectiveTimeImporter(graph, tx, concepts, descriptions, relationships).doImport();
+			new SnomedEffectiveTimeImporter(graph, tx, concepts, descriptions, relationships, parentageChanges).doImport();
 			// single commit for the effective time
 			tx.commit(String.format("Imported SNOMED CT '%s' version", et));
 			// create a version for the effective time
+			Stopwatch branchCreation = Stopwatch.createStarted();
 			createBranch(Branch.MAIN_PATH, et);
+			LOG.info("Created branch in {}", branchCreation);
 		}
 		
 		// few assertions
@@ -224,6 +232,28 @@ public class SnomedImporterTest {
 		assertThat(namespace20110131.getRelationshipGroups()).hasSize(1);
 		final List<Relationship> namespaceRelationships20110131 = namespace20110131.getRelationshipGroups().get(0).getRelationships();
 		assertThat(namespaceRelationships20110131).hasSize(2);
+		
+		// assert parentage of 300577008
+		final Concept concept300577008_20020131 = browser.getConcept("MAIN/20020131", "300577008");
+		final Concept concept300577008_20030131 = browser.getConcept("MAIN/20030131", "300577008");
+		final Concept concept300577008_20040131 = browser.getConcept("MAIN/20040131", "300577008");
+		assertThat(concept300577008_20020131.getAncestorIds()).containsOnly("138875005", "72670004", "118225008", "118222006", "250171008", "246188002");
+		assertThat(concept300577008_20030131.getAncestorIds()).containsOnly("138875005", "250171008", "246188002");
+		assertThat(concept300577008_20040131.getAncestorIds()).containsOnly("138875005", "404684003", "250171008");
+	}
+	
+	private Collection<String> getDescendants(DirectedGraph<String, RelationshipEdge> graph, String source,
+			Set<String> descendantIds) {
+		for (String subType : getSubTypes(graph, source)) {
+			if (descendantIds.add(subType)) {
+				return getDescendants(graph, source, descendantIds);
+			}
+		}
+		return descendantIds;
+	}
+	
+	private Collection<String> getSubTypes(DirectedGraph<String, RelationshipEdge> graph, final String id) {
+		return Graphs.predecessorListOf(graph, id);
 	}
 	
 	static class RelationshipEdge extends DefaultEdge {
