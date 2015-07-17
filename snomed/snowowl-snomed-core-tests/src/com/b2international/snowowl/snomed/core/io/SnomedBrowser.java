@@ -46,12 +46,12 @@ public class SnomedBrowser {
 		return concept;
 	}
 
-	public Iterable<Concept> getChildren(String branchPath, String conceptId) {
-		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().parent(conceptId).build()).limit(1000), Concept.class);
+	public Iterable<Concept> getChildren(String branchPath, String conceptId, int from, int size) {
+		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().parent(conceptId).build()).offset(from).limit(size), Concept.class);
 	}
 	
-	public Iterable<Concept> getDescendants(String branchPath, String conceptId) {
-		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().ancestor(conceptId).build()).limit(100000), Concept.class);
+	public Iterable<Concept> getDescendants(String branchPath, String conceptId, int from, int size) {
+		return index.search(index.query().on(branchPath).selectAll().where(ConceptExpressions.concept().ancestor(conceptId).build()).offset(from).limit(size), Concept.class);
 	}
 	
 }
