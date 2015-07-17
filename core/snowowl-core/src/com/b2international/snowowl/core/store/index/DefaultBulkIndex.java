@@ -230,7 +230,8 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	@Override
 	public void flush(int bulkId) {
 		try {
-			boolean allBulkCompleted = getBulkProcessor(bulkId).awaitClose(30, TimeUnit.SECONDS);
+			checkArgument(activeBulkProcessors.containsKey(bulkId), "Unrecognized bulk processor identifier %s", bulkId);
+			boolean allBulkCompleted = activeBulkProcessors.remove(bulkId).awaitClose(30, TimeUnit.SECONDS);
 			if (!allBulkCompleted) {
 				System.out.println("There are remaining unprocessed bulk requests after 30 seconds of bulk processor close");
 			}
