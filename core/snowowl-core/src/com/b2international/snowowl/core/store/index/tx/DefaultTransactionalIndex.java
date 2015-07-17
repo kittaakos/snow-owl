@@ -89,11 +89,11 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	
 	@Override
 	public <T extends Revision> void updateRevisions(int commitId, Class<T> type, Collection<Long> storageKeys, String branchPath, long commitTimestamp) {
-		final Map<String, Object> scriptParams = createUpdateRevisionScriptParams(commitId, branchPath, commitTimestamp);
+		final Map<String, Object> scriptParams = createUpdateRevisionScriptParams(branchPath, commitTimestamp);
 		final Iterator<SearchHit> hitIterator = ((InternalIndex) index).scan(createStorageKeyFilter(storageKeys, branchPath, commitTimestamp));
 		while (hitIterator.hasNext()) {
 			final SearchHit next = hitIterator.next();
-			index.updateByScript(type, next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
+			index.updateByScript(commitId, getType(type), next.getId(), Revision.UPDATE_REVISION_TIMESTAMP_SCRIPT_KEY, scriptParams);
 		}		
 	}
 	
@@ -105,18 +105,15 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 		return QueryBuilders.filteredQuery(QueryBuilders.matchAllQuery(), FilterBuilders.andFilter(or, VisibleIn.createVisibleFromFilter(branchPath, commitTimestamp)));
 	}
 
-	private Map<String, Object> createUpdateAllRevisionScriptParams(int commitId, String parent, String child) {
+	private Map<String, Object> createUpdateAllRevisionScriptParams(String parent, String child) {
 		final Map<String, Object> params = newHashMap();
-		params.put(Revision.COMMIT_ID, commitId);
 		params.put("parent", parent);
 		params.put("child", child);
 		return params;
 	}
 	
-	private Map<String, Object> createUpdateRevisionScriptParams(int commitId, String branchPath, long commitTimestamp) {
+	private Map<String, Object> createUpdateRevisionScriptParams(String branchPath, long commitTimestamp) {
 		final Map<String, Object> params = newHashMap();
-		// TODO remove after bulk index refactor
-		params.put(Revision.COMMIT_ID, commitId);
 		params.put("branchPath", branchPath);
 		params.put("commitTimestamp", commitTimestamp);
 		return params;
@@ -126,18 +123,18 @@ public class DefaultTransactionalIndex implements TransactionalIndex {
 	public void updateAllRevisions(String parentBranch, String childBranch) {
 		final int bulkId = internalBulks.decrementAndGet();
 		index.create(bulkId);
-		final Map<String, Object> params = createUpdateAllRevisionScriptParams(bulkId, parentBranch, childBranch);
+		final Map<String, Object> params = createUpdateAllRevisionScriptParams(parentBranch, childBranch);
 		final Iterator<SearchHit> scan = ((InternalIndex) index).scan(VisibleIn.createVisibleFromQuery(parentBranch, branchManager.getBranch(parentBranch).headTimestamp()));
 		while (scan.hasNext()) {
 			final SearchHit next = scan.next();
-			index.updateByScript(next.getType(), next.getId(), Revision.BRANCH_CREATE_TAG_SCRIPT_KEY, params);
+			index.updateByScript(bulkId, next.getType(), next.getId(), Revision.BRANCH_CREATE_TAG_SCRIPT_KEY, params);
 		}
 		index.flush(bulkId);
 	}
 
 	@Override
-	public void addRevision(String branchPath, Component revision) {
-		this.index.put(revision);
+	public void addRevision(int commitId, Component revision) {
+		this.index.index(commitId, revision);
 	}
 	
 	@Override

@@ -15,6 +15,8 @@
  */
 package com.b2international.snowowl.core.store.index;
 
+import java.util.Map;
+
 /**
  * @since 5.0
  */
@@ -27,9 +29,14 @@ public interface BulkIndex extends Index {
 	 */
 	void create(int bulkId);
 
+	void index(int bulkId, Object object);
+	
+	void updateByScript(int bulkId, String type, String key, String script, Map<String, Object> params);
+	
 	/**
 	 * Flushes/Sends any pending bulk indexer to the underlying {@link Index} with the given bulkId and waits for all the response.
 	 */
 	void flush(int bulkId);
+
 
 }

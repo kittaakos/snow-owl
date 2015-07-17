@@ -34,12 +34,12 @@ public interface TransactionalIndex extends Administrable<IndexAdmin>, MappingPr
 	/**
 	 * Adds a revision to the transactional index.
 	 * 
-	 * @param branchPath
-	 *            - the branch to use when adding the revision
+	 * @param commitId
+	 *            - the commitId this revision belongs to
 	 * @param revision
 	 *            - the revision
 	 */
-	void addRevision(String branchPath, Component revision);
+	void addRevision(int commitId, Component revision);
 
 	/**
 	 * Loads the latest revision of an object from the index with the given type and storageKey as identifier.

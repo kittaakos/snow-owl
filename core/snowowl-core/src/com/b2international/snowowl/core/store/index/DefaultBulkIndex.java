@@ -39,7 +39,6 @@ import org.slf4j.Logger;
 
 import com.b2international.commons.ClassUtils;
 import com.b2international.snowowl.core.log.Loggers;
-import com.b2international.snowowl.core.store.index.tx.Revision;
 import com.b2international.snowowl.core.store.query.Query.AfterWhereBuilder;
 import com.b2international.snowowl.core.store.query.Query.QueryBuilder;
 import com.google.common.base.Stopwatch;
@@ -86,7 +85,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public <T> void put(T object) {
-		bulkIndex(prepareIndex(getType(object.getClass()), null, object));
+		this.index.put(object);
 	}
 	
 	@Override
@@ -96,7 +95,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public void put(String type, String key, Object object) {
-		bulkIndex(prepareIndex(type, key, object));
+		this.index.put(type, key, object);
 	}
 
 	@Override
@@ -106,7 +105,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public void putWithParent(String type, String parentKey, String key, Object object) {
-		bulkIndex(prepareIndexWithParent(type, parentKey, key, object));
+		this.index.putWithParent(type, parentKey, key, object);
 	}
 	
 	@Override
@@ -140,8 +139,18 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	}
 	
 	@Override
+	public void index(int bulkId, Object object) {
+		bulkIndex(bulkId, prepareIndex(getType(object.getClass()), null, object));
+	}
+	
+	@Override
+	public void updateByScript(int bulkId, String type, String key, String script, Map<String, Object> params) {
+		bulkUpdate(bulkId, prepareUpdateByScript(type, key, script, params));
+	}
+	
+	@Override
 	public void updateByScript(String type, String key, String script, Map<String, Object> params) {
-		bulkUpdate(prepareUpdateByScript(type, key, script, params));
+		this.index.updateByScript(type, key, script, params);
 	}
 	
 	@Override
@@ -149,23 +158,12 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		return index.prepareUpdateByScript(type, key, script, params);
 	}
 	
-	private void bulkIndex(final IndexRequestBuilder req) {
-		final Map<String, Object> source = req.request().sourceAsMap();
-		// TODO remove this limitation somehow
-		checkArgument(source.containsKey(Revision.COMMIT_ID), "BulkIndex cannot be used without transaction support, use it via TransactionalIndex");
-		final int bulkId = (int) source.get(Revision.COMMIT_ID);
+	private void bulkIndex(int bulkId, final IndexRequestBuilder req) {
 		getBulkProcessor(bulkId).add(req.request());
 	}
 	
-	private boolean bulkDelete(final DeleteRequestBuilder req) {
-		throw new UnsupportedOperationException("TODO implement how to get the commit identifier"); 
-	}
-	
-	private void bulkUpdate(UpdateRequestBuilder req) {
-		final Map<String, Object> params = req.request().scriptParams();
-		checkArgument(params.containsKey(Revision.COMMIT_ID), "BulkUpdate cannot be used without transaction support, use it via TransactionalIndex");
-		final int commitId = (int) params.get(Revision.COMMIT_ID);
-		getBulkProcessor(commitId).add(req.request());
+	private void bulkUpdate(int bulkId, UpdateRequestBuilder req) {
+		getBulkProcessor(bulkId).add(req.request());
 	}
 	
 	@Override
@@ -180,7 +178,7 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 	
 	@Override
 	public boolean remove(String type, String key) {
-		return bulkDelete(prepareDelete(type, key));
+		throw new UnsupportedOperationException("TODO implement how to get the commit id");
 	}
 	
 	@Override
@@ -222,8 +220,8 @@ public class DefaultBulkIndex implements BulkIndex, InternalIndex {
 		})
 		.setBulkActions(BULK_THRESHOLD)
 		.setBulkSize(new ByteSizeValue(512L, ByteSizeUnit.MB))
-		.setConcurrentRequests(2)
-		.setFlushInterval(new TimeValue(5, TimeUnit.SECONDS)).build();
+		.setConcurrentRequests(3)
+		.setFlushInterval(new TimeValue(10, TimeUnit.SECONDS)).build();
 		activeBulkProcessors.putIfAbsent(bulkId, processor);
 	}
 	
