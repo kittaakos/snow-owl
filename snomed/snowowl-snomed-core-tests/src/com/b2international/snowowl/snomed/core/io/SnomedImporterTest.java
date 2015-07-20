@@ -156,6 +156,8 @@ public class SnomedImporterTest {
 							final boolean relationshipActive = "1".equals(relationship[2]);
 							final String source = relationship[4];
 							final String target = relationship[5];
+							graph.addVertex(source);
+							graph.addVertex(target);
 							if ((graph.containsEdge(source, target) && !relationshipActive) || (!graph.containsEdge(source, target) && relationshipActive)) {
 								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
 							}
