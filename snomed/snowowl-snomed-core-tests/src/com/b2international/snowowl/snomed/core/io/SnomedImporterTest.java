@@ -46,7 +46,7 @@ import org.slf4j.Logger;
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
-import com.b2international.snowowl.core.internal.branch.VisibleInBranchManagerImpl;
+import com.b2international.snowowl.core.internal.branch.LocalBranchManagerImpl;
 import com.b2international.snowowl.core.log.Loggers;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
@@ -97,7 +97,7 @@ public class SnomedImporterTest {
 	public final TemporaryDirectory tmpDir = new TemporaryDirectory("import");
 	
 	private Store<InternalBranch> branchStore;
-	private VisibleInBranchManagerImpl branching;
+	private LocalBranchManagerImpl branching;
 	
 	private final AtomicLong clock = new AtomicLong(0L);
 	private final AtomicInteger commitIdProvider = new AtomicInteger(0);
@@ -109,16 +109,14 @@ public class SnomedImporterTest {
 	
 	@Before
 	public void givenIndex() throws Exception {
-//		rule.client().admin().indices().prepareDelete("snomed_ct*").get();
 		final Map<String, Object> settings = mapper.readValue(Resources.toString(Resources.getResource(Concept.class, SETTINGS_FILE), Charsets.UTF_8), Map.class);
 		
 		this.index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
 		this.index.admin().delete();
 		this.index.admin().create();
 		this.branchStore = new IndexStore<>(index, InternalBranch.class);
-		this.branching = new VisibleInBranchManagerImpl(branchStore, clock);
+		this.branching = new LocalBranchManagerImpl(branchStore, clock);
 		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), branching);
-		this.branching.setIndex(txIndex);
 	}
 	
 	@Test

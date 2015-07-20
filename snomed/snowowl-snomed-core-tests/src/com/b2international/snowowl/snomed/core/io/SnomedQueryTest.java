@@ -18,6 +18,7 @@ package com.b2international.snowowl.snomed.core.io;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.Before;
@@ -27,7 +28,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.internal.branch.InternalBranch;
-import com.b2international.snowowl.core.internal.branch.VisibleInBranchManagerImpl;
+import com.b2international.snowowl.core.internal.branch.LocalBranchManagerImpl;
 import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
@@ -50,11 +51,11 @@ public class SnomedQueryTest {
 	private static final String SETTINGS_FILE = "snomed_settings.json";
 	
 	@ClassRule
-	public static final ESTransportClientRule rule = new ESTransportClientRule("mczotter");
+	public static final ESLocalNodeRule rule = new ESLocalNodeRule();
 	
 	private Index index;
 	private Store<InternalBranch> branchStore;
-	private VisibleInBranchManagerImpl branching;
+	private LocalBranchManagerImpl branching;
 	
 	private ObjectMapper mapper = new DefaultObjectMapper();
 	private AtomicLong clock = new AtomicLong(0L);
@@ -68,10 +69,9 @@ public class SnomedQueryTest {
 		
 		this.index = new DefaultIndex(rule.client(), "snomed_ct", Mappings.of(mapper, Concept.class), settings);
 		this.branchStore = new IndexStore<>(index, InternalBranch.class);
-		this.branching = new VisibleInBranchManagerImpl(branchStore, clock);
+		this.branching = new LocalBranchManagerImpl(branchStore, clock);
 		this.txIndex = new DefaultTransactionalIndex(new DefaultBulkIndex(index), branching);
 		this.browser = new SnomedBrowser(txIndex);
-		this.branching.setIndex(txIndex);
 	}
 
 	@Test
@@ -83,7 +83,6 @@ public class SnomedQueryTest {
 		assertThat(result).hasSize(19);
 	}
 	
-	@Ignore
 	@Test
 	public void queryDescendantsOfClinicalFindingOnMAIN() throws Exception {
 		final String branch = "MAIN";
@@ -100,6 +99,14 @@ public class SnomedQueryTest {
 		final Iterable<Concept> result = browser.getChildren(branch, "273249006", 0, 909);
 		System.out.println("Assessment Scales Children took: " + watch);
 		assertThat(result).hasSize(909);
+	}
+	
+	@Ignore
+	@Test
+	public void openBranch() throws Exception {
+		Stopwatch watch = Stopwatch.createStarted();
+		branching.getMainBranch().createChild(UUID.randomUUID().toString());
+		System.out.println("Branch open took: " + watch);
 	}
 	
 }
