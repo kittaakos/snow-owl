@@ -15,7 +15,10 @@
  */
 package com.b2international.snowowl.core.store.index.tx;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.when;
 
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -27,16 +30,14 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.branch.BranchManager;
+import com.b2international.snowowl.core.branch.MockBranchManager;
 import com.b2international.snowowl.core.exceptions.NotFoundException;
-import com.b2international.snowowl.core.internal.branch.InternalBranch;
-import com.b2international.snowowl.core.internal.branch.VisibleInBranchManagerImpl;
-import com.b2international.snowowl.core.store.Store;
 import com.b2international.snowowl.core.store.index.DefaultBulkIndex;
 import com.b2international.snowowl.core.store.index.DefaultIndex;
 import com.b2international.snowowl.core.store.index.Mappings;
-import com.b2international.snowowl.core.store.mem.MemStore;
 import com.b2international.snowowl.core.terminology.Component;
-import com.b2international.snowowl.core.tests.ESRule;
+import com.b2international.snowowl.core.tests.ESLocalNodeRule;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonFixtures;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,14 +50,13 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	private static final String COMMIT_MESSAGE = "Commit Message XXX";
 
 	@Rule
-	public ESRule es = new ESRule();
+	public ESLocalNodeRule es = new ESLocalNodeRule();
 
 	private AtomicLong clock = new AtomicLong(0L);
 	private AtomicInteger commitIdProvider = new AtomicInteger(0);
 	private Branch main;
 	private ObjectMapper mapper;
-	private Store<InternalBranch> store = new MemStore<>(InternalBranch.class);
-	private VisibleInBranchManagerImpl manager;
+	private BranchManager manager;
 	private TransactionalIndex txIndex;
 
 	private Person person1_2015;
@@ -66,14 +66,12 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 	@Before
 	public void givenTransactionalIndex() {
 		this.mapper = new DefaultObjectMapper();
-		this.manager = new VisibleInBranchManagerImpl(store, clock);
+		this.manager = new MockBranchManager();
 		this.main = manager.getMainBranch();
 
 		this.txIndex = createTransactionalIndex();
 		this.txIndex.admin().delete();
 		this.txIndex.admin().create();
-
-		this.manager.setIndex(txIndex);
 
 		this.person1_2015 = createPerson1();
 		this.person1_YobChanged = createPerson1();
@@ -239,7 +237,7 @@ public class DefaultTransactionalIndexTest extends PersonFixtures {
 			public void commit(String commitMessage) {
 				original.commit(commitMessage);
 				// make commit available in the branch as timestamp
-				manager.handleCommit(branch, commitTimestamp);
+				when(branch.headTimestamp()).thenReturn(commitTimestamp);
 			}
 
 			@Override

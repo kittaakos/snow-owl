@@ -19,7 +19,7 @@ import org.junit.Rule;
 
 import com.b2international.snowowl.core.store.BaseStoreTest;
 import com.b2international.snowowl.core.store.Store;
-import com.b2international.snowowl.core.tests.ESRule;
+import com.b2international.snowowl.core.tests.ESLocalNodeRule;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -28,7 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class IndexStoreTest extends BaseStoreTest {
 
 	@Rule
-	public ESRule es = new ESRule(); 
+	public ESLocalNodeRule es = new ESLocalNodeRule(); 
 	
 	@Override
 	protected <T> Store<T> createStore(Class<T> type) {

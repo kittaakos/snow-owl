@@ -6,17 +6,21 @@
 		"storageKey" : {
 			"type": "long"		
 		},
-		"visibleIns" : {
+		"branchPath": {
+			"type" : "string",
+			"index" : "not_analyzed"
+		},
+		"commitTimestamp" : {
+			"type" : "long"
+		},
+		"replacedIns" : {
 			"type" : "nested",
 			"properties" : {
 				"branchPath" : {
 					"type" : "string",
 					"index" : "not_analyzed"
 				},
-				"from" : {
-					"type" : "long"
-				},
-				"to" : {
+				"commitTimestamp" : {
 					"type" : "long"
 				}
 			}

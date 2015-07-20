@@ -1,22 +1,26 @@
 {
     "properties": {
-        "storageKey": {
-            "type": "long"
-        },
 		"commitId" : {
 			"type" : "long"
 		},
-		"visibleIns" : {
+		"storageKey" : {
+			"type": "long"		
+		},
+		"branchPath": {
+			"type" : "string",
+			"index" : "not_analyzed"
+		},
+		"commitTimestamp" : {
+			"type" : "long"
+		},
+		"replacedIns" : {
 			"type" : "nested",
 			"properties" : {
 				"branchPath" : {
 					"type" : "string",
 					"index" : "not_analyzed"
 				},
-				"from" : {
-					"type" : "long"
-				},
-				"to" : {
+				"commitTimestamp" : {
 					"type" : "long"
 				}
 			}

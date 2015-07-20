@@ -15,7 +15,7 @@ import org.junit.rules.TestRule;
  * 
  * @since 5.0
  */
-public class ESRule extends ExternalResource {
+public class ESLocalNodeRule extends ExternalResource {
 
 	private Node node;
 	
@@ -29,12 +29,11 @@ public class ESRule extends ExternalResource {
 		settings.put("script.engine.groovy.inline.plugin", "on");
 		settings.put("script.inline", "on");
 		settings.put("script.indexed", "on");
-		node = NodeBuilder.nodeBuilder().settings(settings.build()).clusterName(UUID.randomUUID().toString()).local(true).node();
+		node = NodeBuilder.nodeBuilder().settings(settings).clusterName(UUID.randomUUID().toString()).local(true).node();
 	}
 	
 	@Override
 	protected void after() {
-		client().admin().indices().prepareDelete("_all").get();
 		node.close();
 	}
 	

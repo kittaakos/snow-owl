@@ -18,7 +18,6 @@ package com.b2international.snowowl.core.store.index.tx;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Collection;
-import java.util.Collections;
 
 import com.b2international.snowowl.core.terminology.Component;
 import com.google.common.collect.HashMultimap;
@@ -46,7 +45,8 @@ class DefaultIndexTransaction implements IndexTransaction {
 	public void add(long storageKey, Component revision) {
 		delete(storageKey, revision.getClass());
 		revision.setStorageKey(storageKey);
-		revision.setVisibleIns(Collections.singleton(new VisibleIn(branchPath, commitTimestamp)));
+		revision.setBranchPath(branchPath);
+		revision.setCommitTimestamp(commitTimestamp);
 		index.addRevision(commitId, revision);
 	}
 	

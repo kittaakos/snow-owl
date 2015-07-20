@@ -50,7 +50,7 @@ import com.b2international.snowowl.core.store.index.Mappings;
 import com.b2international.snowowl.core.store.index.tx.DefaultTransactionalIndex;
 import com.b2international.snowowl.core.store.index.tx.TransactionalIndex;
 import com.b2international.snowowl.core.store.query.Expressions;
-import com.b2international.snowowl.core.tests.ESRule;
+import com.b2international.snowowl.core.tests.ESLocalNodeRule;
 import com.b2international.snowowl.core.tests.TemporaryDirectory;
 import com.b2international.snowowl.core.tests.person.Person;
 import com.b2international.snowowl.core.tests.person.PersonChangeProcessorFactory;
@@ -63,7 +63,7 @@ import com.google.common.collect.Iterables;
 public class DefaultRepositoryTransactionTest {
 
 	@Rule
-	public ESRule es = new ESRule();
+	public ESLocalNodeRule es = new ESLocalNodeRule();
 	
 	private Repository repository;
 	private TransactionalIndex txIndex;
