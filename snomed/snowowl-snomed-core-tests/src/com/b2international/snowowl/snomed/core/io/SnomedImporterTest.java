@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -140,9 +141,34 @@ public class SnomedImporterTest {
 			final File concepts = conceptFilesByEffectiveTime.get(et);
 			final File descriptions = descriptionFilesByEffectiveTime.get(et);
 			final File relationships = relationshipFilesByEffectiveTime.get(et);
-			final Collection<String> parentageChanges = newHashSet();
+			Collection<String> parentageChanges = Collections.emptySet();
 			if (relationships != null) {
 				final Stopwatch watch = Stopwatch.createStarted();
+				LOG.info("Collecting parentage changes from relationships of {}", et);
+				parentageChanges = Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Collection<String>>() {
+
+					private Collection<String> parentageChanges = newHashSet();
+					
+					@Override
+					public boolean processLine(String line) throws IOException {
+						final String[] relationship = line.split("\t");
+						if (ISA.equals(relationship[7])) {
+							final boolean relationshipActive = "1".equals(relationship[2]);
+							final String source = relationship[4];
+							final String target = relationship[5];
+							if ((graph.containsEdge(source, target) && !relationshipActive) || (!graph.containsEdge(source, target) && relationshipActive)) {
+								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
+							}
+						}
+						return true;
+					}
+
+					@Override
+					public Collection<String> getResult() {
+						return parentageChanges;
+					}
+					
+				});
 				LOG.info("Building taxonomy from relationships of {}", et);
 				Files.readLines(relationships, Charsets.UTF_8, new LineProcessor<Boolean>() {
 					@Override
@@ -159,7 +185,6 @@ public class SnomedImporterTest {
 							// check if relationship is already in the graph
 							if (graph.containsEdge(source, target) && !relationshipActive) {
 								// before removing the edge, compute all predecessors aka children
-								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
 								final RelationshipEdge edge = graph.removeEdge(source, target);
 								if (debug) {
 									System.out.println("ISA removed from graph: " + edge);
@@ -167,7 +192,6 @@ public class SnomedImporterTest {
 							} else if (!graph.containsEdge(source, target) && relationshipActive) {
 								final RelationshipEdge edge = new RelationshipEdge(relationshipId);
 								checkState(graph.addEdge(source, target, edge), "Can't add ISA to graph: %s: %s->%s", relationshipId, source, target);
-								parentageChanges.addAll(getDescendants(graph, source, Sets.<String>newHashSet()));
 								if (debug) {
 									System.out.println("ISA added to graph: " + edge);
 								}
