@@ -24,6 +24,7 @@ import org.junit.Test;
 
 import com.b2international.snowowl.core.DefaultObjectMapper;
 import com.b2international.snowowl.core.branch.Branch.BranchState;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
@@ -100,12 +101,12 @@ public class MainBranchTest {
 		return branch;
 	}
 
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = BadRequestException.class)
 	public void rebaseMainBranch() throws Exception {
 		main.rebase("Commit");
 	}
 	
-	@Test(expected = UnsupportedOperationException.class)
+	@Test(expected = BadRequestException.class)
 	public void deleteMainBranch() throws Exception {
 		main.delete();
 	}
