@@ -29,7 +29,7 @@ public abstract class BaseEvent extends MetadataHolderImpl implements Event {
 
 	@Override
 	public void send(IEventBus bus) {
-		send(bus, null);
+		send(bus, (IHandler<IMessage>) null);
 	}
 
 	@Override
