@@ -16,6 +16,8 @@
 package com.b2international.snowowl.core.event;
 
 import com.b2international.snowowl.core.MetadataHolderImpl;
+import com.b2international.snowowl.core.event.util.AsyncSupport;
+import com.b2international.snowowl.core.event.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -33,6 +35,11 @@ public abstract class BaseEvent extends MetadataHolderImpl implements Event {
 	@Override
 	public void send(IEventBus bus, IHandler<IMessage> replyHandler) {
 		bus.send(getAddress(), this, replyHandler);
+	}
+	
+	@Override
+	public final <T> Promise<T> send(IEventBus bus, Class<T> returnType) {
+		return new AsyncSupport<T>(bus, returnType).send(this);
 	}
 
 	/**

@@ -16,6 +16,7 @@
 package com.b2international.snowowl.core.internal.branch;
 
 import com.b2international.snowowl.core.branch.Branch;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 
 /**
  * @since 4.1
@@ -65,7 +66,7 @@ public class MainBranchImpl extends BranchImpl {
 	
 	@Override
 	public Branch delete() {
-		throw new UnsupportedOperationException(path() + " cannot be deleted");
+		throw new BadRequestException(path() + " cannot be deleted");
 	}
 	
 	@Override
@@ -75,6 +76,6 @@ public class MainBranchImpl extends BranchImpl {
 	
 	@Override
 	public Branch rebase(Branch target, String commitMessage) {
-		throw new UnsupportedOperationException(path() + " cannot be rebased");
+		throw new BadRequestException(path() + " cannot be rebased");
 	}
 }

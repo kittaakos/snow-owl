@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.server.branch.Branch;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
@@ -43,7 +42,7 @@ import com.b2international.snowowl.datastore.server.events.ReadBranchChildrenEve
 import com.b2international.snowowl.datastore.server.events.ReadBranchEvent;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.snomed.api.rest.domain.CollectionResource;
-import com.b2international.snowowl.snomed.api.rest.domain.CreateSnomedBranchRequest;
+import com.b2international.snowowl.snomed.api.rest.domain.CreateBranchRequest;
 import com.b2international.snowowl.snomed.api.rest.domain.RestApiError;
 import com.b2international.snowowl.snomed.api.rest.util.Responses;
 import com.wordnik.swagger.annotations.Api;
@@ -59,11 +58,9 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @RequestMapping(value="/branches", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
 public class SnomedBranchingController extends AbstractRestService {
 
-	private static final String SNOMED_REPOSITORY = "snomedStore";
-	
 	@Autowired 
 	private IEventBus bus;
-
+	
 	@ApiOperation(
 		value = "Create a new branch", 
 		notes = "Create a new branch in the SNOMED-CT repository.")
@@ -73,12 +70,12 @@ public class SnomedBranchingController extends AbstractRestService {
 	})
 	@RequestMapping(method=RequestMethod.POST)
 	@ResponseStatus(HttpStatus.CREATED)
-	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateSnomedBranchRequest request) {
+	public DeferredResult<ResponseEntity<Void>> createBranch(@RequestBody CreateBranchRequest request) {
 		ApiValidation.checkInput(request);
 		final ResponseEntity<Void> response = Responses.created(getBranchLocationHeader(request.path())).build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, BranchReply.class)
-			.send(request.toEvent())
+		request.toEvent(repositoryId)
+			.send(bus, BranchReply.class)
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})
@@ -97,8 +94,8 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(method=RequestMethod.GET)
 	public DeferredResult<CollectionResource<Branch>> getBranches() {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, BranchesReply.class)
-			.send(new ReadAllBranchEvent(SNOMED_REPOSITORY))
+		new ReadAllBranchEvent(repositoryId)
+			.send(bus, BranchesReply.class)
 			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
 				result.setResult(CollectionResource.of(reply.getBranches()));
 			}})
@@ -118,8 +115,8 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(value="/{path:**}/children", method=RequestMethod.GET)
 	public DeferredResult<CollectionResource<Branch>> getChildren(@PathVariable("path") String branchPath) {
 		final DeferredResult<CollectionResource<Branch>> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, BranchesReply.class)
-			.send(new ReadBranchChildrenEvent(SNOMED_REPOSITORY, branchPath))
+		new ReadBranchChildrenEvent(repositoryId, branchPath)
+			.send(bus, BranchesReply.class)
 			.then(new Procedure<BranchesReply>() { @Override protected void doApply(BranchesReply reply) {
 				result.setResult(CollectionResource.of(reply.getBranches()));
 			}})
@@ -139,8 +136,8 @@ public class SnomedBranchingController extends AbstractRestService {
 	@RequestMapping(value="/{path:**}", method=RequestMethod.GET)
 	public DeferredResult<Branch> getBranch(@PathVariable("path") String branchPath) {
 		final DeferredResult<Branch> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new ReadBranchEvent(SNOMED_REPOSITORY, branchPath))
+		new ReadBranchEvent(repositoryId, branchPath)
+			.send(bus, BranchReply.class)
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(reply.getBranch());
 			}})
@@ -166,8 +163,8 @@ public class SnomedBranchingController extends AbstractRestService {
 	public DeferredResult<ResponseEntity<Void>> deleteBranch(@PathVariable("path") String branchPath) {
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		new AsyncSupport<>(bus, BranchReply.class)
-			.send(new DeleteBranchEvent(SNOMED_REPOSITORY, branchPath))
+		new DeleteBranchEvent(repositoryId, branchPath)
+			.send(bus, BranchReply.class)
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})

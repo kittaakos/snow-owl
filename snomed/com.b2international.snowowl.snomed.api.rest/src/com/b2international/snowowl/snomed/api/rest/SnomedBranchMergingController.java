@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import com.b2international.commons.collections.Procedure;
-import com.b2international.snowowl.core.events.util.AsyncSupport;
 import com.b2international.snowowl.core.exceptions.ApiValidation;
 import com.b2international.snowowl.datastore.server.events.BranchReply;
 import com.b2international.snowowl.eventbus.IEventBus;
@@ -45,7 +44,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 @Api("Branches")
 @RestController
 @RequestMapping(value="/merges", produces={AbstractRestService.SO_MEDIA_TYPE, MediaType.APPLICATION_JSON_VALUE})
-public class SnomedBranchMergingController {
+public class SnomedBranchMergingController extends AbstractRestService {
 
 	@Autowired
 	private IEventBus bus;
@@ -65,8 +64,8 @@ public class SnomedBranchMergingController {
 		ApiValidation.checkInput(request);
 		final ResponseEntity<Void> response = Responses.noContent().build();
 		final DeferredResult<ResponseEntity<Void>> result = new DeferredResult<>();
-		new AsyncSupport<BranchReply>(bus, BranchReply.class)
-			.send(request.toEvent())
+		request.toEvent(repositoryId)
+			.send(bus, BranchReply.class)
 			.then(new Procedure<BranchReply>() { @Override protected void doApply(BranchReply reply) {
 				result.setResult(response);
 			}})

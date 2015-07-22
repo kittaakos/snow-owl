@@ -44,10 +44,12 @@ import com.b2international.snowowl.core.session.SessionManager;
 public class BranchEventHandler extends ApiEventHandler {
 
 	private BranchManager branchManager;
+	private ReviewManager reviewManager;
 	
-	public BranchEventHandler(SessionManager sessionManager, BranchManager branchManager) {
+	public BranchEventHandler(SessionManager sessionManager, BranchManager branchManager, ReviewManager reviewManager) {
 		super(sessionManager);
 		this.branchManager = checkNotNull(branchManager, "manager");
+		this.reviewManager = checkNotNull(reviewManager, "reviewManager");
 	}
 	
 	@Handler
@@ -97,8 +99,24 @@ public class BranchEventHandler extends ApiEventHandler {
 	@Handler
 	protected BranchReply handle(MergeEvent event) {
 		try {
+			final String reviewId = event.getReviewId();
 			final Branch source = branchManager.getBranch(event.getSource());
 			final Branch target = branchManager.getBranch(event.getTarget());
+			
+			if (reviewId != null) {
+				Review review = reviewManager.getReview(reviewId);
+				BranchState sourceState = review.source();
+				BranchState targetState = review.target();
+				
+				if (!sourceState.matches(source)) {
+					throw new ConflictException("Source branch '%s' did not match with stored state on review identifier '%s'.", source.path(), reviewId);
+				}
+				
+				if (!targetState.matches(target)) {
+					throw new ConflictException("Target branch '%s' did not match with stored state on review identifier '%s'.", target.path(), reviewId);
+				}
+			}
+			
 			if (source.parent().equals(target)) {
 				
 				// merge into target

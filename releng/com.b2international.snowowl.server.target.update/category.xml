@@ -6,9 +6,6 @@
    <feature url="features/org.eclipse.equinox.core.sdk_3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU.jar" id="org.eclipse.equinox.core.sdk" version="3.8.0.v20120913-170102-84FAcGeRFnbPjaJrB422VklHlU">
       <category name="Eclipse Runtime"/>
    </feature>
-   <feature url="features/org.jnario.feature.group_1.0.0.201407142310.jar" id="org.jnario" version="1.0.0.201407142310">
-      <category name="Other"/>
-   </feature>
    <feature url="features/org.eclipse.emf.mwe.core_1.3.3.v201406110919.jar" id="org.eclipse.emf.mwe.core" version="1.3.3.v201406110919">
       <category name="Modeling"/>
    </feature>
@@ -39,7 +36,7 @@
    <feature url="features/org.eclipse.xtext.xbase.source_2.6.2.v201407030533.jar" id="org.eclipse.xtext.xbase.source" version="2.6.2.v201407030533">
       <category name="Xtext"/>
    </feature>
-   <feature url="features/org.eclipse.emf.sdk_2.10.0.v20140519-0339.jar" id="org.eclipse.emf.sdk" version="2.10.0.v20140519-0339">
+   <feature url="features/org.eclipse.emf.sdk_2.10.2.v20150123-0452.jar" id="org.eclipse.emf.sdk" version="2.10.2.v20150123-0452">
       <category name="Modeling"/>
    </feature>
    <feature url="features/org.emfjson.feature_0.10.0.jar" id="org.emfjson.feature" version="0.10.0">
@@ -137,9 +134,9 @@
    <bundle id="org.mockito.mockito-all" version="1.9.5"/>
    <bundle id="org.yaml.snakeyaml" version="1.12.0"/>
    <bundle id="xstream" version="1.4.7"/>
+   <bundle id="org.apache.el" version="7.0.35"/>
    <category-def name="Eclipse Runtime" label="Eclipse RT Components"/>
    <category-def name="Modeling" label="Modeling Components"/>
-   <category-def name="Other" label="Others"/>
    <category-def name="IDE Tools" label="Development Environment Tools"/>
    <category-def name="Xtext" label="Eclipse Xtext"/>
    <category-def name="CDO" label="Eclipse CDO"/>

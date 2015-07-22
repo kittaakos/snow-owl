@@ -105,10 +105,7 @@ public class SnomedExportRestService extends AbstractSnomedRestService {
 		final String transientEffectiveTime = configuration.getTransientEffectiveTime();
 		validateTransientEffectiveTime(transientEffectiveTime);
 
-		final StorageRef exportStorageRef = new StorageRef();
-		
-		exportStorageRef.setShortName("SNOMEDCT");
-		exportStorageRef.setBranchPath(configuration.getBranchPath());
+		final StorageRef exportStorageRef = new StorageRef(codeSystemShortName, configuration.getBranchPath());
 		
 		// Check version and branch existence
 		exportStorageRef.checkStorageExists();

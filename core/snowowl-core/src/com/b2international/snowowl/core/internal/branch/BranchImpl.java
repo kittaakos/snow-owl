@@ -25,6 +25,7 @@ import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolderImpl;
 import com.b2international.snowowl.core.branch.Branch;
 import com.b2international.snowowl.core.branch.BranchMergeException;
+import com.b2international.snowowl.core.exceptions.BadRequestException;
 
 /**
  * @since 4.1
@@ -128,7 +129,10 @@ public class BranchImpl extends MetadataHolderImpl implements Branch, InternalBr
 
 	@Override
 	public Branch merge(Branch source, String commitMessage) throws BranchMergeException {
-		checkArgument(!source.equals(this), "Can't merge branch onto itself.");
+		if (path().equals(source.path())) {
+			throw new BadRequestException("Can't merge branch '%s' onto itself.", path());
+		}
+		
 		if (source.state() != Branch.BranchState.FORWARD) {
 			throw new BranchMergeException("Only source in the FORWARD state can merged.");
 		} else {

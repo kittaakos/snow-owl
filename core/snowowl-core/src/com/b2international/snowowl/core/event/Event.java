@@ -17,6 +17,7 @@ package com.b2international.snowowl.core.event;
 
 import com.b2international.snowowl.core.Metadata;
 import com.b2international.snowowl.core.MetadataHolder;
+import com.b2international.snowowl.core.event.util.Promise;
 import com.b2international.snowowl.eventbus.IEventBus;
 import com.b2international.snowowl.eventbus.IHandler;
 import com.b2international.snowowl.eventbus.IMessage;
@@ -31,6 +32,18 @@ public interface Event extends MetadataHolder {
 	void send(IEventBus bus);
 
 	void send(IEventBus bus, IHandler<IMessage> replyHandler);
+
+	/**
+	 * Sends this event to the given event bus and returns a promise of the given returnType.
+	 * 
+	 * @param bus
+	 *            - the bus to send this event to
+	 * @param returnType
+	 *            - the type of the promise
+	 * @return - a {@link Promise} to listen on event resolution or rejection
+	 * @since 4.2
+	 */
+	<T> Promise<T> send(IEventBus bus, Class<T> returnType);
 
 	/**
 	 * Support headers available in event {@link Metadata}.
