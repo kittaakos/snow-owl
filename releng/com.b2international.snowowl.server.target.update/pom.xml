@@ -1,9 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<artifactId>com.b2international.snowowl.server.target.update</artifactId>
 	<packaging>eclipse-repository</packaging>
-	
+
 	<parent>
 		<groupId>com.b2international.snowowl</groupId>
 		<artifactId>releng-parent</artifactId>
@@ -13,7 +14,7 @@
 	<properties>
 		<repository.name>target_platform_${project.version}</repository.name>
 	</properties>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -134,46 +135,46 @@
 					<argLine>-Declipse.p2.mirrors=false</argLine>
 					<appArgLine>-nosplash -consoleLog -application org.eclipse.equinox.p2.repository.repo2runnable -source ${project.build.directory}/repository -destination ${project.build.directory}/${repository.name}</appArgLine>
 					<dependencies>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.transport.ecf</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.repository</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.touchpoint.natives</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.touchpoint.eclipse</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.artifact.repository</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.p2.repository.tools</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-	                    <dependency>
-	                        <artifactId>org.eclipse.equinox.ds</artifactId>
-	                        <type>eclipse-plugin</type>
-	                    </dependency>
-			    		<dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.transport.ecf</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.repository</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.touchpoint.natives</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.touchpoint.eclipse</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.artifact.repository</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.repository.tools</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.ds</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
 							<artifactId>org.eclipse.core.net</artifactId>
 							<type>eclipse-plugin</type>
-		    			</dependency>
-                	</dependencies>
-                	<repositories>
-                		<repository>
+						</dependency>
+					</dependencies>
+					<repositories>
+						<repository>
 							<id>kepler</id>
 							<url>http://download.eclipse.org/releases/kepler</url>
 							<layout>p2</layout>
 						</repository>
-                	</repositories>
+					</repositories>
 				</configuration>
 				<executions>
 					<execution>
@@ -203,5 +204,5 @@
 			</plugin>
 		</plugins>
 	</build>
-	
+
 </project>
