@@ -565,7 +565,7 @@
 			<repositories>
 				<repository>
 					<id>emf</id>
-					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.11/core/R201506010402/</url>
+					<url>http://download.eclipse.org/modeling/emf/emf/updates/2.12/core/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
@@ -575,12 +575,12 @@
 				</repository>
 				<repository>
 					<id>xtext</id>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.8.4/</url>
+					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/head/S201701270250/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
 					<id>mwe</id>
-					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.8.1/</url>
+					<url>http://download.eclipse.org/modeling/emft/mwe/updates/releases/2.9.0/</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>
