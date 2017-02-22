@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.b2international.snowowl.snomed.ecl.scoping
+package com.b2international.snowowl.snomed.ecl
 
 
 /**
- * This class contains custom scoping description.
- * 
- * See https://www.eclipse.org/Xtext/documentation/303_runtime_concepts.html#scoping
- * on how and when to use it.
+ * Initialization support for running Xtext languages without Equinox extension registry.
  */
-class EclScopeProvider extends AbstractEclScopeProvider {
+class EclStandaloneSetup extends EclStandaloneSetupGenerated {
 
+	def static void doSetup() {
+		new EclStandaloneSetup().createInjectorAndDoEMFRegistration()
+	}
 }
