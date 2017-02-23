@@ -100,14 +100,14 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.runtime</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.9.0,3.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.emf.mwe2.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.9.0,3.0.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
@@ -135,35 +135,42 @@
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.smap</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.util</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtext.xbase.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.xtend.lib</id>
 							<restrictTo>
-								<versionRange>[2.8.0,2.9.0)</versionRange>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
+							</restrictTo>
+						</filter>
+						<filter>
+							<type>eclipse-plugin</type>
+							<id>org.eclipse.xtext.testing</id>
+							<restrictTo>
+								<versionRange>[2.11.0,2.13.0)</versionRange>
 							</restrictTo>
 						</filter>
 						<!-- Remove RAP -->
@@ -593,9 +600,16 @@
 					<url>http://download.eclipse.org/modeling/emf/cdo/updates/releases/4.1/</url>
 					<layout>p2</layout>
 				</repository>
+				<!--
+<repository>
+					<id>orbit_site_2014</id>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository</url>
+					<layout>p2</layout>
+				</repository>
+-->
 				<repository>
 					<id>latest_orbit_site</id>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository</url>
+					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository</url>
 					<layout>p2</layout>
 				</repository>
 				<repository>

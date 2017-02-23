@@ -64,8 +64,8 @@
    <bundle id="ch.qos.logback.classic.source" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.core" version="1.0.7.v20121108-1250"/>
    <bundle id="ch.qos.logback.core.source" version="1.0.7.v20121108-1250"/>
-   <bundle id="ch.qos.logback.slf4j" version="1.0.7.v20121108-1250"/>
-   <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v20121108-1250"/>
+   <bundle id="ch.qos.logback.slf4j" version="1.0.7.v201505121915"/>
+   <bundle id="ch.qos.logback.slf4j.source" version="1.0.7.v201505121915"/>
    <bundle id="com.google.guava" version="15.0.0.v201403281430"/>
    <bundle id="com.google.guava.source" version="15.0.0.v201403281430"/>
    <bundle id="org.slf4j.api" version="1.7.2.v20121108-1250"/>
@@ -78,8 +78,12 @@
    <bundle id="org.eclipse.xtend.lib.source" version="2.11.0.v20170124-1424"/>
    <bundle id="org.eclipse.xtend.lib.macro" version="2.11.0.v20170124-1424"/>
    <bundle id="org.eclipse.xtend.lib.macro.source" version="2.11.0.v20170124-1424"/>
-   <bundle id="org.junit" version="4.11.0.v201303080030"/>
-   <bundle id="org.junit.source" version="4.11.0.v201303080030"/>
+   <bundle id="org.eclipse.xtext.testing" version="2.11.0.v20170124-1428"/>
+   <bundle id="org.eclipse.xtext.testing.source" version="2.11.0.v20170124-1428"/>
+   <bundle id="org.eclipse.xtext.xbase.testing" version="2.11.0.v20170124-1445"/>
+   <bundle id="org.eclipse.xtext.xbase.testing.source" version="2.11.0.v20170124-1445"/>
+   <bundle id="org.junit" version="4.12.0.v201504281640"/>
+   <bundle id="org.junit.source" version="4.12.0.v201504281640"/>
    <bundle id="org.apache.commons.beanutils" version="1.8.0.v201205091237"/>
    <bundle id="org.apache.commons.beanutils.source" version="1.8.0.v201205091237"/>
    <bundle id="org.apache.commons.codec" version="1.6.0.v201305230611"/>
@@ -88,8 +92,8 @@
    <bundle id="org.apache.commons.exec.source" version="1.1.0.v201301240602"/>
    <bundle id="org.apache.commons.lang" version="2.6.0.v201404270220"/>
    <bundle id="org.apache.commons.lang.source" version="2.6.0.v201205030909"/>
-   <bundle id="org.apache.xmlbeans" version="2.3.0.v201405241900"/>
-   <bundle id="org.apache.xmlbeans.source" version="2.3.0.v201405241900"/>
+   <bundle id="org.apache.xmlbeans" version="2.3.0.v201605172150"/>
+   <bundle id="org.apache.xmlbeans.source" version="2.3.0.v201605172150"/>
    <bundle id="osgi.enterprise" version="4.2.0.v201108120515"/>
    <bundle id="osgi.enterprise.source" version="4.2.0.v201108120515"/>
    <bundle id="org.dom4j" version="1.6.1.v201312101416"/>
@@ -121,7 +125,7 @@
    <bundle id="org.mockito.mockito-all" version="1.9.5"/>
    <bundle id="org.yaml.snakeyaml" version="1.12.0"/>
    <bundle id="xstream" version="1.4.7"/>
-   <bundle id="org.apache.el" version="7.0.35.v201312011930"/>
+   <bundle id="org.apache.el" version="7.0.56.v201412180755"/>
    <bundle id="javax.xml" version="1.3.4.v201005080400"/>
    <bundle id="javax.xml.stream" version="1.0.1.v201004272200" />
    <bundle id="org.semanticweb.owl.owlapi" version="3.4.4" />

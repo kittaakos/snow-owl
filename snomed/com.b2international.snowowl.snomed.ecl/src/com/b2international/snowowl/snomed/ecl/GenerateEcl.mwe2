@@ -29,7 +29,7 @@ Workflow {
 				baseName = "com.b2international.snowowl.snomed.ecl"
 				rootPath = rootPath
 				runtimeTest = {
-					enabled = false
+					enabled = true
 				}
 				eclipsePlugin = {
 					enabled = false
