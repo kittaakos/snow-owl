@@ -32,14 +32,8 @@ import static org.junit.Assert.assertNotNull
 @FixMethodOrder(NAME_ASCENDING)
 class EclParsingTest {
 
-	@Inject extension ParseHelper<ExpressionConstraint>
-	@Inject extension ValidationTestHelper
-
-	def void assertNoErrors(CharSequence expression) throws Exception {
-		val script = expression.parse;
-		assertNotNull('''Cannot parse expression: «expression»''', script);
-		script.assertNoErrors;
-	}
+	@Inject extension ParseHelper<ExpressionConstraint>;
+	@Inject extension ValidationTestHelper;
 
 	@Test
 	def void test_6_2_1_Self_1() {
@@ -492,6 +486,12 @@ class EclParsingTest {
 			< 19829001|disorder of lung| OR ^ 700043003 |example problem list concepts reference set| OR
 			^ 450976002|disorders and diseases reference set for GP/FP reason for encounter|
 		'''.assertNoErrors;
+	}
+
+	private def void assertNoErrors(CharSequence expression) throws Exception {
+		val script = expression.parse;
+		assertNotNull('''Cannot parse expression: «expression»''', script);
+		script.assertNoErrors;
 	}
 
 }
